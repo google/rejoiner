@@ -7,7 +7,6 @@ maven_jar(
     artifact = "com.graphql-java:graphql-java:6.0",
 )
 
-
 # proto_library rules implicitly depend on @com_google_protobuf//:protoc,
 # which is the proto-compiler.
 # This statement defines the @com_google_protobuf repo.
@@ -17,7 +16,6 @@ http_archive(
     strip_prefix = "protobuf-3.5.0",
     urls = ["https://github.com/google/protobuf/archive/v3.5.0.zip"],
 )
-
 maven_jar(
     name = "com_google_protobuf_java",
     artifact = "com.google.protobuf:protobuf-java:jar:3.5.0",
@@ -58,9 +56,7 @@ maven_jar(
     name = "junit",
     artifact = "junit:junit:jar:4.12",
 )
-
 maven_jar(
     name = "aop",
     artifact = "aopalliance:aopalliance:jar:1.0",
 )
-
