@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package javatests.com.google.api.graphql.rejoiner.proto;
+
+option java_package = "com.google.api.graphql.rejoiner";
+
+message Proto1 {
+  string id = 1;
+  int64 int_field = 2;
+  Proto2 test_proto = 3;
+  InnerProto test_inner_proto = 4;
+
+  message InnerProto {
+    string foo = 1;
+  }
+}
+
+message Proto2 {
+  string inner_id = 1;
+  repeated TestEnum enums = 2;
+
+  enum TestEnum {
+    UNKNOWN = 0;
+    FOO = 1;
+    BAR = 2;
+  }
+}

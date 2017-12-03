@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package javatests.com.google.api.graphql.rejoiner.proto;
+
+option java_package = "com.google.api.graphql.rejoiner";
+
+message GreetingsRequest {
+  string id = 1;
+  Languages lang = 4;
+}
+enum Languages {
+  UNKNOWN = 0;
+  EN = 1;
+  EO = 2;
+}
+message GreetingsResponse {
+  string id = 1;
+}
+message InnerProto {
+  string greeting1 = 1;
+  string greeting2 = 2;
+}
+
+message ExtraProto {
+  string some_value = 1;
+}
+
+message AccountKey {
+  int64 gaia_id = 1;
+}
+message AccountValue {
+  string a_string = 1;
+  Languages an_enum = 2;
+  repeated string strings = 3;
+}
