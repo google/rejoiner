@@ -20,7 +20,6 @@ import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-//import com.google.common.inject.Bindings;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -159,8 +158,7 @@ public abstract class SchemaModule extends AbstractModule {
    * Returns an {@link ImmutableSet} of all the methods in {@code clazz} or its super classes that
    * are annotated with {@link Query}.
    */
-  private static ImmutableSet<Field> findMutationFields(
-      Class<? extends SchemaModule> moduleClass) {
+  private static ImmutableSet<Field> findMutationFields(Class<? extends SchemaModule> moduleClass) {
     return findFields(moduleClass, Mutation.class, GraphQLFieldDefinition.class);
   }
 
@@ -168,8 +166,7 @@ public abstract class SchemaModule extends AbstractModule {
    * Returns an {@link ImmutableSet} of all the methods in {@code clazz} or its super classes that
    * are annotated with {@link Query}.
    */
-  private static ImmutableSet<Field> findQueryFields(
-      Class<? extends SchemaModule> moduleClass) {
+  private static ImmutableSet<Field> findQueryFields(Class<? extends SchemaModule> moduleClass) {
     return findFields(moduleClass, Query.class, GraphQLFieldDefinition.class);
   }
 
@@ -178,8 +175,7 @@ public abstract class SchemaModule extends AbstractModule {
    * have the expected type and annotation.
    */
   private static ImmutableSet<Method> findMethods(
-      Class<? extends SchemaModule> moduleClass,
-      Class<? extends Annotation> targetAnnotation) {
+      Class<? extends SchemaModule> moduleClass, Class<? extends Annotation> targetAnnotation) {
     Class<?> clazz = moduleClass;
     ImmutableSet.Builder<Method> nodesBuilder = ImmutableSet.builder();
     while (clazz != null && !SchemaModule.class.equals(clazz)) {
@@ -372,7 +368,8 @@ public abstract class SchemaModule extends AbstractModule {
         Annotation[] annotations = method.getParameterAnnotations()[i];
         Annotation qualifier = null;
         for (Annotation annotation : annotations) {
-          if (com.google.inject.internal.Annotations.isBindingAnnotation(annotation.annotationType())) {
+          if (com.google.inject.internal.Annotations.isBindingAnnotation(
+              annotation.annotationType())) {
             qualifier = annotation;
           }
         }

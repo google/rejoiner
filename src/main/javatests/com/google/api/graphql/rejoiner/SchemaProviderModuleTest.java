@@ -22,7 +22,6 @@ import com.google.inject.Key;
 import graphql.Scalars;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLSchema;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -33,8 +32,7 @@ public final class SchemaProviderModuleTest {
 
   @Test
   public void schemaModuleShouldProvideEmptySchema() {
-    Injector injector =
-        Guice.createInjector(new SchemaProviderModule(), new SchemaModule() {});
+    Injector injector = Guice.createInjector(new SchemaProviderModule(), new SchemaModule() {});
     assertThat(injector.getInstance(Key.get(GraphQLSchema.class, Schema.class))).isNotNull();
     assertThat(injector.getInstance(Key.get(GraphQLSchema.class, Schema.class)).getQueryType())
         .isNotNull();
@@ -86,7 +84,7 @@ public final class SchemaProviderModuleTest {
                 .getQueryType()
                 .getFieldDefinitions())
         .hasSize(1);
-    //TODO: this should be empty, currently type modifications only apply to types
+    // TODO: this should be empty, currently type modifications only apply to types
     // annotated with ExtraTypes.
   }
 }

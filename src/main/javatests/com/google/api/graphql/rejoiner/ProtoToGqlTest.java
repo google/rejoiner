@@ -22,7 +22,6 @@ import com.google.api.graphql.rejoiner.TestProto.Proto2;
 import com.google.api.graphql.rejoiner.TestProto.Proto2.TestEnum;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLObjectType;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

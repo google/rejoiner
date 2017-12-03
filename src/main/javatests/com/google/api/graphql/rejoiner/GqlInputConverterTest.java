@@ -21,7 +21,6 @@ import com.google.common.truth.Truth;
 import com.google.common.truth.extensions.proto.ProtoTruth;
 import com.google.protobuf.Message;
 import graphql.schema.GraphQLArgument;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -49,7 +48,7 @@ public final class GqlInputConverterTest {
     ProtoTruth.assertThat(protoBuf)
         .isEqualTo(
             Proto1.newBuilder()
-               .setId("id")
+                .setId("id")
                 .setIntField(123)
                 .setTestProto(Proto2.newBuilder().setInnerId("1").build())
                 .build());

@@ -20,7 +20,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import graphql.schema.GraphQLType;
 import java.util.Set;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

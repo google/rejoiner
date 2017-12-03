@@ -21,7 +21,6 @@ import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -150,7 +149,6 @@ public final class SchemaToProtoTest {
                 + "b = 1;\n"
                 + "c = 2;\n"
                 + "}\n"
-                + "}"
-    );
+                + "}");
   }
 }

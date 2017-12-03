@@ -37,8 +37,6 @@ import graphql.schema.DataFetchingEnvironmentBuilder;
 import graphql.schema.GraphQLFieldDefinition;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -58,8 +56,7 @@ public final class SchemaModuleTest {
 
   @Test
   public void schemaModuleShouldProvideEmpty() {
-    Injector injector =
-        Guice.createInjector(new SchemaModule() {});
+    Injector injector = Guice.createInjector(new SchemaModule() {});
     assertThat(injector.getInstance(QUERY_KEY)).isNotNull();
     assertThat(injector.getInstance(MUTATION_KEY)).isNotNull();
     assertThat(injector.getInstance(EXTRA_TYPE_KEY)).isNotNull();
@@ -86,7 +83,8 @@ public final class SchemaModuleTest {
   }
 
   @Test
-  public void schemaShouldValidateWhenIncludingDataFetchingEnvironment() throws ExecutionException, InterruptedException {
+  public void schemaShouldValidateWhenIncludingDataFetchingEnvironment()
+      throws ExecutionException, InterruptedException {
     Injector injector =
         Guice.createInjector(
             new SchemaModule() {
@@ -101,7 +99,8 @@ public final class SchemaModuleTest {
   }
 
   @Test
-  public void schemaShouldValidateWhenProvidingJustRequest() throws ExecutionException, InterruptedException {
+  public void schemaShouldValidateWhenProvidingJustRequest()
+      throws ExecutionException, InterruptedException {
     Injector injector =
         Guice.createInjector(
             new SchemaModule() {
@@ -115,13 +114,13 @@ public final class SchemaModuleTest {
   }
 
   @Test
-  public void schemaShouldValidateWhenInjectingParameterUsingGuice() throws ExecutionException, InterruptedException {
+  public void schemaShouldValidateWhenInjectingParameterUsingGuice()
+      throws ExecutionException, InterruptedException {
     Injector injector =
         Guice.createInjector(
             new SchemaModule() {
               @Query("hello")
-              ListenableFuture<GreetingsResponse> querySnippets(
-                  GreetingsRequest request) {
+              ListenableFuture<GreetingsResponse> querySnippets(GreetingsRequest request) {
                 return Futures.immediateFuture(
                     GreetingsResponse.newBuilder().setId(request.getId()).build());
               }
@@ -148,7 +147,10 @@ public final class SchemaModuleTest {
     Object result =
         hello
             .getDataFetcher()
-            .get(DataFetchingEnvironmentBuilder.newDataFetchingEnvironment().arguments(ImmutableMap.of("input", ImmutableMap.of("id", "123"))).build());
+            .get(
+                DataFetchingEnvironmentBuilder.newDataFetchingEnvironment()
+                    .arguments(ImmutableMap.of("input", ImmutableMap.of("id", "123")))
+                    .build());
 
     assertThat(result).isInstanceOf(ListenableFuture.class);
     assertThat(((ListenableFuture<?>) result).get())

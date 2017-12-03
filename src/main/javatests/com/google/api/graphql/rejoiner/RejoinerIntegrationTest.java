@@ -25,16 +25,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Guice;
 import com.google.inject.Key;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Qualifier;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -61,9 +54,10 @@ public final class RejoinerIntegrationTest {
     }
 
     @Query("greeting")
-    ListenableFuture<GreetingsResponse> greetings(/*TODO: Fix this GreetingsRequest request*/) {
+    ListenableFuture<GreetingsResponse> greetings(/*TODO: Fix this GreetingsRequest request*/ ) {
       return Futures.immediateFuture(GreetingsResponse.newBuilder().setId("10").build());
     }
+
     @SchemaModification(addField = "extraField", onType = GreetingsResponse.class)
     ListenableFuture<ExtraProto> greetingsResponseToExtraProto(
         ExtraProto request, GreetingsResponse source) {
