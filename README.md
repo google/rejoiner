@@ -53,6 +53,15 @@ final class TodoToUserSchemaModule extends SchemaModule {
 In this case the Todo parameter is the parent object which can be referenced to
 get the creators email.
 
+## Removing a field
+
+```
+final class TodoModificationsSchemaModule extends SchemaModule {
+  @SchemaModification
+  TypeModification removePrivateTodoData =
+      Type.find(Todo.getDescriptor()).removeField("privateTodoData");
+}
+```
 
 ## Building the GraphQL schema
 ```
@@ -64,6 +73,7 @@ public final class TodoModule extends AbstractModule {
     install(new SchemaProviderModule());
     install(new TodoQuerySchemaModule());
     install(new TodoMutationSchemaModule());
+    install(new TodoModificationsSchemaModule());
     install(new TodoToUserSchemaModule());
   }
 }
@@ -88,5 +98,8 @@ import graphql.schema.GraphQLSchema;
  - ListenableFuture<? extends Message>
  - ListenableFuture<ImmutableList<? extends Message>>
 
+## Project information
 
-Note: This is not an official Google product
+ - Java code is formatted using [google-java-format](https://github.com/google/google-java-format).
+ - Code is built using https://bazel.build.
+ - Note: This is not an official Google product.
