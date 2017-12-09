@@ -4,3 +4,6 @@ bazel-java-maven
 bazel-out
 bazel-testlogs
 bazel-rejoiner
+.idea/
+target
+*.iml
