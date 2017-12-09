@@ -137,7 +137,7 @@ public abstract class SchemaModule extends AbstractModule {
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code clazz} or its super classes that
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
    * are annotated with {@link Query}.
    */
   private static ImmutableSet<Field> findTypeModificationFields(
@@ -146,7 +146,7 @@ public abstract class SchemaModule extends AbstractModule {
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code clazz} or its super classes that
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
    * are annotated with {@link Query}.
    */
   private static ImmutableSet<Field> findExtraTypeFields(
@@ -155,7 +155,7 @@ public abstract class SchemaModule extends AbstractModule {
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code clazz} or its super classes that
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
    * are annotated with {@link Query}.
    */
   private static ImmutableSet<Field> findMutationFields(Class<? extends SchemaModule> moduleClass) {
@@ -163,7 +163,7 @@ public abstract class SchemaModule extends AbstractModule {
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code clazz} or its super classes that
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
    * are annotated with {@link Query}.
    */
   private static ImmutableSet<Field> findQueryFields(Class<? extends SchemaModule> moduleClass) {
@@ -171,7 +171,7 @@ public abstract class SchemaModule extends AbstractModule {
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code clazz} or its super classes that
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
    * have the expected type and annotation.
    */
   private static ImmutableSet<Method> findMethods(
@@ -181,11 +181,6 @@ public abstract class SchemaModule extends AbstractModule {
     while (clazz != null && !SchemaModule.class.equals(clazz)) {
       for (Method method : clazz.getDeclaredMethods()) {
         if (method.isAnnotationPresent(targetAnnotation)) {
-          Preconditions.checkArgument(
-              method.getReturnType() == ListenableFuture.class,
-              "Method %s should return type %s",
-              method,
-              ListenableFuture.class.getSimpleName());
           nodesBuilder.add(method);
         }
       }
@@ -194,7 +189,7 @@ public abstract class SchemaModule extends AbstractModule {
     return nodesBuilder.build();
   }
   /**
-   * Returns an {@link ImmutableSet} of all the fields in {@code clazz} or its super classes that
+   * Returns an {@link ImmutableSet} of all the fields in {@code moduleClass} or its super classes that
    * have the expected type and annotation.
    */
   private static ImmutableSet<Field> findFields(
@@ -301,7 +296,16 @@ public abstract class SchemaModule extends AbstractModule {
 
   private GraphQLOutputType getReturnType(Method method)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-    // Currently it's assumed the response is of type ListenableFuture<? extends Message>.
+    // Currently it's assumed the response is of type Message or ListenableFuture<? extends Message>.
+    if(!(method.getGenericReturnType() instanceof ParameterizedType)){
+      @SuppressWarnings("unchecked")
+      Class<? extends Message> responseClass =
+          (Class<? extends Message>) method.getReturnType();
+      Descriptor responseDescriptor =
+          (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
+      referencedDescriptors.add(responseDescriptor);
+      return ProtoToGql.getReference(responseDescriptor);
+    }
     ParameterizedType parameterizedFutureType = (ParameterizedType) method.getGenericReturnType();
     Preconditions.checkArgument(
         parameterizedFutureType != null, "Method %s should have a generic return type", method);
