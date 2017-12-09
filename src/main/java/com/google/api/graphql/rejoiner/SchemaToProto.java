@@ -123,7 +123,7 @@ public final class SchemaToProto {
   }
 
   private static String getJspb(GraphQLType type) {
-    return String.format("option (jspb.message_id) = \"corp.graphql.%s\";", type.getName());
+    return String.format("option (jspb.message_id) = \"graphql.%s\";", type.getName());
   }
 
   private static String toField(GraphQLFieldDefinition field) {
