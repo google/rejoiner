@@ -60,3 +60,7 @@ maven_jar(
     name = "aop",
     artifact = "aopalliance:aopalliance:jar:1.0",
 )
+maven_jar(
+    name = "future_converter",
+    artifact = "net.javacrumbs.future-converter:future-converter-java8-guava:1.1.0"
+)
