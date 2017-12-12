@@ -21,8 +21,8 @@ mutations, and schema modifications are presented below.
 ```java
 final class TodoQuerySchemaModule extends SchemaModule {
   @Query("listTodo")
-  ListenableFuture<ListTodoResponse> listTodo(ListTodoRequest request, TodoService todoService) {
-    return todoService.listTodo(request);
+  ListenableFuture<ListTodoResponse> listTodo(ListTodoRequest request, TodoClient todoClient) {
+    return todoClient.listTodo(request);
   }
 }
 ```
@@ -82,7 +82,10 @@ import com.google.api.graphql.rejoiner.SchemaProviderModule;
 public final class TodoModule extends AbstractModule {
   @Override
   protected void configure() {
+    // Guice module that provides the generated GraphQLSchema instance
     install(new SchemaProviderModule());
+
+    // Install schema modules
     install(new TodoQuerySchemaModule());
     install(new TodoMutationSchemaModule());
     install(new TodoModificationsSchemaModule());
@@ -113,7 +116,7 @@ All generated proto messages extend `Message`.
 
 ## Project information
 
- - Rejoiner is built on top of [GraphQL-Java](https://github.com/graphql-java/graphql-java) which provides the core 
+ - Rejoiner is built on top of [GraphQL-Java](https://github.com/graphql-java/graphql-java) which provides the core
    GraphQL capabilities such as query parsing, validation, and execution.  
  - Java code is formatted using [google-java-format](https://github.com/google/google-java-format).
  - Code is built using https://bazel.build.
