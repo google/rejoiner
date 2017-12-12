@@ -7,10 +7,10 @@ java_library(
     deps = [
         ":auto",
         "@aop//jar",
-        "@com_google_guava_guava//jar",
-        "@com_google_guice//jar",
+        "@com_google_guava_guava2//jar",
+        "@guice//jar",
         "@com_google_guice_multibindings//jar",
-        "@com_google_protobuf_java//jar",
+        "@com_google_protobuf_java2//jar",
         "@com_graphql_java//jar",
         "@javax_annotations//jar",
         "@javax_inject//jar",
