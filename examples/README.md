@@ -24,4 +24,4 @@ GraphQL frontend server.
    ```
 
 3. Visit GraphiQL and make requests
-   <p>http://localhost:8080<p>
+   <p>[http://localhost:8080](http://localhost:8080)<p>
