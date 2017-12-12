@@ -21,8 +21,8 @@ import graphql.execution.instrumentation.parameters.InstrumentationFieldFetchPar
 import graphql.schema.DataFetcher;
 import net.javacrumbs.futureconverter.java8guava.FutureConverter;
 
-public final class GauvaListenableFutureSupport {
-  private GauvaListenableFutureSupport() {}
+public final class GuavaListenableFutureSupport {
+  private GuavaListenableFutureSupport() {}
 
   /**
    * Converts a {@link ListenableFuture} to a Java8 {@link java.util.concurrent.CompletableFuture}.
