@@ -29,13 +29,13 @@ Each [SchemaModule](./src/main/java/com/google/api/graphql/rejoiner/SchemaModule
 
 
 ## Extending Rejoiner
- - [TypeModification](./src/main/java/com/google/api/graphql/rejoiner/TypeModification.java)
+ - [TypeModification](./src/main/java/com/google/api/graphql/rejoiner/TypeModification.java) are functions that transform GraphQLObjectType instances. This is used to add and remove fields from the generated GraphQLObjectType instances. Additional transforms can be added by implementing this interface.
  - [Annotations](./src/main/java/com/google/api/graphql/rejoiner/Annotations.java)
 
 
 # Implementation
 
-These classes package private and not part of the public API.
+These classes are package private and not part of the public API.
 
  - [GqlInputConverter](./src/main/java/com/google/api/graphql/rejoiner/GqlInputConverter.java)
  - [ProtoRegistry](./src/main/java/com/google/api/graphql/rejoiner/ProtoRegistry.java)
