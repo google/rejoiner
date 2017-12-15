@@ -73,7 +73,7 @@ public class GraphQlServer extends AbstractHandler {
     resourceHandler.setWelcomeFiles(new String[] {"index.html"});
     resourceHandler.setDirectoriesListed(false);
     // resource base is relative to the WORKSPACE file
-    resourceHandler.setResourceBase("./examples/hello-grpc/src/main/resources");
+    resourceHandler.setResourceBase("./examples/hello-grpc/resources");
     HandlerList handlerList = new HandlerList();
     handlerList.setHandlers(new Handler[] {resourceHandler, new GraphQlServer()});
     server.setHandler(handlerList);
