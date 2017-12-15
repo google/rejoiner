@@ -28,6 +28,9 @@ import com.google.inject.Key;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.execution.instrumentation.ChainedInstrumentation;
+import graphql.execution.instrumentation.Instrumentation;
+import graphql.execution.instrumentation.tracing.TracingInstrumentation;
 import graphql.schema.GraphQLSchema;
 import java.io.IOException;
 import java.util.*;
@@ -55,10 +58,14 @@ public class GraphQlServer extends AbstractHandler {
               new HelloWorldSchemaModule())
           .getInstance(Key.get(GraphQLSchema.class, Schema.class));
 
+  private static final Instrumentation instrumentation =
+      new ChainedInstrumentation(
+          java.util.Arrays.asList(
+              GuavaListenableFutureSupport.listenableFutureInstrumentation(),
+              new TracingInstrumentation()));
+
   private static final GraphQL GRAPHQL =
-      GraphQL.newGraphQL(SCHEMA)
-          .instrumentation(GuavaListenableFutureSupport.listenableFutureInstrumentation())
-          .build();
+      GraphQL.newGraphQL(SCHEMA).instrumentation(instrumentation).build();
 
   public static void main(String[] args) throws Exception {
     Server server = new Server(HTTP_PORT);
