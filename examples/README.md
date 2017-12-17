@@ -13,14 +13,14 @@ GraphQL frontend server.
    <p>From the top level directory run these commands:
 
     ```
-    bazel run examples/hello-grpc:helloworld_server --script_path server.sh
-    ./server.sh
+    > bazel run examples/java/com/google/api/graphql/examples/helloworld/backend --script_path server.sh
+    > ./server.sh
     ```
 2. Run the GraphQL frontend server
    <p>In another terminal run the following command:
 
    ```
-   bazel run examples/hello-grpc:graphql_server
+   > bazel run examples:helloworld_graphqlserver
    ```
 
 3. Visit GraphiQL and make requests

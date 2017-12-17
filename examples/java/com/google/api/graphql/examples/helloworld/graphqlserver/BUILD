@@ -1,10 +1,8 @@
 package(default_visibility = ["//visibility:public"])
 
-java_binary(
+java_library(
     name = "graphqlserver",
-    main_class="com.google.api.graphql.examples.helloworld.graphqlserver.GraphQlServer",
     srcs = glob(["*.java"]),
-    data = glob(["resources/*"]),
     deps = [
         "@com_google_guava_guava2//jar", # this must be on top
         "//examples/proto:helloworld_java_grpc",

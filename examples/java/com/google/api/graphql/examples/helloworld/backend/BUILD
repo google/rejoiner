@@ -1,7 +1,20 @@
 package(default_visibility = ["//visibility:public"])
 
-java_library(
+load("@dependencies//:generate_workspace.bzl", "generated_java_libraries")
+generated_java_libraries()
+
+java_binary(
     name = "backend",
+    testonly = 1,
+    main_class = "com.google.api.graphql.examples.helloworld.backend.HelloWorldServer",
+    runtime_deps = [
+        ":backend_lib",
+        "@grpc_java//netty",
+    ],
+)
+
+java_library(
+    name = "backend_lib",
     testonly = 1,
     srcs = glob(["*.java"]),
     deps = [

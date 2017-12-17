@@ -26,11 +26,9 @@ java_proto_library(
   ],
 )
 java_grpc_library(
-    name = "book_java_grpc",
-    srcs = [":book_service_proto"],
-    deps = [
-        ":book_service_java_proto",
-        ],
+  name = "book_java_grpc",
+  srcs = [":book_service_proto"],
+  deps = [":book_service_java_proto"],
 )
 
 proto_library(
@@ -57,9 +55,7 @@ java_proto_library(
   ],
 )
 java_grpc_library(
-    name = "shelf_java_grpc",
-    srcs = [":shelf_service_proto"],
-    deps = [
-        ":shelf_service_java_proto",
-        ],
+  name = "shelf_java_grpc",
+  srcs = [":shelf_service_proto"],
+  deps = [":shelf_service_java_proto"],
 )

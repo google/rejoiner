@@ -33,5 +33,5 @@ message HelloRequest {
 
 // The response message containing the greetings
 message HelloReply {
-  string message = 1 [deprecated = true];
+  string message = 1;
 }
