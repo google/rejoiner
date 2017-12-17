@@ -12,26 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-syntax = "proto3";
+package com.google.api.graphql.examples.helloworld.graphqlserver;
 
-option java_multiple_files = true;
-option java_package = "io.grpc.examples.helloworld";
-option java_outer_classname = "HelloWorldProto";
+import com.google.api.graphql.rejoiner.Query;
+import com.google.api.graphql.rejoiner.SchemaModule;
+import io.grpc.examples.helloworld.GreeterGrpc;
+import io.grpc.examples.helloworld.HelloReply;
+import io.grpc.examples.helloworld.HelloRequest;
 
-package helloworld;
-
-// The greeting service definition.
-service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply) {}
-}
-
-// The request message containing the user's name.
-message HelloRequest {
-  string name = 1;
-}
-
-// The response message containing the greetings
-message HelloReply {
-  string message = 1;
+/** A GraphQL {@link SchemaModule} backed by a gRPC service. */
+final class HelloWorldSchemaModule extends SchemaModule {
+  @Query("sayHello")
+  HelloReply sayHello(HelloRequest request, GreeterGrpc.GreeterBlockingStub client) {
+    return client.sayHello(request);
+  }
 }
