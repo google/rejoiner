@@ -83,6 +83,17 @@ maven_jar(
   artifact = "org.slf4j:slf4j-api:1.7.25",
 )
 
+# proto_library rules implicitly depend on @com_google_protobuf//:protoc,
+# which is the proto-compiler.
+# This statement defines the @com_google_protobuf repo.
+# This is explicitly added to get the built-in known protos.
+# https://github.com/google/protobuf/commit/699c0eb9cf6573f3a00b4db61f60aff92dc3dd7a
+http_archive(
+  name = "com_google_protobuf",
+  urls = ["https://github.com/google/protobuf/archive/master.zip"],
+  strip_prefix = "protobuf-master",
+)
+
 ############ transitive_maven_jar ############
 
 http_archive(
@@ -113,4 +124,4 @@ git_repository(
   commit = "8a210d037dec14c0da687d639d6601b0d8dd1fb3",
 )
 load("@grpc_java//:repositories.bzl", "grpc_java_repositories")
-grpc_java_repositories()
+grpc_java_repositories(omit_com_google_protobuf = True)
