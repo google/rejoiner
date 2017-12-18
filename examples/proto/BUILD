@@ -34,3 +34,18 @@ java_grpc_library(
     deps = [":helloworld_streaming_java_proto"],
 )
 
+proto_library(
+    name = "graphql_service_proto",
+    srcs = ["graphql_service.proto"],
+)
+
+java_proto_library(
+    name = "graphql_service_java_proto",
+    deps = [":graphql_service_proto"],
+)
+
+java_grpc_library(
+    name = "graphql_service_java_grpc",
+    srcs = [":graphql_service_proto"],
+    deps = [":graphql_service_java_proto"],
+)
