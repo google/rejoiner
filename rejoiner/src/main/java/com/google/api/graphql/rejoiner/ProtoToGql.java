@@ -129,11 +129,17 @@ final class ProtoToGql {
 
     @Override
     public GraphQLFieldDefinition apply(FieldDescriptor fieldDescriptor) {
-      return GraphQLFieldDefinition.newFieldDefinition()
-          .type(convertType(fieldDescriptor))
-          .dataFetcher(new ProtoDataFetcher(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName())))
-          .name(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName()))
-          .build();
+      GraphQLFieldDefinition.Builder builder =
+          GraphQLFieldDefinition.newFieldDefinition()
+              .type(convertType(fieldDescriptor))
+              .dataFetcher(
+                  new ProtoDataFetcher(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName())))
+              .name(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName()));
+      if (fieldDescriptor.getOptions().hasDeprecated()
+          && fieldDescriptor.getOptions().getDeprecated()) {
+        builder.deprecate("deprecated in proto");
+      }
+      return builder.build();
     }
   }
 
