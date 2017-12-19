@@ -48,7 +48,7 @@ public final class SchemaToProtoTest {
                 + "import \"java/com/google/apps/jspb/jspb.proto\";\n"
                 + "\n"
                 + "message queryType {\n"
-                + "option (jspb.message_id) = \"corp.graphql.queryType\";\n"
+                + "option (jspb.message_id) = \"graphql.queryType\";\n"
                 + "}");
   }
 
@@ -98,7 +98,7 @@ public final class SchemaToProtoTest {
                 + "import \"java/com/google/apps/jspb/jspb.proto\";\n"
                 + "\n"
                 + "message queryType {\n"
-                + "option (jspb.message_id) = \"corp.graphql.queryType\";\n"
+                + "option (jspb.message_id) = \"graphql.queryType\";\n"
                 + "string string = 1;\n"
                 + "bool boolean = 2;\n"
                 + "float float = 3;\n"
@@ -138,12 +138,12 @@ public final class SchemaToProtoTest {
                 + "import \"java/com/google/apps/jspb/jspb.proto\";\n"
                 + "\n"
                 + "message queryType {\n"
-                + "option (jspb.message_id) = \"corp.graphql.queryType\";\n"
+                + "option (jspb.message_id) = \"graphql.queryType\";\n"
                 + "enumType.Enum enum = 1;\n"
                 + "}\n"
                 + "\n"
                 + "message enumType {\n"
-                + " option (jspb.message_id) = \"corp.graphql.enumType\";\n"
+                + " option (jspb.message_id) = \"graphql.enumType\";\n"
                 + " enum Enum {\n"
                 + "a = 0;\n"
                 + "b = 1;\n"
