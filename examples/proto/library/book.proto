@@ -22,17 +22,15 @@ option java_package = "com.google.example.library.v1";
 
 // A single book in the library.
 message Book {
-    // The resource name of the book.
-    // Book names have the form `shelves/{shelf_id}/books/{book_id}`.
-    // The name is ignored when creating a book.
-    string name = 1;
+  // The id is ignored when creating a book.
+  string id = 1;
 
-    // The name of the book author.
-    string author = 2;
+  // The name of the book author.
+  string author = 2;
 
-    // The title of the book.
-    string title = 3;
+  // The title of the book.
+  string title = 3;
 
-    // Value indicating whether the book has been read.
-    bool read = 4;
+  // Value indicating whether the book has been read.
+  bool read = 4;
 }

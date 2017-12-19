@@ -2,6 +2,7 @@ package(default_visibility = ["//visibility:public"])
 
 load("@grpc_java//:java_grpc_library.bzl", "java_grpc_library")
 
+# Book Service
 proto_library(
   name = "book_proto",
   srcs = ["book.proto"],
@@ -31,6 +32,7 @@ java_grpc_library(
   deps = [":book_service_java_proto"],
 )
 
+# Shelf Service
 proto_library(
   name = "shelf_proto",
   srcs = ["shelf.proto"],
