@@ -135,6 +135,16 @@ final class ProtoToGql {
               .dataFetcher(
                   new ProtoDataFetcher(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName())))
               .name(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName()));
+      if (fieldDescriptor.getFile().toProto().getSourceCodeInfo().getLocationCount()
+          > fieldDescriptor.getIndex()) {
+        builder.description(
+            fieldDescriptor
+                .getFile()
+                .toProto()
+                .getSourceCodeInfo()
+                .getLocation(fieldDescriptor.getIndex())
+                .getLeadingComments());
+      }
       if (fieldDescriptor.getOptions().hasDeprecated()
           && fieldDescriptor.getOptions().getDeprecated()) {
         builder.deprecate("deprecated in proto");
