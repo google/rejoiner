@@ -15,9 +15,11 @@
 package com.google.api.graphql.rejoiner;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static graphql.Scalars.GraphQLID;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
+import com.google.api.graphql.options.RelayOptionsProto;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Converter;
@@ -30,7 +32,9 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.GenericDescriptor;
+import com.google.protobuf.Message;
 import graphql.Scalars;
+import graphql.relay.Relay;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLEnumType;
@@ -45,6 +49,7 @@ import graphql.schema.GraphQLTypeReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Optional;
 
 /** Converts Protos to GraphQL Types. */
 final class ProtoToGql {
@@ -181,10 +186,33 @@ final class ProtoToGql {
   static GraphQLObjectType convert(Descriptor descriptor) {
     ImmutableList<GraphQLFieldDefinition> graphQLFieldDefinitions =
         descriptor.getFields().stream().map(FIELD_CONVERTER).collect(toImmutableList());
-    return GraphQLObjectType.newObject()
-        .name(getReferenceName(descriptor))
-        .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions)
-        .build();
+
+    Optional<GraphQLFieldDefinition> relayId =
+        descriptor
+            .getFields()
+            .stream()
+            .filter(field -> field.getOptions().hasExtension(RelayOptionsProto.relayOptions))
+            .map(
+                field ->
+                    GraphQLFieldDefinition.newFieldDefinition()
+                        .name("relayId")
+                        .type(new GraphQLNonNull(GraphQLID))
+                        .description("Relay ID")
+                        .dataFetcher(
+                            data ->
+                                new Relay()
+                                    .toGlobalId(
+                                        descriptor.getFullName(),
+                                        data.<Message>getSource().getField(field).toString()))
+                        .build())
+            .findFirst();
+
+    GraphQLObjectType.Builder builder =
+        GraphQLObjectType.newObject()
+            .name(getReferenceName(descriptor))
+            .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions);
+    relayId.ifPresent(field -> builder.field(field));
+    return builder.build();
   }
 
   static GraphQLEnumType convert(EnumDescriptor descriptor) {

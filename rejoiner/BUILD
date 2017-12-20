@@ -6,6 +6,7 @@ java_library(
     plugins = [":auto_plugin"],
     deps = [
         ":auto",
+        "//rejoiner/src/main/proto:relay_java_proto",
         "@aop//jar",
         "@com_google_guava_guava2//jar",
         "@com_google_guice_multibindings//jar",
