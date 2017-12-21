@@ -17,6 +17,20 @@ java_library(
         "@javax_inject//jar",
     ],
 )
+java_library(
+    name = "grpc",
+    srcs = glob(["src/main/java/com/google/api/graphql/grpc/*.java"]),
+    deps = [
+        "@aop//jar",
+        "@com_google_guava_guava2//jar",
+        "@com_google_guice_multibindings//jar",
+        "@com_google_protobuf_java2//jar",
+        "@com_graphql_java//jar",
+        "@guice//jar",
+        "@javax_annotations//jar",
+        "@javax_inject//jar",
+    ],
+)
 
 java_plugin(
     name = "auto_plugin",

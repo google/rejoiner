@@ -52,7 +52,7 @@ public final class ProtoToGqlTest {
 
   @Test
   public void convertShouldWorkForMessage() {
-    GraphQLObjectType result = ProtoToGql.convert(Proto1.getDescriptor());
+    GraphQLObjectType result = ProtoToGql.convert(Proto1.getDescriptor(), null);
     assertThat(result.getName())
         .isEqualTo("javatests_com_google_api_graphql_rejoiner_proto_Proto1");
     assertThat(result.getFieldDefinitions()).hasSize(4);

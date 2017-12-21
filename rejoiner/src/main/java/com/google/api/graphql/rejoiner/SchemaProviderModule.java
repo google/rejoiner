@@ -19,10 +19,14 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.protobuf.Descriptors.FileDescriptor;
+import graphql.relay.Relay;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -34,25 +38,54 @@ public final class SchemaProviderModule extends AbstractModule {
     private final Set<GraphQLFieldDefinition> mutationFields;
     private final Set<TypeModification> modifications;
     private final Set<FileDescriptor> fileDescriptors;
+    private final Set<NodeDataFetcher> nodeDataFetchers;
 
     @Inject
     public SchemaImpl(
         @Annotations.Queries Set<GraphQLFieldDefinition> queryFields,
         @Annotations.Mutations Set<GraphQLFieldDefinition> mutationFields,
         @Annotations.GraphModifications Set<TypeModification> modifications,
-        @Annotations.ExtraTypes Set<FileDescriptor> fileDescriptors) {
+        @Annotations.ExtraTypes Set<FileDescriptor> fileDescriptors,
+        @Annotations.Queries Set<NodeDataFetcher> nodeDataFetchers) {
       this.queryFields = queryFields;
       this.mutationFields = mutationFields;
       this.modifications = modifications;
       this.fileDescriptors = fileDescriptors;
+      this.nodeDataFetchers = nodeDataFetchers;
     }
 
     @Override
     public GraphQLSchema get() {
-      GraphQLObjectType queryType =
-          newObject().name("QueryType").fields(Lists.newArrayList(queryFields)).build();
+      Map<String, ? extends Function<String, Object>> nodeDataFetchers =
+          this.nodeDataFetchers
+              .stream()
+              .collect(Collectors.toMap(e -> e.getClassName(), Function.identity()));
+
+      GraphQLObjectType.Builder queryType =
+          newObject().name("QueryType").fields(Lists.newArrayList(queryFields));
+
       ProtoRegistry protoRegistry =
-          ProtoRegistry.newBuilder().addAll(fileDescriptors).build(modifications);
+          ProtoRegistry.newBuilder().addAll(fileDescriptors).add(modifications).build();
+
+      if (protoRegistry.hasRelayNode()) {
+        queryType.field(
+            new Relay()
+                .nodeField(
+                    protoRegistry.getRelayNode(),
+                    environment -> {
+                      String id = environment.getArgument("id");
+                      Relay.ResolvedGlobalId resolvedGlobalId = new Relay().fromGlobalId(id);
+                      Function<String, ?> stringFunction =
+                          nodeDataFetchers.get(resolvedGlobalId.getType());
+                      if (stringFunction == null) {
+                        throw new RuntimeException(
+                            String.format(
+                                "Relay Node fetcher not implemented for type=%s",
+                                resolvedGlobalId.getType()));
+                      }
+                      return stringFunction.apply(resolvedGlobalId.getId());
+                    }));
+      }
 
       if (mutationFields.isEmpty()) {
         return GraphQLSchema.newSchema().query(queryType).build(protoRegistry.listTypes());

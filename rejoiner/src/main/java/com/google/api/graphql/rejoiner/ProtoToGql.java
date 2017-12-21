@@ -39,6 +39,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
@@ -183,7 +184,7 @@ final class ProtoToGql {
     }
   }
 
-  static GraphQLObjectType convert(Descriptor descriptor) {
+  static GraphQLObjectType convert(Descriptor descriptor, GraphQLInterfaceType nodeInterface) {
     ImmutableList<GraphQLFieldDefinition> graphQLFieldDefinitions =
         descriptor.getFields().stream().map(FIELD_CONVERTER).collect(toImmutableList());
 
@@ -195,24 +196,44 @@ final class ProtoToGql {
             .map(
                 field ->
                     GraphQLFieldDefinition.newFieldDefinition()
-                        .name("relayId")
+                        .name("id")
                         .type(new GraphQLNonNull(GraphQLID))
                         .description("Relay ID")
                         .dataFetcher(
                             data ->
                                 new Relay()
                                     .toGlobalId(
-                                        descriptor.getFullName(),
+                                        getReferenceName(descriptor),
                                         data.<Message>getSource().getField(field).toString()))
                         .build())
             .findFirst();
 
-    GraphQLObjectType.Builder builder =
-        GraphQLObjectType.newObject()
-            .name(getReferenceName(descriptor))
-            .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions);
-    relayId.ifPresent(field -> builder.field(field));
-    return builder.build();
+    if (relayId.isPresent()) {
+      return GraphQLObjectType.newObject()
+          .name(getReferenceName(descriptor))
+          .withInterface(nodeInterface)
+          .field(relayId.get())
+          .fields(
+              graphQLFieldDefinitions
+                  .stream()
+                  .map(
+                      field ->
+                          field.getName().equals("id")
+                              ? GraphQLFieldDefinition.newFieldDefinition()
+                                  .name("rawId")
+                                  .description(field.getDescription())
+                                  .type(field.getType())
+                                  .dataFetcher(field.getDataFetcher())
+                                  .build()
+                              : field)
+                  .collect(ImmutableList.toImmutableList()))
+          .build();
+    }
+
+    return GraphQLObjectType.newObject()
+        .name(getReferenceName(descriptor))
+        .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions)
+        .build();
   }
 
   static GraphQLEnumType convert(EnumDescriptor descriptor) {

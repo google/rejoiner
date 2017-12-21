@@ -22,6 +22,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
+import graphql.relay.Relay;
+import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -36,9 +38,11 @@ import java.util.stream.Collectors;
 /** Registers Protos for building a GraphQL schema. */
 final class ProtoRegistry {
   private final BiMap<String, GraphQLType> mapping;
+  private final GraphQLInterfaceType nodeInterface;
 
-  private ProtoRegistry(BiMap<String, GraphQLType> mapping) {
+  private ProtoRegistry(BiMap<String, GraphQLType> mapping, GraphQLInterfaceType nodeInterface) {
     this.mapping = mapping;
+    this.nodeInterface = nodeInterface;
   }
 
   static Builder newBuilder() {
@@ -49,11 +53,26 @@ final class ProtoRegistry {
     return mapping.values();
   }
 
+  boolean hasRelayNode() {
+    return mapping
+        .values()
+        .stream()
+        .anyMatch(
+            type ->
+                type instanceof GraphQLObjectType
+                    && ((GraphQLObjectType) type).getInterfaces().contains(nodeInterface));
+  }
+
+  GraphQLInterfaceType getRelayNode() {
+    return nodeInterface;
+  }
+
   /** Builder for {@see ProtoRegistry}. */
   public static class Builder {
     private final ArrayList<FileDescriptor> fileDescriptors = new ArrayList<>();
     private final ArrayList<Descriptor> descriptors = new ArrayList<>();
     private final ArrayList<EnumDescriptor> enumDescriptors = new ArrayList<>();
+    private final Set<TypeModification> typeModifications = new HashSet<>();
 
     Builder add(FileDescriptor fileDescriptor) {
       fileDescriptors.add(fileDescriptor);
@@ -75,31 +94,45 @@ final class ProtoRegistry {
       return this;
     }
 
-    ProtoRegistry build() {
-      return new ProtoRegistry(getMap(fileDescriptors, descriptors, enumDescriptors));
+    Builder add(Set<TypeModification> modifications) {
+      typeModifications.addAll(modifications);
+      return this;
     }
 
-    ProtoRegistry build(Set<TypeModification> modifications) {
+    ProtoRegistry build() {
       ImmutableListMultimap<String, TypeModification> modificationsMap =
           ImmutableListMultimap.copyOf(
-              modifications
+              this.typeModifications
                   .stream()
                   .map(
                       modification ->
                           new SimpleImmutableEntry<>(modification.getTypeName(), modification))
                   .collect(Collectors.toList()));
-      return build(modificationsMap);
-    }
 
-    private ProtoRegistry build(ImmutableListMultimap<String, TypeModification> modifications) {
-      return new ProtoRegistry(
-          modifyTypes(getMap(fileDescriptors, descriptors, enumDescriptors), modifications));
+      final BiMap<String, GraphQLType> mapping = HashBiMap.create();
+
+      GraphQLInterfaceType nodeInterface =
+          new Relay()
+              .nodeInterface(
+                  env -> {
+                    Relay.ResolvedGlobalId resolvedGlobalId =
+                        new Relay().fromGlobalId(env.getArguments().get("id").toString());
+                    return (GraphQLObjectType) mapping.get(resolvedGlobalId.getType());
+                  });
+
+      mapping.putAll(
+          modifyTypes(
+              getMap(fileDescriptors, descriptors, enumDescriptors, nodeInterface),
+              modificationsMap));
+
+      return new ProtoRegistry(mapping, nodeInterface);
     }
 
     private static BiMap<String, GraphQLType> getMap(
         List<FileDescriptor> fileDescriptors,
         List<Descriptor> descriptors,
-        List<EnumDescriptor> enumDescriptors) {
+        List<EnumDescriptor> enumDescriptors,
+        GraphQLInterfaceType nodeInterface) {
       HashBiMap<String, GraphQLType> mapping = HashBiMap.create(getEnumMap(enumDescriptors));
       LinkedList<Descriptor> loop = new LinkedList<>(descriptors);
 
@@ -113,7 +146,9 @@ final class ProtoRegistry {
       while (!loop.isEmpty()) {
         Descriptor descriptor = loop.pop();
         if (!mapping.containsKey(descriptor.getFullName())) {
-          mapping.put(ProtoToGql.getReferenceName(descriptor), ProtoToGql.convert(descriptor));
+          mapping.put(
+              ProtoToGql.getReferenceName(descriptor),
+              ProtoToGql.convert(descriptor, nodeInterface));
           loop.addAll(descriptor.getNestedTypes());
 
           mapping.putAll(getEnumMap(descriptor.getEnumTypes()));

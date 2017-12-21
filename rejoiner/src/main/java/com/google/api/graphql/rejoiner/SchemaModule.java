@@ -19,6 +19,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -27,12 +28,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Message;
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLOutputType;
+import graphql.schema.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -43,6 +39,8 @@ import javax.inject.Provider;
 
 /**
  * Module for registering parts of a {@link graphql.schema.GraphQLSchema}.
+ *
+ * <p>
  *
  * <p>Any public fields of type {@link GraphQLFieldDefinition} annotated with {@link Query} or
  * {@link Mutation} will be added to the top level query or mutation. Fields of type {@link
@@ -85,6 +83,9 @@ public abstract class SchemaModule extends AbstractModule {
         Multibinder.newSetBinder(
             binder(), new TypeLiteral<FileDescriptor>() {}, Annotations.ExtraTypes.class);
 
+    Multibinder<NodeDataFetcher> relayIdMultibinder =
+        Multibinder.newSetBinder(
+            binder(), new TypeLiteral<NodeDataFetcher>() {}, Annotations.Queries.class);
     try {
       for (Field field : findQueryFields(getClass())) {
         field.setAccessible(true);
@@ -114,6 +115,25 @@ public abstract class SchemaModule extends AbstractModule {
         String name = method.getAnnotationsByType(Mutation.class)[0].value();
         mutationMultibinder.addBinding().toInstance(methodToFieldDefinition(method, name, null));
       }
+      for (Method method : findMethods(getClass(), RelayNode.class)) {
+        GraphQLFieldDefinition graphQLFieldDefinition =
+            methodToFieldDefinition(method, "_NOT_USED_", null);
+        relayIdMultibinder
+            .addBinding()
+            .toInstance(
+                new NodeDataFetcher(graphQLFieldDefinition.getType().getName()) {
+                  @Override
+                  public Object apply(String s) {
+                    // TODO: Don't hardcode the arguments structure.
+                    return graphQLFieldDefinition
+                        .getDataFetcher()
+                        .get(
+                            DataFetchingEnvironmentBuilder.newDataFetchingEnvironment()
+                                .arguments(ImmutableMap.of("input", ImmutableMap.of("id", s)))
+                                .build());
+                  }
+                });
+      }
 
       for (Method method : findMethods(getClass(), SchemaModification.class)) {
         SchemaModification annotation = method.getAnnotationsByType(SchemaModification.class)[0];
@@ -136,8 +156,8 @@ public abstract class SchemaModule extends AbstractModule {
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
-   * are annotated with {@link Query}.
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
+   * that are annotated with {@link Query}.
    */
   private static ImmutableSet<Field> findTypeModificationFields(
       Class<? extends SchemaModule> moduleClass) {
@@ -145,8 +165,8 @@ public abstract class SchemaModule extends AbstractModule {
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
-   * are annotated with {@link Query}.
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
+   * that are annotated with {@link Query}.
    */
   private static ImmutableSet<Field> findExtraTypeFields(
       Class<? extends SchemaModule> moduleClass) {
@@ -154,24 +174,33 @@ public abstract class SchemaModule extends AbstractModule {
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
-   * are annotated with {@link Query}.
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
+   * that are annotated with {@link Query}.
    */
   private static ImmutableSet<Field> findMutationFields(Class<? extends SchemaModule> moduleClass) {
     return findFields(moduleClass, Mutation.class, GraphQLFieldDefinition.class);
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
-   * are annotated with {@link Query}.
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
+   * that are annotated with {@link Query}.
    */
   private static ImmutableSet<Field> findQueryFields(Class<? extends SchemaModule> moduleClass) {
     return findFields(moduleClass, Query.class, GraphQLFieldDefinition.class);
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes that
-   * have the expected type and annotation.
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
+   * that are annotated with {@link RelayNode}.
+   */
+  private static ImmutableSet<Method> findRelayIdMethods(
+      Class<? extends SchemaModule> moduleClass) {
+    return findMethods(moduleClass, RelayNode.class);
+  }
+
+  /**
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
+   * that have the expected type and annotation.
    */
   private static ImmutableSet<Method> findMethods(
       Class<? extends SchemaModule> moduleClass, Class<? extends Annotation> targetAnnotation) {
@@ -187,9 +216,10 @@ public abstract class SchemaModule extends AbstractModule {
     }
     return nodesBuilder.build();
   }
+
   /**
-   * Returns an {@link ImmutableSet} of all the fields in {@code moduleClass} or its super classes that
-   * have the expected type and annotation.
+   * Returns an {@link ImmutableSet} of all the fields in {@code moduleClass} or its super classes
+   * that have the expected type and annotation.
    */
   private static ImmutableSet<Field> findFields(
       Class<? extends SchemaModule> moduleClass,
@@ -295,11 +325,11 @@ public abstract class SchemaModule extends AbstractModule {
 
   private GraphQLOutputType getReturnType(Method method)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-    // Currently it's assumed the response is of type Message or ListenableFuture<? extends Message>.
-    if(!(method.getGenericReturnType() instanceof ParameterizedType)){
+    // Currently it's assumed the response is of type Message or ListenableFuture<? extends
+    // Message>.
+    if (!(method.getGenericReturnType() instanceof ParameterizedType)) {
       @SuppressWarnings("unchecked")
-      Class<? extends Message> responseClass =
-          (Class<? extends Message>) method.getReturnType();
+      Class<? extends Message> responseClass = (Class<? extends Message>) method.getReturnType();
       Descriptor responseDescriptor =
           (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
       referencedDescriptors.add(responseDescriptor);
