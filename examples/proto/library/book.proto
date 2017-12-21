@@ -20,10 +20,13 @@ option java_multiple_files = true;
 option java_outer_classname = "BookProto";
 option java_package = "com.google.example.library.v1";
 
+import "rejoiner/src/main/proto/relay.proto";
+
+
 // A single book in the library.
 message Book {
   // The id is ignored when creating a book.
-  string id = 1;
+  string id = 1 [(google.api.graphql.relay_options).id = true];
 
   // The name of the book author.
   string author = 2;
@@ -34,3 +37,4 @@ message Book {
   // Value indicating whether the book has been read.
   bool read = 4;
 }
+

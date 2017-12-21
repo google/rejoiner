@@ -61,8 +61,8 @@ message CreateBookRequest {
 }
 
 message GetBookRequest {
-  // The name of the book to retrieve.
-  string name = 1;
+  // The id of the book to retrieve.
+  string id = 1;
 }
 
 message ListBooksRequest {

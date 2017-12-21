@@ -6,6 +6,9 @@ load("@grpc_java//:java_grpc_library.bzl", "java_grpc_library")
 proto_library(
   name = "book_proto",
   srcs = ["book.proto"],
+  deps = [
+    "//rejoiner/src/main/proto:relay_proto",
+  ],
 )
 java_proto_library(
     name = "book_java_proto",

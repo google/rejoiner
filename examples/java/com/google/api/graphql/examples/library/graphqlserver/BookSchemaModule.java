@@ -16,12 +16,15 @@ package com.google.api.graphql.examples.library.graphqlserver;
 
 import com.google.api.graphql.rejoiner.Mutation;
 import com.google.api.graphql.rejoiner.Query;
+import com.google.api.graphql.rejoiner.RelayNode;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.example.library.v1.*;
 
 /** A GraphQL {@link SchemaModule} backed by a gRPC service. */
 final class BookSchemaModule extends SchemaModule {
+
   @Query("getBook")
+  @RelayNode
   Book getBook(GetBookRequest request, BookServiceGrpc.BookServiceBlockingStub client) {
     return client.getBook(request);
   }
