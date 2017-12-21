@@ -12,22 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.api.graphql.examples.streaming.graphqlserver;
+package com.google.api.graphql.grpc;
 
 import com.google.auto.value.AutoValue;
-import io.grpc.examples.graphql.GraphQlResponse;
 import io.grpc.stub.StreamObserver;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// TODO: move this to a shared library
 @AutoValue
-abstract class RejoinerStreamingContext {
+public abstract class RejoinerStreamingContext<T> {
 
   private final CountDownLatch countDownLatch = new CountDownLatch(1);
   private final AtomicInteger atomicInteger = new AtomicInteger(0);
 
-  abstract StreamObserver<GraphQlResponse> responseStreamObserver();
+  abstract StreamObserver<T> responseStreamObserver();
 
   public void startStream() {
     atomicInteger.addAndGet(1);
@@ -43,7 +41,7 @@ abstract class RejoinerStreamingContext {
     countDownLatch.await();
   }
 
-  public static RejoinerStreamingContext create(StreamObserver<GraphQlResponse> stream) {
+  public static <T> RejoinerStreamingContext create(StreamObserver<T> stream) {
     return new AutoValue_RejoinerStreamingContext(stream);
   }
 }

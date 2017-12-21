@@ -14,9 +14,12 @@
 
 package com.google.api.graphql.examples.streaming.graphqlserver;
 
+import com.google.api.graphql.grpc.GraphQlStreamObserver;
 import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.SchemaModule;
+import com.google.protobuf.ListValue;
 import graphql.schema.DataFetchingEnvironment;
+import io.grpc.examples.graphql.GraphQlResponse;
 import io.grpc.examples.graphql.QueryType;
 import io.grpc.examples.streaming.HelloReply;
 import io.grpc.examples.streaming.HelloRequest;
@@ -32,16 +35,19 @@ final class HelloWorldSchemaModule extends SchemaModule {
       DataFetchingEnvironment dataFetchingEnvironment) {
     client.sayHelloStreaming(
         request,
-        new GraphQlStreamObserver<HelloReply>(dataFetchingEnvironment) {
+        new GraphQlStreamObserver<HelloReply, GraphQlResponse>(dataFetchingEnvironment) {
           @Override
-          protected QueryType getData(HelloReply value) {
+          protected GraphQlResponse getData(HelloReply value, ListValue path) {
             // TODO: how can this be improved?
-            return QueryType.newBuilder()
-                .setHelloReply(
-                    io.grpc.examples.graphql.HelloReply.newBuilder()
-                        .setMessage(value.getMessage())
-                        .build())
-                .build();
+            QueryType data =
+                QueryType.newBuilder()
+                    .setHelloReply(
+                        io.grpc.examples.graphql.HelloReply.newBuilder()
+                            .setMessage(value.getMessage())
+                            .build())
+                    .build();
+
+            return GraphQlResponse.newBuilder().setPath(path).setData(data).build();
           }
         });
 

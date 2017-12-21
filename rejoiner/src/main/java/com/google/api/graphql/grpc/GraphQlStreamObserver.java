@@ -12,28 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.api.graphql.examples.streaming.graphqlserver;
+package com.google.api.graphql.grpc;
 
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.Message;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import graphql.schema.DataFetchingEnvironment;
-import io.grpc.examples.graphql.GraphQlResponse;
-import io.grpc.examples.graphql.QueryType;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// TODO: make this part of the framework
-public abstract class GraphQlStreamObserver<T> implements StreamObserver<T> {
+public abstract class GraphQlStreamObserver<T extends Message, R extends Message>
+    implements StreamObserver<T> {
 
   private final RejoinerStreamingContext rejoinerStreamingContext;
   private final DataFetchingEnvironment dataFetchingEnvironment;
   private final AtomicInteger pathIndex = new AtomicInteger();
 
-  GraphQlStreamObserver(DataFetchingEnvironment dataFetchingEnvironment) {
+  public GraphQlStreamObserver(DataFetchingEnvironment dataFetchingEnvironment) {
     this.dataFetchingEnvironment = dataFetchingEnvironment;
     rejoinerStreamingContext = dataFetchingEnvironment.getContext();
     rejoinerStreamingContext.startStream();
@@ -55,14 +54,14 @@ public abstract class GraphQlStreamObserver<T> implements StreamObserver<T> {
                             .build()
                         : Value.newBuilder().setStringValue(p.toString()).build())
             .collect(ImmutableList.toImmutableList());
-    GraphQlResponse graphQlResponse =
-        GraphQlResponse.newBuilder()
-            .setPath(
-                ListValue.newBuilder()
-                    .addAllValues(path)
-                    .addValues(Value.newBuilder().setNumberValue(pathIndex.incrementAndGet())))
-            .setData(getData(value))
+
+    ListValue pathListVale =
+        ListValue.newBuilder()
+            .addAllValues(path)
+            .addValues(Value.newBuilder().setNumberValue(pathIndex.incrementAndGet()))
             .build();
+
+    R graphQlResponse = getData(value, pathListVale);
 
     rejoinerStreamingContext.responseStreamObserver().onNext(graphQlResponse);
 
@@ -74,7 +73,7 @@ public abstract class GraphQlStreamObserver<T> implements StreamObserver<T> {
     }
   }
 
-  protected abstract QueryType getData(T value);
+  protected abstract R getData(T value, ListValue path);
 
   @Override
   public void onError(Throwable t) {

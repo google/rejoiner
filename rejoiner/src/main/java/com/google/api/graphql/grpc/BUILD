@@ -1,17 +1,18 @@
 package(default_visibility = ["//visibility:public"])
 
 java_library(
-    name = "rejoiner",
-    srcs = glob(["src/main/java/com/google/api/graphql/rejoiner/*.java"]),
-    plugins = [":auto_plugin"],
+    name = "grpc",
+    srcs = glob(["*.java"]),
     deps = [
         ":auto",
-        "//rejoiner/src/main/proto:relay_java_proto",
         "@aop//jar",
         "@com_google_guava_guava2//jar",
         "@com_google_guice_multibindings//jar",
         "@com_google_protobuf_java2//jar",
         "@com_graphql_java//jar",
+        "@grpc_java//core",
+        "@com_google_protobuf_java//:protobuf_java_util",
+        "@grpc_java//stub",
         "@guice//jar",
         "@javax_annotations//jar",
         "@javax_inject//jar",

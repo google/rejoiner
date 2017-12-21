@@ -13,7 +13,6 @@ java_library(
     name = "backend_lib",
     srcs = glob(["*.java"]),
     deps = [
-        ":auto",
         "@com_google_guava_guava2//jar", # this must be on top
         "@com_google_protobuf_java//:protobuf_java_util",
         "@com_google_protobuf_java2//jar",
@@ -23,7 +22,7 @@ java_library(
         "//examples/proto:helloworld_streaming_java_proto",
         "//execution",
         "//rejoiner",
-        "//rejoiner:grpc",
+        "//rejoiner/src/main/java/com/google/api/graphql/grpc",
         "@grpc_java//stub",
         "@antlr//jar",
         "@aop//jar",
@@ -42,14 +41,3 @@ java_library(
     ],
 )
 
-java_plugin(
-    name = "auto_plugin",
-    processor_class = "com.google.auto.value.processor.AutoValueProcessor",
-    deps = ["@com_google_autovalue//jar"],
-)
-
-java_library(
-    name = "auto",
-    exported_plugins = [":auto_plugin"],
-    exports = ["@com_google_autovalue//jar"],
-)

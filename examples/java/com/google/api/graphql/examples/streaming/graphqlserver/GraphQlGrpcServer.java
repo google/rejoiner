@@ -16,6 +16,7 @@ package com.google.api.graphql.examples.streaming.graphqlserver;
 
 import com.google.api.graphql.execution.GuavaListenableFutureSupport;
 import com.google.api.graphql.grpc.QueryResponseToProto;
+import com.google.api.graphql.grpc.RejoinerStreamingContext;
 import com.google.api.graphql.rejoiner.Schema;
 import com.google.api.graphql.rejoiner.SchemaProviderModule;
 import com.google.common.collect.ImmutableMap;
@@ -102,7 +103,8 @@ public class GraphQlGrpcServer {
       // TODO: get variables
       Map<String, Object> variables = ImmutableMap.of();
 
-      RejoinerStreamingContext context = RejoinerStreamingContext.create(responseObserver);
+      RejoinerStreamingContext<GraphQlResponse> context =
+          RejoinerStreamingContext.create(responseObserver);
 
       ExecutionInput executionInput =
           ExecutionInput.newExecutionInput()
