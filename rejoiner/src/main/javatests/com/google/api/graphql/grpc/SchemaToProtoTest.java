@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.api.graphql.rejoiner;
+package com.google.api.graphql.grpc;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link com.google.api.graphql.rejoiner.SchemaToProto}. */
+/** Unit tests for {@link SchemaToProto}. */
 @RunWith(JUnit4.class)
 public final class SchemaToProtoTest {
 

@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.api.graphql.rejoiner;
+package com.google.api.graphql.grpc;
 
+import com.google.api.graphql.rejoiner.TestProto;
 import com.google.api.graphql.rejoiner.TestProto.Proto1;
 import com.google.api.graphql.rejoiner.TestProto.Proto2;
 import com.google.common.collect.ImmutableMap;
