@@ -15,14 +15,14 @@
 package com.google.api.graphql.examples.streaming.graphqlserver;
 
 import com.google.api.graphql.execution.GuavaListenableFutureSupport;
+import com.google.api.graphql.grpc.QueryResponseToProto;
 import com.google.api.graphql.rejoiner.Schema;
 import com.google.api.graphql.rejoiner.SchemaProviderModule;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Key;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -37,6 +37,7 @@ import io.grpc.examples.graphql.GraphQlServiceGrpc;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GraphQlGrpcServer {
@@ -52,10 +53,6 @@ public class GraphQlGrpcServer {
   private static final Instrumentation instrumentation =
       new ChainedInstrumentation(
           java.util.Arrays.asList(GuavaListenableFutureSupport.listenableFutureInstrumentation()));
-
-  private static final Gson GSON = new GsonBuilder().serializeNulls().create();
-  private static final TypeToken<Map<String, Object>> MAP_TYPE_TOKEN =
-      new TypeToken<Map<String, Object>>() {};
 
   private static final GraphQL GRAPHQL =
       GraphQL.newGraphQL(SCHEMA).instrumentation(instrumentation).build();
@@ -114,9 +111,16 @@ public class GraphQlGrpcServer {
               .context(context)
               .build();
       ExecutionResult executionResult = GRAPHQL.execute(executionInput);
-      // TODO: return proto response
-      String response = GSON.toJson(executionResult.toSpecification());
-      responseObserver.onNext(GraphQlResponse.newBuilder().setData(response).build());
+
+      GraphQlResponse graphQlResponse =
+          QueryResponseToProto.buildMessage(
+              GraphQlResponse.getDefaultInstance(), executionResult.toSpecification());
+      try {
+        logger.info("Response in Json format: " + JsonFormat.printer().print(graphQlResponse));
+      } catch (InvalidProtocolBufferException e) {
+        logger.log(Level.WARNING, "Response proto is invalid", e);
+      }
+      responseObserver.onNext(graphQlResponse);
 
       try {
         logger.info("Waiting for streams");

@@ -33,11 +33,7 @@ public class GraphQlGrpcClient {
 
   public void query(String query) {
     GraphQlRequest request =
-        GraphQlRequest.newBuilder()
-            .build()
-            .newBuilder()
-            .setQuery(query)
-            .build();
+        GraphQlRequest.newBuilder().build().newBuilder().setQuery(query).build();
 
     stub.execute(
         request,

@@ -14,19 +14,23 @@
 
 syntax = "proto3";
 
+// TODO: This entire file should be generated
+import "google/protobuf/struct.proto";
+
 option java_multiple_files = true;
 option java_package = "io.grpc.examples.graphql";
 option java_outer_classname = "GraphQlProto";
 
 message GraphQlRequest {
   string query = 1;
-  string variables = 2;
+  google.protobuf.Struct variables = 2;
   string operationName = 3;
 }
 
 message GraphQlResponse {
-  string data = 1;
-  repeated string path = 2;
+  QueryType data = 1;
+  // TODO: path can be a number or string
+  google.protobuf.ListValue path = 2;
 }
 
 service GraphQlService {
@@ -34,3 +38,13 @@ service GraphQlService {
   }
 }
 
+// GraphQL Data
+// All fields that can be returned by a query, mutation, stream or defer
+message QueryType {
+  oneof data {
+    HelloReply helloReply = 1;
+  }
+}
+message HelloReply {
+  string message = 1;
+}

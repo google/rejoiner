@@ -37,6 +37,9 @@ java_grpc_library(
 proto_library(
     name = "graphql_service_proto",
     srcs = ["graphql_service.proto"],
+    deps = [
+      "@com_google_protobuf//:struct_proto",
+    ]
 )
 
 java_proto_library(

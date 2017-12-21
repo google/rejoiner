@@ -24,28 +24,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 @AutoValue
 abstract class RejoinerStreamingContext {
 
+  private final CountDownLatch countDownLatch = new CountDownLatch(1);
+  private final AtomicInteger atomicInteger = new AtomicInteger(0);
+
   abstract StreamObserver<GraphQlResponse> responseStreamObserver();
 
-  abstract CountDownLatch countDownLatch();
-
-  abstract AtomicInteger atomicInteger();
-
   public void startStream() {
-    atomicInteger().addAndGet(1);
+    atomicInteger.addAndGet(1);
   }
 
   public void completeStream() {
-    if (atomicInteger().decrementAndGet() <= 0) {
-      countDownLatch().countDown();
+    if (atomicInteger.decrementAndGet() <= 0) {
+      countDownLatch.countDown();
     }
   }
 
   public void awaitStreams() throws InterruptedException {
-    countDownLatch().await();
+    countDownLatch.await();
   }
 
   public static RejoinerStreamingContext create(StreamObserver<GraphQlResponse> stream) {
-    return new AutoValue_RejoinerStreamingContext(
-        stream, new CountDownLatch(1), new AtomicInteger(0));
+    return new AutoValue_RejoinerStreamingContext(stream);
   }
 }
