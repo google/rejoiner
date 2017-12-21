@@ -38,9 +38,6 @@ public final class RejoinerIntegrationTest {
 
   static class GreetingsSchemaModule extends SchemaModule {
 
-    static final GqlInputConverter INPUT_CONVERTER =
-        GqlInputConverter.newBuilder().add(GreetingsRequest.getDescriptor().getFile()).build();
-
     @Query("grettingXL")
     ListenableFuture<GreetingsResponse> greetingXl(
         GreetingsRequest req, DataFetchingEnvironment env) {
