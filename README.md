@@ -6,7 +6,14 @@
  - Populates request Proto based on GraphQL query parameters
  - Supplies a DSL to modify the generated schema
  - Joins data sources by annotating methods that fetch data
- - Creates Proto FieldMasks based on GraphQL selectors
+ - Creates Proto [FieldMasks](https://developers.google.com/protocol-buffers/docs/reference/java/com/google/protobuf/FieldMask) based on GraphQL selectors
+
+## Experimental Features
+
+These features are actively being developed.
+
+ - Relay support [[Example](./examples/java/com/google/api/graphql/examples/library)]
+ - GraphQL Stream (based on gRPC streaming) [[Example](./examples/java/com/google/api/graphql/examples/streaming)]
 
 ## Schema Module
 
