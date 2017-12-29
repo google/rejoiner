@@ -39,6 +39,9 @@ java_grpc_library(
 proto_library(
   name = "shelf_proto",
   srcs = ["shelf.proto"],
+  deps = [
+    "//rejoiner/src/main/proto:relay_proto",
+  ],
 )
 java_proto_library(
     name = "shelf_java_proto",
