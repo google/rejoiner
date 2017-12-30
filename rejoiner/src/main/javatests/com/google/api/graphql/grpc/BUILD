@@ -7,7 +7,7 @@ java_test(
     deps = [
         "//rejoiner/src/main/javatests/com/google/api/graphql/rejoiner:greetings_java_proto",
         "//rejoiner/src/main/javatests/com/google/api/graphql/rejoiner:test_java_proto",
-        "//rejoiner:grpc",
+        "//rejoiner/src/main/java/com/google/api/graphql/grpc",
         "@com_google_guava_guava//jar",
         "@com_google_guice//jar",
         "@com_graphql_java//jar",
@@ -25,7 +25,7 @@ java_test(
     deps = [
         "//rejoiner/src/main/javatests/com/google/api/graphql/rejoiner:greetings_java_proto",
         "//rejoiner/src/main/javatests/com/google/api/graphql/rejoiner:test_java_proto",
-        "//rejoiner:grpc",
+        "//rejoiner/src/main/java/com/google/api/graphql/grpc",
         "@com_google_guava_guava//jar",
         "@com_google_guice//jar",
         "@com_graphql_java//jar",
