@@ -14,13 +14,13 @@
 
 syntax = "proto3";
 
-package google.example.library.v1;
+package google.example.library.shelf.v1;
 
 import "rejoiner/src/main/proto/relay.proto";
 
 option java_multiple_files = true;
 option java_outer_classname = "ShelfProto";
-option java_package = "com.google.example.library.v1";
+option java_package = "com.google.example.library.shelf.v1";
 
 // A Shelf contains a collection of books with a theme.
 message Shelf {

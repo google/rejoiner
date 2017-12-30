@@ -14,14 +14,14 @@
 
 syntax = "proto3";
 
-package google.example.library.v1;
+package google.example.library.book.v1;
 
 import "google/protobuf/empty.proto";
 import "examples/proto/library/book.proto";
 
 option java_multiple_files = true;
 option java_outer_classname = "BookServiceProto";
-option java_package = "com.google.example.library.v1";
+option java_package = "com.google.example.library.book.v1";
 
 
 // This API represents a simple book repository.

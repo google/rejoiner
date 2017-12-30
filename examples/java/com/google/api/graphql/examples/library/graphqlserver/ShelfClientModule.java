@@ -14,21 +14,21 @@
 
 package com.google.api.graphql.examples.library.graphqlserver;
 
-import com.google.example.library.book.v1.BookServiceGrpc;
+import com.google.example.library.shelf.v1.ShelfServiceGrpc;
 import com.google.inject.AbstractModule;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
-final class BookClientModule extends AbstractModule {
+final class ShelfClientModule extends AbstractModule {
 
   private static final String HOST = "localhost";
-  private static final int PORT = 50051;
+  private static final int PORT = 50052;
 
   @Override
   protected void configure() {
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(HOST, PORT).usePlaintext(true).build();
-    bind(BookServiceGrpc.BookServiceBlockingStub.class)
-        .toInstance(BookServiceGrpc.newBlockingStub(channel));
+    bind(ShelfServiceGrpc.ShelfServiceBlockingStub.class)
+        .toInstance(ShelfServiceGrpc.newBlockingStub(channel));
   }
 }

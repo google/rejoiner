@@ -18,30 +18,30 @@ import com.google.api.graphql.rejoiner.Mutation;
 import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.RelayNode;
 import com.google.api.graphql.rejoiner.SchemaModule;
-import com.google.example.library.book.v1.Book;
-import com.google.example.library.book.v1.BookServiceGrpc;
-import com.google.example.library.book.v1.CreateBookRequest;
-import com.google.example.library.book.v1.GetBookRequest;
-import com.google.example.library.book.v1.ListBooksRequest;
-import com.google.example.library.book.v1.ListBooksResponse;
+import com.google.example.library.shelf.v1.CreateShelfRequest;
+import com.google.example.library.shelf.v1.GetShelfRequest;
+import com.google.example.library.shelf.v1.ListShelvesRequest;
+import com.google.example.library.shelf.v1.ListShelvesResponse;
+import com.google.example.library.shelf.v1.Shelf;
+import com.google.example.library.shelf.v1.ShelfServiceGrpc;
 
 /** A GraphQL {@link SchemaModule} backed by a gRPC service. */
-final class BookSchemaModule extends SchemaModule {
+final class ShelfSchemaModule extends SchemaModule {
 
-  @Query("getBook")
+  @Mutation("createShelf")
+  Shelf createShelf(CreateShelfRequest request, ShelfServiceGrpc.ShelfServiceBlockingStub client) {
+    return client.createShelf(request);
+  }
+
+  @Query("getShelf")
   @RelayNode
-  Book getBook(GetBookRequest request, BookServiceGrpc.BookServiceBlockingStub client) {
-    return client.getBook(request);
+  Shelf getShelf(GetShelfRequest request, ShelfServiceGrpc.ShelfServiceBlockingStub client) {
+    return client.getShelf(request);
   }
 
-  @Query("listBooks")
-  ListBooksResponse listBooks(
-      ListBooksRequest request, BookServiceGrpc.BookServiceBlockingStub client) {
-    return client.listBooks(request);
-  }
-
-  @Mutation("createBook")
-  Book createBook(CreateBookRequest request, BookServiceGrpc.BookServiceBlockingStub client) {
-    return client.createBook(request);
+  @Query("listShelves")
+  ListShelvesResponse listShelves(
+      ListShelvesRequest request, ShelfServiceGrpc.ShelfServiceBlockingStub client) {
+    return client.listShelves(request);
   }
 }

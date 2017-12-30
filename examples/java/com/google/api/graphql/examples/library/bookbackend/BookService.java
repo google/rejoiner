@@ -1,14 +1,14 @@
 package com.google.api.graphql.examples.library.bookbackend;
 
 import com.google.common.collect.ImmutableList;
-import com.google.example.library.v1.Book;
-import com.google.example.library.v1.BookServiceGrpc;
-import com.google.example.library.v1.CreateBookRequest;
-import com.google.example.library.v1.DeleteBookRequest;
-import com.google.example.library.v1.GetBookRequest;
-import com.google.example.library.v1.ListBooksRequest;
-import com.google.example.library.v1.ListBooksResponse;
-import com.google.example.library.v1.UpdateBookRequest;
+import com.google.example.library.book.v1.Book;
+import com.google.example.library.book.v1.BookServiceGrpc;
+import com.google.example.library.book.v1.CreateBookRequest;
+import com.google.example.library.book.v1.DeleteBookRequest;
+import com.google.example.library.book.v1.GetBookRequest;
+import com.google.example.library.book.v1.ListBooksRequest;
+import com.google.example.library.book.v1.ListBooksResponse;
+import com.google.example.library.book.v1.UpdateBookRequest;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import java.util.Base64;
@@ -36,7 +36,7 @@ public class BookService extends BookServiceGrpc.BookServiceImplBase {
 
   @Override
   public synchronized void getBook(GetBookRequest request, StreamObserver<Book> responseObserver) {
-    responseObserver.onNext(booksById.get(request.getName()));
+    responseObserver.onNext(booksById.get(request.getId()));
     responseObserver.onCompleted();
   }
 
