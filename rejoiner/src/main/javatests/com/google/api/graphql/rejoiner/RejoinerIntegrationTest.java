@@ -51,8 +51,8 @@ public final class RejoinerIntegrationTest {
     }
 
     @Query("greeting")
-    ListenableFuture<GreetingsResponse> greetings(/*TODO: Fix this GreetingsRequest request*/ ) {
-      return Futures.immediateFuture(GreetingsResponse.newBuilder().setId("10").build());
+    ListenableFuture<GreetingsResponse> greetings(GreetingsRequest request) {
+      return Futures.immediateFuture(GreetingsResponse.newBuilder().setId(request.getId()).build());
     }
 
     @SchemaModification(addField = "extraField", onType = GreetingsResponse.class)

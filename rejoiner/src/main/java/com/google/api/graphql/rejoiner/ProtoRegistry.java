@@ -67,6 +67,22 @@ final class ProtoRegistry {
     return nodeInterface;
   }
 
+  static Set<FileDescriptor> extractDependencies(List<FileDescriptor> fileDescriptors) {
+    LinkedList<FileDescriptor> loop = new LinkedList<>(fileDescriptors);
+    HashSet<FileDescriptor> fileDescriptorSet = new HashSet<>(fileDescriptors);
+
+    while (!loop.isEmpty()) {
+      FileDescriptor fileDescriptor = loop.pop();
+      for (FileDescriptor dependency : fileDescriptor.getDependencies()) {
+        if (!fileDescriptorSet.contains(dependency)) {
+          fileDescriptorSet.add(dependency);
+          loop.push(dependency);
+        }
+      }
+    }
+
+    return ImmutableSet.copyOf(fileDescriptorSet);
+  }
   /** Builder for {@see ProtoRegistry}. */
   public static class Builder {
     private final ArrayList<FileDescriptor> fileDescriptors = new ArrayList<>();
@@ -149,30 +165,17 @@ final class ProtoRegistry {
           mapping.put(
               ProtoToGql.getReferenceName(descriptor),
               ProtoToGql.convert(descriptor, nodeInterface));
+          GqlInputConverter inputConverter =
+              GqlInputConverter.newBuilder().add(descriptor.getFile()).build();
+          mapping.put(
+              GqlInputConverter.getReferenceName(descriptor),
+              inputConverter.getInputType(descriptor));
           loop.addAll(descriptor.getNestedTypes());
 
           mapping.putAll(getEnumMap(descriptor.getEnumTypes()));
         }
       }
-
       return ImmutableBiMap.copyOf(mapping);
-    }
-
-    private static Set<FileDescriptor> extractDependencies(List<FileDescriptor> fileDescriptors) {
-      LinkedList<FileDescriptor> loop = new LinkedList<>(fileDescriptors);
-      HashSet<FileDescriptor> fileDescriptorSet = new HashSet<>(fileDescriptors);
-
-      while (!loop.isEmpty()) {
-        FileDescriptor fileDescriptor = loop.pop();
-        for (FileDescriptor dependency : fileDescriptor.getDependencies()) {
-          if (!fileDescriptorSet.contains(dependency)) {
-            fileDescriptorSet.add(dependency);
-            loop.push(dependency);
-          }
-        }
-      }
-
-      return ImmutableSet.copyOf(fileDescriptorSet);
     }
 
     private static BiMap<String, GraphQLType> getEnumMap(Iterable<EnumDescriptor> descriptors) {

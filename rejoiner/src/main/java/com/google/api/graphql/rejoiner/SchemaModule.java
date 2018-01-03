@@ -403,7 +403,7 @@ public abstract class SchemaModule extends AbstractModule {
                         requestDescriptor, message.toBuilder(), environment.getArgument(argName));
                 return req;
               };
-          GraphQLArgument argument = inputConverter.createArgument(requestDescriptor, argName);
+          GraphQLArgument argument = GqlInputConverter.createArgument(requestDescriptor, argName);
           listBuilder.add(MethodMetadata.create(function, argument));
         }
       } else if (DataFetchingEnvironment.class.isAssignableFrom(parameterType)) {
