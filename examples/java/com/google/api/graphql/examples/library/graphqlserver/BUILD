@@ -8,8 +8,12 @@ java_library(
         "//examples/proto/library:book_java_proto",
         "//examples/proto/library:book_service_java_proto",
         "//examples/proto/library:book_java_grpc",
+        "//examples/proto/library:shelf_java_proto",
+        "//examples/proto/library:shelf_service_java_proto",
+        "//examples/proto/library:shelf_java_grpc",
         "//execution",
         "//rejoiner",
+        "//rejoiner/src/main/java/com/google/api/graphql/grpc",
         "@antlr//jar",
         "@aop//jar",
         "@com_google_guice_multibindings//jar",
@@ -32,4 +36,18 @@ java_library(
         "@slf4j_api//jar",
         "@slf4j_simple//jar",
     ],
+)
+
+java_binary(
+  name = "LibraryProtoWriter",
+  main_class="com.google.api.graphql.examples.library.graphqlserver.LibraryProtoWriter",
+  runtime_deps = [
+    ":graphqlserver",
+  ],
+)
+
+load("//rejoiner:rejoiner.bzl", "graphql_proto")
+graphql_proto(
+    name="schema",
+    proto_writer = ":LibraryProtoWriter",
 )

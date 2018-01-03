@@ -15,23 +15,18 @@
 package com.google.api.graphql.examples.library.graphqlserver;
 
 import com.google.api.graphql.execution.GuavaListenableFutureSupport;
-import com.google.api.graphql.rejoiner.Schema;
-import com.google.api.graphql.rejoiner.SchemaProviderModule;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.google.inject.Guice;
-import com.google.inject.Key;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.execution.instrumentation.ChainedInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.execution.instrumentation.tracing.TracingInstrumentation;
-import graphql.schema.GraphQLSchema;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,11 +49,6 @@ public class GraphQlServer extends AbstractHandler {
   private static final TypeToken<Map<String, Object>> MAP_TYPE_TOKEN =
       new TypeToken<Map<String, Object>>() {};
 
-  private static final GraphQLSchema SCHEMA =
-      Guice.createInjector(
-              new SchemaProviderModule(), new BookClientModule(), new BookSchemaModule())
-          .getInstance(Key.get(GraphQLSchema.class, Schema.class));
-
   private static final Instrumentation instrumentation =
       new ChainedInstrumentation(
           Arrays.asList(
@@ -66,7 +56,7 @@ public class GraphQlServer extends AbstractHandler {
               new TracingInstrumentation()));
 
   private static final GraphQL GRAPHQL =
-      GraphQL.newGraphQL(SCHEMA).instrumentation(instrumentation).build();
+      GraphQL.newGraphQL(LibrarySchema.SCHEMA).instrumentation(instrumentation).build();
 
   public static void main(String[] args) throws Exception {
     Server server = new Server(HTTP_PORT);

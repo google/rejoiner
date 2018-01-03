@@ -22,6 +22,7 @@ import com.google.example.library.shelf.v1.CreateShelfRequest;
 import com.google.example.library.shelf.v1.GetShelfRequest;
 import com.google.example.library.shelf.v1.ListShelvesRequest;
 import com.google.example.library.shelf.v1.ListShelvesResponse;
+import com.google.example.library.shelf.v1.MergeShelvesRequest;
 import com.google.example.library.shelf.v1.Shelf;
 import com.google.example.library.shelf.v1.ShelfServiceGrpc;
 
@@ -43,5 +44,11 @@ final class ShelfSchemaModule extends SchemaModule {
   ListShelvesResponse listShelves(
       ListShelvesRequest request, ShelfServiceGrpc.ShelfServiceBlockingStub client) {
     return client.listShelves(request);
+  }
+
+  @Mutation("mergeShelves")
+  Shelf mergeShelves(
+      MergeShelvesRequest request, ShelfServiceGrpc.ShelfServiceBlockingStub client) {
+    return client.mergeShelves(request);
   }
 }

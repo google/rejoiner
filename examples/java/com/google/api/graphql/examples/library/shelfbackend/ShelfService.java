@@ -63,7 +63,7 @@ public class ShelfService extends ShelfServiceGrpc.ShelfServiceImplBase {
   }
 
   @Override
-  public void listShelves(
+  public synchronized void listShelves(
       ListShelvesRequest request, StreamObserver<ListShelvesResponse> responseObserver) {
     NavigableMap<String, Shelf> cursor = shelfsById;
 
