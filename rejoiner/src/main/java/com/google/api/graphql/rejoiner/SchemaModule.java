@@ -151,7 +151,6 @@ public abstract class SchemaModule extends AbstractModule {
     referencedDescriptors
         .build()
         .forEach(descriptor -> extraTypesMultibinder.addBinding().toInstance(descriptor.getFile()));
-
     requestInjection(this);
   }
 
@@ -290,7 +289,6 @@ public abstract class SchemaModule extends AbstractModule {
       Method method, String name, @Nullable Descriptor descriptor) {
     method.setAccessible(true);
     try {
-
       ImmutableList<MethodMetadata> methodParameters = getMethodMetadata(method, descriptor);
       DataFetcher dataFetcher =
           (DataFetchingEnvironment environment) -> {
@@ -327,6 +325,8 @@ public abstract class SchemaModule extends AbstractModule {
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
     // Currently it's assumed the response is of type Message or ListenableFuture<? extends
     // Message>.
+
+    // Assume Message
     if (!(method.getGenericReturnType() instanceof ParameterizedType)) {
       @SuppressWarnings("unchecked")
       Class<? extends Message> responseClass = (Class<? extends Message>) method.getReturnType();
@@ -335,14 +335,14 @@ public abstract class SchemaModule extends AbstractModule {
       referencedDescriptors.add(responseDescriptor);
       return ProtoToGql.getReference(responseDescriptor);
     }
-    ParameterizedType parameterizedFutureType = (ParameterizedType) method.getGenericReturnType();
-    Preconditions.checkArgument(
-        parameterizedFutureType != null, "Method %s should have a generic return type", method);
 
-    java.lang.reflect.Type type = parameterizedFutureType.getActualTypeArguments()[0];
-    if (type instanceof ParameterizedType) {
-      // Assume type is of type ImmutableList<? extends Message>.
-      java.lang.reflect.Type listElType = ((ParameterizedType) type).getActualTypeArguments()[0];
+    ParameterizedType genericReturnType = (ParameterizedType) method.getGenericReturnType();
+
+    // Assume ListenableFuture<ImmutableList<? extends Message>>
+    java.lang.reflect.Type genericTypeValue = genericReturnType.getActualTypeArguments()[0];
+    if (genericTypeValue instanceof ParameterizedType) {
+      java.lang.reflect.Type listElType =
+          ((ParameterizedType) genericTypeValue).getActualTypeArguments()[0];
       @SuppressWarnings("unchecked")
       Class<? extends Message> responseClass = (Class<? extends Message>) listElType;
       Descriptor responseDescriptor =
@@ -351,9 +351,20 @@ public abstract class SchemaModule extends AbstractModule {
       return new GraphQLList(ProtoToGql.getReference(responseDescriptor));
     }
 
+    // ImmutableList<? extends Message>
+    if (ImmutableList.class.isAssignableFrom((Class<?>) genericReturnType.getRawType())) {
+      @SuppressWarnings("unchecked")
+      Class<? extends Message> responseClass = (Class<? extends Message>) genericTypeValue;
+      Descriptor responseDescriptor =
+          (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
+      referencedDescriptors.add(responseDescriptor);
+      return new GraphQLList(ProtoToGql.getReference(responseDescriptor));
+    }
+
+    // ListenableFuture<? extends Message>
     @SuppressWarnings("unchecked")
     Class<? extends Message> responseClass =
-        (Class<? extends Message>) parameterizedFutureType.getActualTypeArguments()[0];
+        (Class<? extends Message>) genericReturnType.getActualTypeArguments()[0];
     Descriptor responseDescriptor =
         (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
     referencedDescriptors.add(responseDescriptor);
