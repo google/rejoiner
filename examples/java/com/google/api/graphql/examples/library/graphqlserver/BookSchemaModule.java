@@ -18,6 +18,7 @@ import com.google.api.graphql.rejoiner.Mutation;
 import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.RelayNode;
 import com.google.api.graphql.rejoiner.SchemaModule;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.example.library.book.v1.Book;
 import com.google.example.library.book.v1.BookServiceGrpc;
 import com.google.example.library.book.v1.CreateBookRequest;
@@ -30,18 +31,18 @@ final class BookSchemaModule extends SchemaModule {
 
   @Query("getBook")
   @RelayNode
-  Book getBook(GetBookRequest request, BookServiceGrpc.BookServiceBlockingStub client) {
+  ListenableFuture<Book> getBook(GetBookRequest request, BookServiceGrpc.BookServiceFutureStub client) {
     return client.getBook(request);
   }
 
   @Query("listBooks")
-  ListBooksResponse listBooks(
-      ListBooksRequest request, BookServiceGrpc.BookServiceBlockingStub client) {
+  ListenableFuture<ListBooksResponse> listBooks(
+      ListBooksRequest request, BookServiceGrpc.BookServiceFutureStub client) {
     return client.listBooks(request);
   }
 
   @Mutation("createBook")
-  Book createBook(CreateBookRequest request, BookServiceGrpc.BookServiceBlockingStub client) {
+  ListenableFuture<Book> createBook(CreateBookRequest request, BookServiceGrpc.BookServiceFutureStub client) {
     return client.createBook(request);
   }
 }

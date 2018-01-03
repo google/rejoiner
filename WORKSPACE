@@ -43,6 +43,18 @@ maven_jar(
   artifact = "net.javacrumbs.future-converter:future-converter-java8-guava:1.1.0"
 )
 maven_jar(
+  name = "future_converter_common",
+  artifact = "net.javacrumbs.future-converter:future-converter-common:1.1.0"
+)
+maven_jar(
+  name = "future_converter_java8_common",
+  artifact = "net.javacrumbs.future-converter:future-converter-java8-common:1.1.0"
+)
+maven_jar(
+  name = "future_converter_guava_common",
+  artifact = "net.javacrumbs.future-converter:future-converter-guava-common:1.1.0"
+)
+maven_jar(
   name = "com_google_guava_guava2",
   artifact = "com.google.guava:guava:23.5-jre",
 )

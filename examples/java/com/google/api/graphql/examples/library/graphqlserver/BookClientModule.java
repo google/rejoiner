@@ -28,6 +28,8 @@ final class BookClientModule extends AbstractModule {
   protected void configure() {
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(HOST, PORT).usePlaintext(true).build();
+    bind(BookServiceGrpc.BookServiceFutureStub.class)
+        .toInstance(BookServiceGrpc.newFutureStub(channel));
     bind(BookServiceGrpc.BookServiceBlockingStub.class)
         .toInstance(BookServiceGrpc.newBlockingStub(channel));
   }
