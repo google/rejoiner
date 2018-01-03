@@ -18,6 +18,7 @@ import com.google.api.graphql.rejoiner.Mutation;
 import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.RelayNode;
 import com.google.api.graphql.rejoiner.SchemaModule;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.example.library.shelf.v1.CreateShelfRequest;
 import com.google.example.library.shelf.v1.GetShelfRequest;
 import com.google.example.library.shelf.v1.ListShelvesRequest;
@@ -30,25 +31,27 @@ import com.google.example.library.shelf.v1.ShelfServiceGrpc;
 final class ShelfSchemaModule extends SchemaModule {
 
   @Mutation("createShelf")
-  Shelf createShelf(CreateShelfRequest request, ShelfServiceGrpc.ShelfServiceBlockingStub client) {
+  ListenableFuture<Shelf> createShelf(
+      CreateShelfRequest request, ShelfServiceGrpc.ShelfServiceFutureStub client) {
     return client.createShelf(request);
   }
 
   @Query("getShelf")
   @RelayNode
-  Shelf getShelf(GetShelfRequest request, ShelfServiceGrpc.ShelfServiceBlockingStub client) {
+  ListenableFuture<Shelf> getShelf(
+      GetShelfRequest request, ShelfServiceGrpc.ShelfServiceFutureStub client) {
     return client.getShelf(request);
   }
 
   @Query("listShelves")
-  ListShelvesResponse listShelves(
-      ListShelvesRequest request, ShelfServiceGrpc.ShelfServiceBlockingStub client) {
+  ListenableFuture<ListShelvesResponse> listShelves(
+      ListShelvesRequest request, ShelfServiceGrpc.ShelfServiceFutureStub client) {
     return client.listShelves(request);
   }
 
   @Mutation("mergeShelves")
-  Shelf mergeShelves(
-      MergeShelvesRequest request, ShelfServiceGrpc.ShelfServiceBlockingStub client) {
+  ListenableFuture<Shelf> mergeShelves(
+      MergeShelvesRequest request, ShelfServiceGrpc.ShelfServiceFutureStub client) {
     return client.mergeShelves(request);
   }
 }

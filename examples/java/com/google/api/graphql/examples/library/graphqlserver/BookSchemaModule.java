@@ -31,7 +31,8 @@ final class BookSchemaModule extends SchemaModule {
 
   @Query("getBook")
   @RelayNode
-  ListenableFuture<Book> getBook(GetBookRequest request, BookServiceGrpc.BookServiceFutureStub client) {
+  ListenableFuture<Book> getBook(
+      GetBookRequest request, BookServiceGrpc.BookServiceFutureStub client) {
     return client.getBook(request);
   }
 
@@ -42,7 +43,8 @@ final class BookSchemaModule extends SchemaModule {
   }
 
   @Mutation("createBook")
-  ListenableFuture<Book> createBook(CreateBookRequest request, BookServiceGrpc.BookServiceFutureStub client) {
+  ListenableFuture<Book> createBook(
+      CreateBookRequest request, BookServiceGrpc.BookServiceFutureStub client) {
     return client.createBook(request);
   }
 }
