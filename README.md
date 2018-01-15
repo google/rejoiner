@@ -8,6 +8,8 @@
  - Joins data sources by annotating methods that fetch data
  - Creates Proto [FieldMasks](https://developers.google.com/protocol-buffers/docs/reference/java/com/google/protobuf/FieldMask) based on GraphQL selectors
 
+ ![Rejoiner API Joining](./rejoiner.svg)
+
 ## Experimental Features
 
 These features are actively being developed.

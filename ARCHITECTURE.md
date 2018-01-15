@@ -5,7 +5,8 @@ The main component of Rejoiner is the [SchemaModule](./src/main/java/com/google/
 
 TODO: Explain how SchemaModule works and how it uses Guice Multibinder.
 
-### Annotations
+### Java Annotations
+These annotations are used to build and modify a generated GraphQL schema.
  - [Query](./src/main/java/com/google/api/graphql/rejoiner/Query.java)
  - [Mutation](./src/main/java/com/google/api/graphql/rejoiner/Mutation.java)
  - [SchemaModification](./src/main/java/com/google/api/graphql/rejoiner/SchemaModification.java)
