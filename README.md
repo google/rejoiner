@@ -21,8 +21,8 @@ These features are actively being developed.
 
 SchemaModule is a Guice module that is used to generate parts of a GraphQL
 schema. It finds methods and fields that have Rejoiner annotations when its
-instantiated. It then looks at the parameters and return type of these methods
-in order to generated the appropriate GraphQL schema. Examples of queries,
+instantiated. It then looks at the parameters and returns type of these methods
+in order to generate the appropriate GraphQL schema. Examples of queries,
 mutations, and schema modifications are presented below.
 
 ## GraphQL Query
@@ -128,5 +128,5 @@ All generated proto messages extend `Message`.
  - Rejoiner is built on top of [GraphQL-Java](https://github.com/graphql-java/graphql-java) which provides the core
    GraphQL capabilities such as query parsing, validation, and execution.  
  - Java code is formatted using [google-java-format](https://github.com/google/google-java-format).
- - Code is built using https://bazel.build.
+ - The code is built using https://bazel.build.
  - Note: This is not an official Google product.
