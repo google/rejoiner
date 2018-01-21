@@ -8,7 +8,7 @@
  - Joins data sources by annotating methods that fetch data
  - Creates Proto [FieldMasks](https://developers.google.com/protocol-buffers/docs/reference/java/com/google/protobuf/FieldMask) based on GraphQL selectors
 
- ![Rejoiner API Joining](./rejoiner.svg)
+ ![Rejoiner Overview](./rejoiner_overview.svg)
 
 ## Experimental Features
 
@@ -73,6 +73,10 @@ final class TodoToUserSchemaModule extends SchemaModule {
 ```
 In this case the Todo parameter is the parent object which can be referenced to
 get the creator's email.
+
+This is how types are joined within and across APIs.
+
+![Rejoiner API Joining](./rejoiner.svg)
 
 ## Removing a field
 
