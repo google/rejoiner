@@ -14,11 +14,11 @@
 
 package com.google.api.graphql.rejoiner;
 
+import static graphql.Scalars.GraphQLString;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -26,22 +26,24 @@ import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.GenericDescriptor;
 import com.google.protobuf.Message;
 import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Converts GraphQL inputs into Protobuf message. */
-public final class GqlInputConverter {
+/**
+ * Converts GraphQL inputs into Protobuf message.
+ *
+ * <p>Keeps a mapping from type name to Proto descriptor for Message and Enum types.
+ */
+final class GqlInputConverter {
 
   private final BiMap<String, Descriptor> descriptorMapping;
   private final BiMap<String, EnumDescriptor> enumMapping;
@@ -52,11 +54,11 @@ public final class GqlInputConverter {
     this.enumMapping = enumMapping;
   }
 
-  public static Builder newBuilder() {
+  static Builder newBuilder() {
     return new Builder();
   }
 
-  public Message createProtoBuf(
+  Message createProtoBuf(
       Descriptor descriptor, Message.Builder builder, Map<String, Object> input) {
 
     if (input == null) {
@@ -83,51 +85,15 @@ public final class GqlInputConverter {
     return builder.build();
   }
 
-  Object getValueForField(FieldDescriptor field, Object value, Message.Builder builder) {
-    // TODO: handle groups, oneof
-    if (field.getType() == FieldDescriptor.Type.MESSAGE) {
-      Descriptor fieldTypeDescriptor =
-          descriptorMapping.get(getReferenceName(field.getMessageType()));
-      return createProtoBuf(
-          fieldTypeDescriptor, builder.newBuilderForField(field), (Map<String, Object>) value);
-    }
-
-    if (field.getType() == FieldDescriptor.Type.ENUM) {
-      EnumDescriptor enumDescriptor = enumMapping.get(getReferenceName(field.getEnumType()));
-      return enumDescriptor.findValueByNumber((int) value);
-    }
-
-    return value;
-  }
-
-  public GraphQLArgument createArgument(Descriptor descriptor, String name) {
-    return GraphQLArgument.newArgument().name(name).type(createCustomType(descriptor)).build();
-  }
-
-  public GraphQLArgument createRequiredArgument(Descriptor descriptor, String name) {
-    return GraphQLArgument.newArgument()
-        .name(name)
-        .type(new GraphQLNonNull(createCustomType(descriptor)))
-        .build();
-  }
-
-  public GraphQLArgument createArgumentForField(FieldDescriptor fieldDescriptor) {
-    // TODO: only works for non-repeated fields
-    return GraphQLArgument.newArgument()
-        .name(fieldDescriptor.getName())
-        .type((GraphQLInputType) getInputType(fieldDescriptor))
-        .build();
-  }
-
-  private GraphQLInputObjectType createCustomType(Descriptor descriptor) {
-    // TODO: This may not handle self-references correctly,
-    // resulting in infinite recursion
+  GraphQLType getInputType(Descriptor descriptor) {
     GraphQLInputObjectType.Builder builder =
         GraphQLInputObjectType.newInputObject().name(getReferenceName(descriptor));
 
+    if (descriptor.getFields().isEmpty()) {
+      builder.field(STATIC_FIELD);
+    }
     for (FieldDescriptor field : descriptor.getFields()) {
-      GraphQLType fieldType = getInputType(field);
-
+      GraphQLType fieldType = getFieldType(field);
       GraphQLInputObjectField.Builder inputBuilder =
           GraphQLInputObjectField.newInputObjectField().name(field.getName());
       if (field.isRepeated()) {
@@ -141,15 +107,39 @@ public final class GqlInputConverter {
     return builder.build();
   }
 
-  private GraphQLType getInputType(FieldDescriptor field) {
+  private Object getValueForField(FieldDescriptor field, Object value, Message.Builder builder) {
+    // TODO: handle groups, oneof
+    if (field.getType() == FieldDescriptor.Type.MESSAGE) {
+      Descriptor fieldTypeDescriptor =
+          descriptorMapping.get(getReferenceName(field.getMessageType()));
+      return createProtoBuf(
+          fieldTypeDescriptor, builder.newBuilderForField(field), (Map<String, Object>) value);
+    }
+
+    if (field.getType() == FieldDescriptor.Type.ENUM) {
+      EnumDescriptor enumDescriptor =
+          enumMapping.get(ProtoToGql.getReferenceName(field.getEnumType()));
+      return enumDescriptor.findValueByNumber((int) value);
+    }
+
+    return value;
+  }
+
+  static GraphQLArgument createArgument(Descriptor descriptor, String name) {
+    return GraphQLArgument.newArgument().name(name).type(getInputTypeReference(descriptor)).build();
+  }
+
+  static String getReferenceName(GenericDescriptor descriptor) {
+    return "Input_" + ProtoToGql.getReferenceName(descriptor);
+  }
+
+  private GraphQLType getFieldType(FieldDescriptor field) {
     if (field.getType() == FieldDescriptor.Type.MESSAGE
         || field.getType() == FieldDescriptor.Type.GROUP) {
-      String fieldTypeName = getReferenceName(field.getMessageType());
-      return createCustomType(descriptorMapping.get(fieldTypeName));
+      return new GraphQLTypeReference(getReferenceName(field.getMessageType()));
     }
     if (field.getType() == FieldDescriptor.Type.ENUM) {
-      String enumTypeName = getReferenceName(field.getEnumType());
-      return createEnumType(enumMapping.get(enumTypeName));
+      return new GraphQLTypeReference(ProtoToGql.getReferenceName(field.getEnumType()));
     }
     GraphQLType type = ProtoToGql.convertType(field);
     if (type instanceof GraphQLList) {
@@ -158,46 +148,37 @@ public final class GqlInputConverter {
     return type;
   }
 
-  private static String getReferenceName(GenericDescriptor descriptor) {
-    return "Input_" + ProtoToGql.getReferenceName(descriptor);
+  private static GraphQLInputType getInputTypeReference(Descriptor descriptor) {
+    return new GraphQLTypeReference(getReferenceName(descriptor));
   }
 
-  private static GraphQLEnumType createEnumType(EnumDescriptor descriptor) {
-    GraphQLEnumType.Builder builder = GraphQLEnumType.newEnum().name(getReferenceName(descriptor));
-    for (Descriptors.EnumValueDescriptor valueDescriptor : descriptor.getValues()) {
-      builder.value(valueDescriptor.getName(), valueDescriptor.getNumber());
-    }
-    return builder.build();
-  }
+  private static final GraphQLInputObjectField STATIC_FIELD =
+      GraphQLInputObjectField.newInputObjectField()
+          .type(GraphQLString)
+          .name("_")
+          .defaultValue("")
+          .description("NOT USED")
+          .build();
 
   // Based on ProtoRegistry.Builder, but builds a map of descriptors rather than types.
+
   /** Builder for GqlInputConverter. */
-  public static class Builder {
+  static class Builder {
     private final ArrayList<FileDescriptor> fileDescriptors = new ArrayList<>();
     private final ArrayList<Descriptor> descriptors = new ArrayList<>();
     private final ArrayList<EnumDescriptor> enumDescriptors = new ArrayList<>();
 
-    public Builder add(FileDescriptor fileDescriptor) {
+    Builder add(FileDescriptor fileDescriptor) {
       fileDescriptors.add(fileDescriptor);
       return this;
     }
 
-    public Builder add(Descriptor descriptor) {
-      descriptors.add(descriptor);
-      return this;
-    }
-
-    public Builder add(EnumDescriptor enumDescriptor) {
-      enumDescriptors.add(enumDescriptor);
-      return this;
-    }
-
-    public GqlInputConverter build() {
+    GqlInputConverter build() {
       HashBiMap<String, Descriptor> mapping = HashBiMap.create();
       HashBiMap<String, EnumDescriptor> enumMapping = HashBiMap.create(getEnumMap(enumDescriptors));
       LinkedList<Descriptor> loop = new LinkedList<>(descriptors);
 
-      Set<FileDescriptor> fileDescriptorSet = extractDependencies(fileDescriptors);
+      Set<FileDescriptor> fileDescriptorSet = ProtoRegistry.extractDependencies(fileDescriptors);
 
       for (FileDescriptor fileDescriptor : fileDescriptorSet) {
         loop.addAll(fileDescriptor.getMessageTypes());
@@ -217,28 +198,10 @@ public final class GqlInputConverter {
           ImmutableBiMap.copyOf(mapping), ImmutableBiMap.copyOf(enumMapping));
     }
 
-    private static Set<FileDescriptor> extractDependencies(List<FileDescriptor> fileDescriptors) {
-      LinkedList<FileDescriptor> loop = new LinkedList<>(fileDescriptors);
-      HashSet<FileDescriptor> fileDescriptorSet = new HashSet<>(fileDescriptors);
-
-      while (!loop.isEmpty()) {
-        FileDescriptor fileDescriptor = loop.pop();
-
-        for (FileDescriptor dependency : fileDescriptor.getDependencies()) {
-          if (!fileDescriptorSet.contains(dependency)) {
-            fileDescriptorSet.add(dependency);
-            loop.push(dependency);
-          }
-        }
-      }
-
-      return ImmutableSet.copyOf(fileDescriptorSet);
-    }
-
     private static BiMap<String, EnumDescriptor> getEnumMap(Iterable<EnumDescriptor> descriptors) {
       HashBiMap<String, EnumDescriptor> mapping = HashBiMap.create();
       for (EnumDescriptor enumDescriptor : descriptors) {
-        mapping.put(getReferenceName(enumDescriptor), enumDescriptor);
+        mapping.put(ProtoToGql.getReferenceName(enumDescriptor), enumDescriptor);
       }
       return mapping;
     }

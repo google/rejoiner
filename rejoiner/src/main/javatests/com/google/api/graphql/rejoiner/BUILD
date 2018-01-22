@@ -1,49 +1,13 @@
 package(default_visibility = ["//visibility:public"])
 
 java_test(
-    name = "SchemaToProtoTest",
-    srcs = ["SchemaToProtoTest.java"],
-    test_class = "com.google.api.graphql.rejoiner.SchemaToProtoTest",
-    deps = [
-        ":greetings_java_proto",
-        ":test_java_proto",
-        "//:rejoiner",
-        "@com_google_guava_guava//jar",
-        "@com_google_guice//jar",
-        "@com_graphql_java//jar",
-        "@junit//jar",
-        "@truth//jar",
-        "@truth_extension//jar",
-        "@truth_extension_lite//jar",
-    ],
-)
-
-java_test(
-    name = "QueryResponseToProtoTest",
-    srcs = ["QueryResponseToProtoTest.java"],
-    test_class = "com.google.api.graphql.rejoiner.QueryResponseToProtoTest",
-    deps = [
-        ":greetings_java_proto",
-        ":test_java_proto",
-        "//:rejoiner",
-        "@com_google_guava_guava//jar",
-        "@com_google_guice//jar",
-        "@com_graphql_java//jar",
-        "@junit//jar",
-        "@truth//jar",
-        "@truth_extension//jar",
-        "@truth_extension_lite//jar",
-    ],
-)
-
-java_test(
     name = "RejoinerIntegrationTest",
     srcs = ["RejoinerIntegrationTest.java"],
     test_class = "com.google.api.graphql.rejoiner.RejoinerIntegrationTest",
     deps = [
         ":greetings_java_proto",
         ":test_java_proto",
-        "//:rejoiner",
+        "//rejoiner",
         "@com_google_guava_guava//jar",
         "@com_google_guice//jar",
         "@com_graphql_java//jar",
@@ -60,7 +24,7 @@ java_test(
     deps = [
         ":greetings_java_proto",
         ":test_java_proto",
-        "//:rejoiner",
+        "//rejoiner",
         "@com_google_guava_guava//jar",
         "@com_graphql_java//jar",
         "@junit//jar",
@@ -76,7 +40,7 @@ java_test(
     deps = [
         ":greetings_java_proto",
         ":test_java_proto",
-        "//:rejoiner",
+        "//rejoiner",
         "@com_graphql_java//jar",
         "@junit//jar",
         "@truth//jar",
@@ -91,8 +55,9 @@ java_test(
     deps = [
         ":greetings_java_proto",
         ":test_java_proto",
-        "//:rejoiner",
+        "//rejoiner",
         "@com_google_guava_guava//jar",
+        "@com_google_protobuf//:protobuf_java",
         "@com_graphql_java//jar",
         "@junit//jar",
         "@truth//jar",
@@ -108,7 +73,7 @@ java_test(
     deps = [
         ":greetings_java_proto",
         ":test_java_proto",
-        "//:rejoiner",
+        "//rejoiner",
         "@com_graphql_java//jar",
         "@junit//jar",
         "@truth//jar",
@@ -122,7 +87,7 @@ java_test(
     deps = [
         ":greetings_java_proto",
         ":test_java_proto",
-        "//:rejoiner",
+        "//rejoiner",
         "@com_google_guava_guava//jar",
         "@com_google_guice//jar",
         "@com_graphql_java//jar",
@@ -138,10 +103,11 @@ java_test(
     deps = [
         ":greetings_java_proto",
         ":test_java_proto",
-        "//:rejoiner",
+        "//rejoiner",
         "@com_google_guava_guava//jar",
         "@com_google_guice//jar",
         "@com_graphql_java//jar",
+        "@com_google_protobuf//:protobuf_java",
         "@junit//jar",
         "@truth//jar",
     ],
@@ -155,7 +121,6 @@ proto_library(
 
 java_proto_library(
     name = "test_java_proto",
-    strict_deps = 0,
     deps = [":test_proto"],
 )
 
@@ -167,6 +132,5 @@ proto_library(
 
 java_proto_library(
     name = "greetings_java_proto",
-    strict_deps = 0,
     deps = [":greetings_proto"],
 )

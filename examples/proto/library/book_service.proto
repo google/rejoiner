@@ -1,0 +1,103 @@
+// Copyright (c) 2015, Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package google.example.library.book.v1;
+
+import "google/protobuf/empty.proto";
+import "examples/proto/library/book.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "BookServiceProto";
+option java_package = "com.google.example.library.book.v1";
+
+
+// This API represents a simple book repository.
+service BookService {
+  // Creates a book, and returns the new Book.
+  rpc CreateBook(CreateBookRequest) returns (Book) {
+  }
+
+  // Gets a book. Returns NOT_FOUND if the book does not exist.
+  rpc GetBook(GetBookRequest) returns (Book) {
+  }
+
+  // Lists all books. The order is unspecified but deterministic. Newly
+  // created books will not necessarily be added to the end of this list.
+  rpc ListBooks(ListBooksRequest) returns (ListBooksResponse) {
+  }
+
+  // Stream all books. The order is unspecified but deterministic. Newly
+  // created books will not necessarily be added to the end of this list.
+  rpc StreamBooks(ListBooksRequest) returns (stream ListBooksResponse) {
+  }
+
+  // Deletes a book. Returns NOT_FOUND if the book does not exist.
+  rpc DeleteBook(DeleteBookRequest) returns (google.protobuf.Empty) {
+  }
+
+  // Updates a book. Returns INVALID_ARGUMENT if the id of the book
+  // is non-empty and does equal the previous id.
+  rpc UpdateBook(UpdateBookRequest) returns (Book) {
+  }
+}
+
+
+message CreateBookRequest {
+  // The book to create.
+  Book book = 2;
+}
+
+message GetBookRequest {
+  // The id of the book to retrieve.
+  string id = 1;
+}
+
+message ListBooksRequest {
+  // Requested page size. Server may return fewer books than requested.
+  // If unspecified, server will pick an appropriate default.
+  int32 page_size = 1;
+
+  // A token identifying a page of results the server should return.
+  // Typically, this is the value of
+  // [ListBooksResponse.next_page_token][google.example.library.v1.ListBooksResponse.next_page_token].
+  // returned from the previous call to `ListBooks` method.
+  string page_token = 2;
+}
+
+message ListBooksResponse {
+  // The list of books.
+  repeated Book books = 1;
+
+  // A token to retrieve next page of results.
+  // Pass this value in the
+  // [ListBooksRequest.page_token][google.example.library.v1.ListBooksRequest.page_token]
+  // field in the subsequent call to `ListBooks` method to retrieve the next
+  // page of results.
+  string next_page_token = 2;
+}
+
+message UpdateBookRequest {
+  // The id of the book to update.
+  string id = 1;
+
+  // The book to update with. The name must match or be empty.
+  Book book = 2;
+}
+
+message DeleteBookRequest {
+  // The id of the book to delete.
+  string id = 1;
+}

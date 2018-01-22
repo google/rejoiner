@@ -37,7 +37,10 @@ public final class ProtoRegistryTest {
             "javatests_com_google_api_graphql_rejoiner_proto_Proto1",
             "javatests_com_google_api_graphql_rejoiner_proto_Proto2",
             "javatests_com_google_api_graphql_rejoiner_proto_Proto1_InnerProto",
-            "javatests_com_google_api_graphql_rejoiner_proto_Proto2_TestEnum");
+            "javatests_com_google_api_graphql_rejoiner_proto_Proto2_TestEnum",
+            "Input_javatests_com_google_api_graphql_rejoiner_proto_Proto1",
+            "Input_javatests_com_google_api_graphql_rejoiner_proto_Proto2",
+            "Input_javatests_com_google_api_graphql_rejoiner_proto_Proto1_InnerProto");
   }
 
   private static final Function<GraphQLType, String> GET_NAME = type -> type.getName();

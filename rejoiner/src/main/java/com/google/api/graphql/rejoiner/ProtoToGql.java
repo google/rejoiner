@@ -15,9 +15,11 @@
 package com.google.api.graphql.rejoiner;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static graphql.Scalars.GraphQLID;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
+import com.google.api.graphql.options.RelayOptionsProto;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Converter;
@@ -30,11 +32,14 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.GenericDescriptor;
+import com.google.protobuf.Message;
 import graphql.Scalars;
+import graphql.relay.Relay;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
@@ -45,6 +50,7 @@ import graphql.schema.GraphQLTypeReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Optional;
 
 /** Converts Protos to GraphQL Types. */
 final class ProtoToGql {
@@ -129,11 +135,27 @@ final class ProtoToGql {
 
     @Override
     public GraphQLFieldDefinition apply(FieldDescriptor fieldDescriptor) {
-      return GraphQLFieldDefinition.newFieldDefinition()
-          .type(convertType(fieldDescriptor))
-          .dataFetcher(new ProtoDataFetcher(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName())))
-          .name(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName()))
-          .build();
+      GraphQLFieldDefinition.Builder builder =
+          GraphQLFieldDefinition.newFieldDefinition()
+              .type(convertType(fieldDescriptor))
+              .dataFetcher(
+                  new ProtoDataFetcher(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName())))
+              .name(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName()));
+      if (fieldDescriptor.getFile().toProto().getSourceCodeInfo().getLocationCount()
+          > fieldDescriptor.getIndex()) {
+        builder.description(
+            fieldDescriptor
+                .getFile()
+                .toProto()
+                .getSourceCodeInfo()
+                .getLocation(fieldDescriptor.getIndex())
+                .getLeadingComments());
+      }
+      if (fieldDescriptor.getOptions().hasDeprecated()
+          && fieldDescriptor.getOptions().getDeprecated()) {
+        builder.deprecate("deprecated in proto");
+      }
+      return builder.build();
     }
   }
 
@@ -162,9 +184,52 @@ final class ProtoToGql {
     }
   }
 
-  static GraphQLObjectType convert(Descriptor descriptor) {
+  static GraphQLObjectType convert(Descriptor descriptor, GraphQLInterfaceType nodeInterface) {
     ImmutableList<GraphQLFieldDefinition> graphQLFieldDefinitions =
         descriptor.getFields().stream().map(FIELD_CONVERTER).collect(toImmutableList());
+
+    Optional<GraphQLFieldDefinition> relayId =
+        descriptor
+            .getFields()
+            .stream()
+            .filter(field -> field.getOptions().hasExtension(RelayOptionsProto.relayOptions))
+            .map(
+                field ->
+                    GraphQLFieldDefinition.newFieldDefinition()
+                        .name("id")
+                        .type(new GraphQLNonNull(GraphQLID))
+                        .description("Relay ID")
+                        .dataFetcher(
+                            data ->
+                                new Relay()
+                                    .toGlobalId(
+                                        getReferenceName(descriptor),
+                                        data.<Message>getSource().getField(field).toString()))
+                        .build())
+            .findFirst();
+
+    if (relayId.isPresent()) {
+      return GraphQLObjectType.newObject()
+          .name(getReferenceName(descriptor))
+          .withInterface(nodeInterface)
+          .field(relayId.get())
+          .fields(
+              graphQLFieldDefinitions
+                  .stream()
+                  .map(
+                      field ->
+                          field.getName().equals("id")
+                              ? GraphQLFieldDefinition.newFieldDefinition()
+                                  .name("rawId")
+                                  .description(field.getDescription())
+                                  .type(field.getType())
+                                  .dataFetcher(field.getDataFetcher())
+                                  .build()
+                              : field)
+                  .collect(ImmutableList.toImmutableList()))
+          .build();
+    }
+
     return GraphQLObjectType.newObject()
         .name(getReferenceName(descriptor))
         .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions)

@@ -29,10 +29,10 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class GqlInputConverterTest {
 
-  @Test(expected = NullPointerException.class)
-  public void unknownProtoShouldFail() {
+  @Test
+  public void unknownProtoShouldPass() {
     GqlInputConverter inputConverter = GqlInputConverter.newBuilder().build();
-    inputConverter.createArgument(TestProto.Proto1.getDescriptor(), "input");
+    Truth.assertThat(inputConverter.createArgument(Proto1.getDescriptor(), "input")).isNotNull();
   }
 
   @Test

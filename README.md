@@ -1,19 +1,28 @@
 # Rejoiner
 
  - Creates a uniform GraphQL schema from microservices
- - Allows the GraphQL schema to be flexibility defined and composed as shared components
+ - Allows the GraphQL schema to be flexibly defined and composed as shared components
  - Generates GraphQL types from Proto definitions
  - Populates request Proto based on GraphQL query parameters
  - Supplies a DSL to modify the generated schema
  - Joins data sources by annotating methods that fetch data
- - Creates Proto FieldMasks based on GraphQL selectors
+ - Creates Proto [FieldMasks](https://developers.google.com/protocol-buffers/docs/reference/java/com/google/protobuf/FieldMask) based on GraphQL selectors
+
+ ![Rejoiner Overview](./rejoiner_overview.svg)
+
+## Experimental Features
+
+These features are actively being developed.
+
+ - Relay support [[Example](./examples/java/com/google/api/graphql/examples/library)]
+ - GraphQL Stream (based on gRPC streaming) [[Example](./examples/java/com/google/api/graphql/examples/streaming)]
 
 ## Schema Module
 
 SchemaModule is a Guice module that is used to generate parts of a GraphQL
-schema. It finds methods and fields that have Rejoiner annotations when its
+schema. It finds methods and fields that have Rejoiner annotations when it's
 instantiated. It then looks at the parameters and return type of these methods
-in order to generated the appropriate GraphQL schema. Examples of queries,
+in order to generate the appropriate GraphQL schema. Examples of queries,
 mutations, and schema modifications are presented below.
 
 ## GraphQL Query
@@ -27,7 +36,7 @@ final class TodoQuerySchemaModule extends SchemaModule {
 }
 ```
 
-In this example `request` is of type `ListTodoRequest` a protobuf message, so
+In this example `request` is of type `ListTodoRequest` (a protobuf message), so
 it's used as a parameter in the generated GraphQL query. `todoService` isn't a
 protobuf message, so it's provided by the Guice injector.
 
@@ -63,7 +72,11 @@ final class TodoToUserSchemaModule extends SchemaModule {
 }
 ```
 In this case the Todo parameter is the parent object which can be referenced to
-get the creators email.
+get the creator's email.
+
+This is how types are joined within and across APIs.
+
+![Rejoiner API Joining](./rejoiner.svg)
 
 ## Removing a field
 
