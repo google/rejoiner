@@ -9,8 +9,8 @@ const siteConfig = {
     {href: 'https://github.com/google/rejoiner', label: 'GitHub'},
   ],
   users: [],
-  headerIcon: 'rejoiner_logo.svg',
-  footerIcon: 'rejoiner_logo.svg',
+  headerIcon: 'rejoiner_logo_white.svg',
+  footerIcon: 'rejoiner_logo_white.svg',
   favicon: 'favicon.png',
   colors: {
     primaryColor: '#039be5',
