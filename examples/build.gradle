@@ -15,6 +15,9 @@ buildscript {
 repositories {
   mavenCentral()
   mavenLocal()
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+  }
 }
 
 // IMPORTANT: You probably want the non-SNAPSHOT version of gRPC. Make sure you
