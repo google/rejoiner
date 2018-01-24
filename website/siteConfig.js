@@ -2,7 +2,7 @@ const siteConfig = {
   title: 'Rejoiner',
   tagline: 'Uniform GraphQL schema from gRPC microservices',
   url: 'https://rejoiner.io',
-  baseUrl: '/site/',
+  baseUrl: '/',
   projectName: 'site',
   headerLinks: [
     {doc: 'queries', label: 'Docs'},
