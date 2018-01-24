@@ -19,4 +19,4 @@ get the creator's email.
 
 This is how types are joined within and across APIs.
 
-![Rejoiner API Joining](./rejoiner.svg)
+![Rejoiner API Joining](https://github.com/google/rejoiner/raw/master/website/static/rejoiner.svg?sanitize=true)
