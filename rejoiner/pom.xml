@@ -34,6 +34,8 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <grpc.version>1.7.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
   </properties>
 
   <groupId>com.google.api.graphql</groupId>
@@ -114,5 +116,55 @@
       <artifactId>guice</artifactId>
       <version>4.1.0</version>
     </dependency>
+
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>proto-google-common-protos</artifactId>
+      <version>0.1.9</version>
+    </dependency>
   </dependencies>
+  <build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.7.0</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+    </plugin>
+    <plugin>
+       <groupId>org.xolstice.maven.plugins</groupId>
+       <artifactId>protobuf-maven-plugin</artifactId>
+       <version>0.5.1</version>
+       <configuration>
+         <protocExecutable>/usr/local/sbin/protoc</protocExecutable>
+       </configuration>
+       <executions>
+         <execution>
+           <goals>
+             <goal>compile</goal>
+             <goal>test-compile</goal>
+           </goals>
+         </execution>
+       </executions>
+     </plugin>
+  </plugins>
+</build>
 </project>
