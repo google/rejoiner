@@ -1,5 +1,7 @@
-# Rejoiner Examples
-
+---
+id: examples
+title: Examples
+---
 
 ## Helloworld HTTP Server
 
@@ -29,7 +31,7 @@ GraphQL frontend server.
 
 
 ## Streaming GraphQL using gRPC
- 
+
 This example showcases a streaming GraphQL response. The goal is to support the `@streaming` directive.
 
 Note: This is a work in progress
@@ -46,7 +48,7 @@ Note: This is a work in progress
    > bazel run examples/java/com/google/api/graphql/examples/streaming/graphqlserver --script_path graphql_server.sh
    > ./graphql_server.sh
    ```
-   
+
 3. Run the GraphQL gRPC client
 
    ```
@@ -59,4 +61,4 @@ Current Limitations of Streaming Demo
  - The demo is using a gRPC service for the GraphQL API (no HTTP/JSON demo).
  - The data field of the top level GraphQL Response proto is a JSON encoded string of the response (it could be either Any or oneOf())
  - Variables are not used in the demo
- - Errors are not returned in the response 
+ - Errors are not returned in the response

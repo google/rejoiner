@@ -7,3 +7,8 @@ bazel-rejoiner
 .idea/
 target
 *.iml
+website/node_modules
+website/build/
+website/yarn.lock
+website/i18n/*
+!website/i18n/en.json
