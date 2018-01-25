@@ -23,7 +23,9 @@ const siteConfig = {
     theme: 'default',
   },
   scripts: ['https://buttons.github.io/buttons.js'],
-  repoUrl: 'https://github.com/google/rejoiner'
+  repoUrl: 'https://github.com/google/rejoiner',
+  gaTrackingId: 'UA-109799776-2',
+  cname: 'rejoiner.io'
 };
 
 module.exports = siteConfig;
