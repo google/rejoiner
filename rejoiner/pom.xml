@@ -137,6 +137,28 @@
       <artifactId>proto-google-common-protos</artifactId>
       <version>0.1.9</version>
     </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.truth</groupId>
+      <artifactId>truth</artifactId>
+      <version>0.36</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.truth.extensions</groupId>
+      <artifactId>truth-proto-extension</artifactId>
+      <version>0.36</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
   <build>
   <plugins>

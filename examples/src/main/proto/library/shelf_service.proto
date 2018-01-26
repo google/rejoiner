@@ -1,0 +1,157 @@
+// Copyright (c) 2015, Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package google.example.library.shelf.v1;
+
+import "google/protobuf/empty.proto";
+import "library/shelf.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "ShelfServiceProto";
+option java_package = "com.google.example.library.shelf.v1";
+
+
+// This API represents a simple digital library.  It lets you manage Shelf
+// resources and Book resources in the library. It defines the following
+// resource model:
+//
+// - The API has a collection of [Shelf][google.example.library.v1.Shelf]
+//   resources, named `shelves/*`
+//
+// - Each Shelf has a collection of [Book][google.example.library.v1.Book]
+//   resources, named `shelves/*/books/*`
+service ShelfService {
+  // Creates a shelf, and returns the new Shelf.
+  rpc CreateShelf(CreateShelfRequest) returns (Shelf) {
+  }
+
+  // Gets a shelf. Returns NOT_FOUND if the shelf does not exist.
+  rpc GetShelf(GetShelfRequest) returns (Shelf) {
+  }
+
+  // Lists shelves. The order is unspecified but deterministic. Newly created
+  // shelves will not necessarily be added to the end of this list.
+  rpc ListShelves(ListShelvesRequest) returns (ListShelvesResponse) {
+  }
+
+  // Deletes a shelf. Returns NOT_FOUND if the shelf does not exist.
+  rpc DeleteShelf(DeleteShelfRequest) returns (google.protobuf.Empty) {
+  }
+
+  // Merges two shelves by adding all books from the shelf named
+  // `other_shelf_id` to shelf `id`, and deletes
+  // `other_shelf_id`. Returns the updated shelf.
+  // The book ids of the moved books may not be the same as the original books.
+  //
+  // Returns NOT_FOUND if either shelf does not exist.
+  // This call is a no-op if the specified shelves are the same.
+  rpc MergeShelves(MergeShelvesRequest) returns (Shelf) {
+  }
+
+}
+
+// Request message for LibraryService.CreateShelf.
+message CreateShelfRequest {
+  // The shelf to create.
+  Shelf shelf = 1;
+}
+
+// Request message for LibraryService.GetShelf.
+message GetShelfRequest {
+  // The id of the shelf to retrieve.
+  string id = 1;
+}
+
+// Request message for LibraryService.ListShelves.
+message ListShelvesRequest {
+  // Requested page size. Server may return fewer shelves than requested.
+  // If unspecified, server will pick an appropriate default.
+  int32 page_size = 1;
+
+  // A token identifying a page of results the server should return.
+  // Typically, this is the value of
+  // [ListShelvesResponse.next_page_token][google.example.library.v1.ListShelvesResponse.next_page_token]
+  // returned from the previous call to `ListShelves` method.
+  string page_token = 2;
+}
+
+// Response message for LibraryService.ListShelves.
+message ListShelvesResponse {
+  // The list of shelves.
+  repeated Shelf shelves = 1;
+
+  // A token to retrieve next page of results.
+  // Pass this value in the
+  // [ListShelvesRequest.page_token][google.example.library.v1.ListShelvesRequest.page_token]
+  // field in the subsequent call to `ListShelves` method to retrieve the next
+  // page of results.
+  string next_page_token = 2;
+}
+
+// Request message for LibraryService.DeleteShelf.
+message DeleteShelfRequest {
+  // The id of the shelf to delete.
+  string id = 1;
+}
+
+// Describes the shelf being removed (other_shelf_id) and updated
+// (id) in this merge.
+message MergeShelvesRequest {
+  // The id of the shelf we're adding books to.
+  string id = 1;
+
+  // The id of the shelf we're removing books from and deleting.
+  string other_shelf_id = 2;
+}
+
+// Request message for LibraryService.ListBooks.
+message ListBooksRequest {
+  // The id of the shelf whose books we'd like to list.
+  string id = 1;
+
+  // Requested page size. Server may return fewer books than requested.
+  // If unspecified, server will pick an appropriate default.
+  int32 page_size = 2;
+
+  // A token identifying a page of results the server should return.
+  // Typically, this is the value of
+  // [ListBooksResponse.next_page_token][google.example.library.v1.ListBooksResponse.next_page_token].
+  // returned from the previous call to `ListBooks` method.
+  string page_token = 3;
+}
+
+// Response message for LibraryService.ListBooks.
+message ListBooksResponse {
+  // The list of books.
+  repeated string books_id = 1;
+
+  // A token to retrieve next page of results.
+  // Pass this value in the
+  // [ListBooksRequest.page_token][google.example.library.v1.ListBooksRequest.page_token]
+  // field in the subsequent call to `ListBooks` method to retrieve the next
+  // page of results.
+  string next_page_token = 2;
+}
+
+// Describes what book to move (id) and what shelf we're moving it
+// to (other_shelf_id).
+message MoveBookRequest {
+  // The id of the book to move.
+  string id = 1;
+
+  // The id of the destination shelf.
+  string other_shelf_id = 2;
+}

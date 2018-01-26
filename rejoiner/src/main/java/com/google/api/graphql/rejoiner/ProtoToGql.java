@@ -73,6 +73,8 @@ final class ProtoToGql {
           .put(Type.BYTES, Scalars.GraphQLString)
           .put(Type.FIXED32, Scalars.GraphQLInt)
           .put(Type.FIXED64, Scalars.GraphQLLong)
+          .put(Type.SFIXED32, Scalars.GraphQLInt)
+          .put(Type.SFIXED64, Scalars.GraphQLLong)
           .build();
 
   private static final Converter<String, String> UNDERSCORE_TO_CAMEL =

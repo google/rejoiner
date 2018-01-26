@@ -15,14 +15,16 @@ GraphQL frontend server.
    <p>From the top level directory run these commands:
 
     ```
-    > bazel run examples/java/com/google/api/graphql/examples/helloworld/backend --script_path server.sh
-    > ./server.sh
+    > cd examples
+    > ./gradlew installDist
+    > ./build/install/examples/bin/helloworld-backend
+
     ```
 2. Run the GraphQL frontend server
    <p>In another terminal run the following command:
 
    ```
-   > bazel run examples:helloworld_graphqlserver
+   > ./build/install/examples/bin/helloworld-graphqlserver
    ```
 
 3. Visit GraphiQL and make requests
@@ -39,20 +41,22 @@ Note: This is a work in progress
 1. Run the gRPc backend server
 
    ```
-   >  bazel run examples/java/com/google/api/graphql/examples/streaming/backend --script_path backend.sh
-   > ./backend.sh
+   > cd examples
+   > ./gradlew installDist
+   > ./build/install/examples/bin/streaming-backend
    ```
 2. Run the GraphQL frontend gRPC server
 
    ```
-   > bazel run examples/java/com/google/api/graphql/examples/streaming/graphqlserver --script_path graphql_server.sh
-   > ./graphql_server.sh
+   > cd examples
+   > ./build/install/examples/bin/streaming-graphql-server
    ```
 
 3. Run the GraphQL gRPC client
 
    ```
-   > bazel run examples/java/com/google/api/graphql/examples/streaming/graphqlclient
+   > cd examples
+   > ./build/install/examples/bin/streaming-graphql-client
    ```
 
 Current Limitations of Streaming Demo
