@@ -132,5 +132,4 @@ All generated proto messages extend `Message`.
  - Rejoiner is built on top of [GraphQL-Java](https://github.com/graphql-java/graphql-java) which provides the core
    GraphQL capabilities such as query parsing, validation, and execution.  
  - Java code is formatted using [google-java-format](https://github.com/google/google-java-format).
- - Code is built using https://bazel.build.
  - Note: This is not an official Google product.

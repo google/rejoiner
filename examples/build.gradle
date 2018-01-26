@@ -75,6 +75,9 @@ apply plugin: 'application'
 
 startScripts.enabled = false
 
+// ------------------
+// Helloworld Example
+
 task helloworldGraphqlServer(type: CreateStartScripts) {
   mainClassName = 'com.google.api.graphql.examples.helloworld.graphqlserver.GraphQlServer'
   applicationName = 'helloworld-graphqlserver'
@@ -82,8 +85,69 @@ task helloworldGraphqlServer(type: CreateStartScripts) {
   classpath = jar.outputs.files + project.configurations.runtime
 }
 
+task helloworldBackend(type: CreateStartScripts) {
+  mainClassName = 'com.google.api.graphql.examples.helloworld.backend.HelloWorldServer'
+  applicationName = 'helloworld-backend'
+  outputDir = new File(project.buildDir, 'tmp')
+  classpath = jar.outputs.files + project.configurations.runtime
+}
+
+// ------------------
+// Library Example
+
+task libraryGraphqlServer(type: CreateStartScripts) {
+  mainClassName = 'com.google.api.graphql.examples.library.graphqlserver.GraphQlServer'
+  applicationName = 'library-graphqlserver'
+  outputDir = new File(project.buildDir, 'tmp')
+  classpath = jar.outputs.files + project.configurations.runtime
+}
+
+task bookBackend(type: CreateStartScripts) {
+  mainClassName = 'com.google.api.graphql.examples.library.bookbackend.BookServer'
+  applicationName = 'book-backend'
+  outputDir = new File(project.buildDir, 'tmp')
+  classpath = jar.outputs.files + project.configurations.runtime
+}
+
+task shelfBackend(type: CreateStartScripts) {
+  mainClassName = 'com.google.api.graphql.examples.library.shelfbackend.ShelfServer'
+  applicationName = 'shelf-backend'
+  outputDir = new File(project.buildDir, 'tmp')
+  classpath = jar.outputs.files + project.configurations.runtime
+}
+
+// ------------------
+// Streaming Examples
+
+task streamingBackend(type: CreateStartScripts) {
+  mainClassName = 'com.google.api.graphql.examples.streaming.backend.HelloWorldServer'
+  applicationName = 'streaming-backend'
+  outputDir = new File(project.buildDir, 'tmp')
+  classpath = jar.outputs.files + project.configurations.runtime
+}
+
+task streamingGraphQlClient(type: CreateStartScripts) {
+  mainClassName = 'com.google.api.graphql.examples.streaming.graphqlclient.GraphQlGrpcClient'
+  applicationName = 'streaming-graphql-client'
+  outputDir = new File(project.buildDir, 'tmp')
+  classpath = jar.outputs.files + project.configurations.runtime
+}
+
+task streamingGraphQlServer(type: CreateStartScripts) {
+  mainClassName = 'com.google.api.graphql.examples.streaming.graphqlserver.GraphQlGrpcServer'
+  applicationName = 'streaming-graphql-server'
+  outputDir = new File(project.buildDir, 'tmp')
+  classpath = jar.outputs.files + project.configurations.runtime
+}
 
 applicationDistribution.into('bin') {
   from(helloworldGraphqlServer)
+  from(helloworldBackend)
+  from(libraryGraphqlServer)
+  from(bookBackend)
+  from(shelfBackend)
+  from(streamingBackend)
+  from(streamingGraphQlClient)
+  from(streamingGraphQlServer)
   fileMode = 0755
 }
