@@ -12,13 +12,15 @@ GraphQL frontend server.</p>
 <ol>
 <li><p>Build and run the gRPC backend server</p>
    <p>From the top level directory run these commands:
-<pre><code class="hljs">&gt; bazel run examples<span class="hljs-meta-keyword">/java/</span>com<span class="hljs-meta-keyword">/google/</span>api<span class="hljs-meta-keyword">/graphql/</span>examples<span class="hljs-meta-keyword">/helloworld/</span>backend --script_path server.sh
-&gt; ./server.sh
+<pre><code class="hljs"><span class="hljs-meta">&gt;</span><span class="bash"> <span class="hljs-built_in">cd</span> examples</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> ./gradlew installDist</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> ./build/install/examples/bin/helloworld-backend</span>
+
 </code></pre></li>
 <li><p>Run the GraphQL frontend server</p>
    <p>In another terminal run the following command:
-<pre><code class="hljs">&gt; bazel <span class="hljs-keyword">run</span><span class="bash"> examples:helloworld_graphqlserver
-</span></code></pre></li>
+<pre><code class="hljs">&gt; .<span class="hljs-meta-keyword">/build/</span>install<span class="hljs-meta-keyword">/examples/</span>bin/helloworld-graphqlserver
+</code></pre></li>
 <li><p>Visit GraphiQL and make requests</p>
 <ul>
 <li><a href="http://localhost:8080">http://localhost:8080</a></li>
@@ -29,15 +31,17 @@ GraphQL frontend server.</p>
 <p>Note: This is a work in progress</p>
 <ol>
 <li><p>Run the gRPc backend server</p>
-<pre><code class="hljs">&gt;  <span class="hljs-keyword">bazel </span>run examples/java/com/google/api/graphql/examples/<span class="hljs-keyword">streaming/backend </span>--script_path <span class="hljs-keyword">backend.sh
-</span>&gt; ./<span class="hljs-keyword">backend.sh
-</span></code></pre></li>
+<pre><code class="hljs"><span class="hljs-meta">&gt;</span><span class="bash"> <span class="hljs-built_in">cd</span> examples</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> ./gradlew installDist</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> ./build/install/examples/bin/streaming-backend</span>
+</code></pre></li>
 <li><p>Run the GraphQL frontend gRPC server</p>
-<pre><code class="hljs">&gt; bazel run examples<span class="hljs-meta-keyword">/java/</span>com<span class="hljs-meta-keyword">/google/</span>api<span class="hljs-meta-keyword">/graphql/</span>examples<span class="hljs-meta-keyword">/streaming/</span>graphqlserver --script_path graphql_server.sh
-&gt; ./graphql_server.sh
+<pre><code class="hljs"><span class="hljs-meta">&gt;</span><span class="bash"> <span class="hljs-built_in">cd</span> examples</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> ./build/install/examples/bin/streaming-graphql-server</span>
 </code></pre></li>
 <li><p>Run the GraphQL gRPC client</p>
-<pre><code class="hljs">&gt; bazel run examples<span class="hljs-regexp">/java/</span>com<span class="hljs-regexp">/google/</span>api<span class="hljs-regexp">/graphql/</span>examples<span class="hljs-regexp">/streaming/g</span>raphqlclient
+<pre><code class="hljs"><span class="hljs-meta">&gt;</span><span class="bash"> <span class="hljs-built_in">cd</span> examples</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> ./build/install/examples/bin/streaming-graphql-client</span>
 </code></pre></li>
 </ol>
 <p>Current Limitations of Streaming Demo</p>
