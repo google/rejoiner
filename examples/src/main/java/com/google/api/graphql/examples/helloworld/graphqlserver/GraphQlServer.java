@@ -20,9 +20,12 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
+import java.util.logging.Logger;
+
 public class GraphQlServer {
 
   private static final int HTTP_PORT = 8080;
+  private static final Logger logger = Logger.getLogger(GraphQlServer.class.getName());
 
   public static void main(String[] args) throws Exception {
     // Embedded Jetty server
@@ -37,6 +40,7 @@ public class GraphQlServer {
         new Handler[] {resourceHandler, new GraphQlHandler(), new DefaultHandler()});
     server.setHandler(handlerList);
     server.start();
+    logger.info("Server running on port " + HTTP_PORT);
     server.join();
   }
 }
