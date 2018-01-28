@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,6 +46,7 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 public class GraphQlServer extends AbstractHandler {
 
   private static final int HTTP_PORT = 8080;
+  private static final Logger logger = Logger.getLogger(GraphQlServer.class.getName());
   private static final Gson GSON = new GsonBuilder().serializeNulls().create();
   private static final TypeToken<Map<String, Object>> MAP_TYPE_TOKEN =
       new TypeToken<Map<String, Object>>() {};
@@ -69,6 +71,7 @@ public class GraphQlServer extends AbstractHandler {
     handlerList.setHandlers(new Handler[] {resourceHandler, new GraphQlServer()});
     server.setHandler(handlerList);
     server.start();
+    logger.info("Server running on port " + HTTP_PORT);
     server.join();
   }
 
