@@ -29,6 +29,10 @@ import java.io.File;
 import java.util.EnumSet;
 import java.util.logging.Logger;
 
+import static javax.servlet.DispatcherType.ASYNC;
+import static javax.servlet.DispatcherType.REQUEST;
+import static org.eclipse.jetty.servlet.ServletContextHandler.SESSIONS;
+
 public class GraphQlServer {
 
   private static final int HTTP_PORT = 8080;
@@ -38,7 +42,7 @@ public class GraphQlServer {
     Server server = new Server(HTTP_PORT);
 
     ServletContextHandler context =
-        new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+        new ServletContextHandler(server, "/", SESSIONS);
 
     context.addEventListener(
         new GuiceServletContextListener() {
@@ -53,7 +57,7 @@ public class GraphQlServer {
                 },
                 new DataLoaderModule(),
                 new SchemaProviderModule(), // Part of Rejoiner framework (Provides `@Schema
-                                            // GraphQLSchema`)
+                // GraphQLSchema`)
                 new BookClientModule(), // Configures the Book gRPC client
                 new ShelfClientModule(), // Configures the Shelf gRPC client
                 new BookSchemaModule(), // Creates queries and mutations for the Book service
@@ -64,10 +68,7 @@ public class GraphQlServer {
           }
         });
 
-    context.addFilter(
-        GuiceFilter.class,
-        "/*",
-        EnumSet.of(javax.servlet.DispatcherType.REQUEST, javax.servlet.DispatcherType.ASYNC));
+    context.addFilter(GuiceFilter.class, "/*", EnumSet.of(REQUEST, ASYNC));
 
     context.setBaseResource(
         new PathResource(new File("./src/main/resources").toPath().toRealPath()));
