@@ -28,6 +28,7 @@ repositories {
 def grpcVersion = '1.7.0' // CURRENT_GRPC_VERSION
 
 dependencies {
+  compile 'com.google.inject.extensions:guice-servlet:4.2.0'
   compile "com.google.api.grpc:proto-google-common-protos:0.1.9"
   compile "io.grpc:grpc-netty:${grpcVersion}"
   compile "io.grpc:grpc-protobuf:${grpcVersion}"
@@ -35,6 +36,7 @@ dependencies {
   compile "com.google.api.graphql:rejoiner:0.0.1-SNAPSHOT"
   compile "com.google.api.graphql:execution:0.0.1-SNAPSHOT"
   compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.3.8.v20160314'
+  compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.3.8.v20160314'
   compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.2'
 
 }

@@ -14,120 +14,61 @@
 
 package com.google.api.graphql.examples.library.graphqlserver;
 
-import com.google.api.graphql.execution.GuavaListenableFutureSupport;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.io.CharStreams;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import graphql.ExecutionInput;
-import graphql.ExecutionResult;
-import graphql.GraphQL;
-import graphql.execution.instrumentation.ChainedInstrumentation;
-import graphql.execution.instrumentation.Instrumentation;
-import graphql.execution.instrumentation.tracing.TracingInstrumentation;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Request;
+import com.google.api.graphql.rejoiner.SchemaProviderModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.servlet.GuiceFilter;
+import com.google.inject.servlet.GuiceServletContextListener;
+import com.google.inject.servlet.ServletModule;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 
-public class GraphQlServer extends AbstractHandler {
+import java.util.EnumSet;
+import java.util.logging.Logger;
+
+public class GraphQlServer {
 
   private static final int HTTP_PORT = 8080;
   private static final Logger logger = Logger.getLogger(GraphQlServer.class.getName());
-  private static final Gson GSON = new GsonBuilder().serializeNulls().create();
-  private static final TypeToken<Map<String, Object>> MAP_TYPE_TOKEN =
-      new TypeToken<Map<String, Object>>() {};
-
-  private static final Instrumentation instrumentation =
-      new ChainedInstrumentation(
-          Arrays.asList(
-              GuavaListenableFutureSupport.listenableFutureInstrumentation(),
-              new TracingInstrumentation()));
-
-  private static final GraphQL GRAPHQL =
-      GraphQL.newGraphQL(LibrarySchema.SCHEMA).instrumentation(instrumentation).build();
 
   public static void main(String[] args) throws Exception {
     Server server = new Server(HTTP_PORT);
-    ResourceHandler resourceHandler = new ResourceHandler();
-    resourceHandler.setWelcomeFiles(new String[] {"index.html"});
-    resourceHandler.setDirectoriesListed(false);
-    resourceHandler.setResourceBase("./src/main/resources");
-    HandlerList handlerList = new HandlerList();
-    handlerList.setHandlers(new Handler[] {resourceHandler, new GraphQlServer()});
-    server.setHandler(handlerList);
+
+    ServletContextHandler context =
+        new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+
+    context.addEventListener(
+        new GuiceServletContextListener() {
+          @Override
+          protected Injector getInjector() {
+            return Guice.createInjector(
+                new ServletModule() {
+                  @Override
+                  protected void configureServlets() {
+                    serve("/graphql").with(GraphQlServlet.class);
+                  }
+                },
+                new DataLoaderModule(),
+                new SchemaProviderModule(), // Part of Rejoiner framework (Provides `@Schema GraphQLSchema`)
+                new BookClientModule(), // Configures the Book gRPC client
+                new ShelfClientModule(), // Configures the Shelf gRPC client
+                new BookSchemaModule(), // Creates queries and mutations for the Book service
+                new ShelfSchemaModule(), // Creates queries and mutations for the Shelf service
+                new LibrarySchemaModule(), // Joins together Shelf and Book services
+                new SeedLibrarySchemaModule() // Fills the Shelf and Book services with data
+                );
+          }
+        });
+
+    context.addFilter(
+        GuiceFilter.class,
+        "/*",
+        EnumSet.of(javax.servlet.DispatcherType.REQUEST, javax.servlet.DispatcherType.ASYNC));
+
+    context.addServlet(DefaultServlet.class, "/");
     server.start();
     logger.info("Server running on port " + HTTP_PORT);
     server.join();
-  }
-
-  @Override
-  public void handle(
-      String target,
-      Request request,
-      HttpServletRequest httpServletRequest,
-      HttpServletResponse httpServletResponse)
-      throws IOException, ServletException {
-    if ("/graphql".equals(target)) {
-      request.setHandled(true);
-      Map<String, Object> json = readJson(httpServletRequest);
-      String query = (String) json.get("query");
-      if (query == null) {
-        httpServletResponse.setStatus(400);
-        return;
-      }
-      String operationName = (String) json.get("operationName");
-      Map<String, Object> variables = getVariables(json.get("variables"));
-
-      ExecutionInput executionInput =
-          ExecutionInput.newExecutionInput()
-              .query(query)
-              .operationName(operationName)
-              .variables(variables)
-              .context(new Object())
-              .build();
-      ExecutionResult executionResult = GRAPHQL.execute(executionInput);
-      httpServletResponse.setContentType("application/json");
-      httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-      GSON.toJson(executionResult.toSpecification(), httpServletResponse.getWriter());
-    }
-  }
-
-  private static Map<String, Object> getVariables(Object variables) {
-    Map<String, Object> variablesWithStringKey = new HashMap<>();
-    if (variables instanceof Map) {
-      ((Map) variables).forEach((k, v) -> variablesWithStringKey.put(String.valueOf(k), v));
-    }
-    return variablesWithStringKey;
-  }
-
-  private static Map<String, Object> readJson(HttpServletRequest request) {
-    try {
-      String json = CharStreams.toString(request.getReader());
-      return jsonToMap(json);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static Map<String, Object> jsonToMap(String json) {
-    if (Strings.isNullOrEmpty(json)) {
-      return ImmutableMap.of();
-    }
-    return Optional.<Map<String, Object>>ofNullable(GSON.fromJson(json, MAP_TYPE_TOKEN.getType()))
-        .orElse(ImmutableMap.of());
   }
 }
