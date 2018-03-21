@@ -66,3 +66,12 @@ Current Limitations of Streaming Demo
  - The data field of the top level GraphQL Response proto is a JSON encoded string of the response (it could be either Any or oneOf())
  - Variables are not used in the demo
  - Errors are not returned in the response
+
+
+## Library Example
+
+The library example uses DataLoaders which provides a request-scoped cache and automatically batches requests.
+
+## Community Examples
+
+[github.com/dbaggett/medallion](https://github.com/dbaggett/medallion) contains multiple microservices and uses Kotlin instead of Java.
