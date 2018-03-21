@@ -23,7 +23,9 @@ import com.google.inject.servlet.ServletModule;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.resource.PathResource;
 
+import java.io.File;
 import java.util.EnumSet;
 import java.util.logging.Logger;
 
@@ -50,7 +52,8 @@ public class GraphQlServer {
                   }
                 },
                 new DataLoaderModule(),
-                new SchemaProviderModule(), // Part of Rejoiner framework (Provides `@Schema GraphQLSchema`)
+                new SchemaProviderModule(), // Part of Rejoiner framework (Provides `@Schema
+                                            // GraphQLSchema`)
                 new BookClientModule(), // Configures the Book gRPC client
                 new ShelfClientModule(), // Configures the Shelf gRPC client
                 new BookSchemaModule(), // Creates queries and mutations for the Book service
@@ -66,6 +69,8 @@ public class GraphQlServer {
         "/*",
         EnumSet.of(javax.servlet.DispatcherType.REQUEST, javax.servlet.DispatcherType.ASYNC));
 
+    context.setBaseResource(
+        new PathResource(new File("./src/main/resources").toPath().toRealPath()));
     context.addServlet(DefaultServlet.class, "/");
     server.start();
     logger.info("Server running on port " + HTTP_PORT);
