@@ -41,7 +41,11 @@ final class DataLoaderModule extends AbstractModule {
         keys -> {
           ListenableFuture<List<Book>> listenableFuture =
               Futures.transform(
-                  bookService.listBooks(ListBooksRequest.newBuilder().build()),
+                  bookService.listBooks(
+                      ListBooksRequest.newBuilder()
+                          .addAllIds(keys)
+                          .setPageSize(keys.size())
+                          .build()),
                   resp -> resp.getBooksList(),
                   MoreExecutors.directExecutor());
           //  ServletScopes.transferRequest(() -> ... ); ??
@@ -51,6 +55,7 @@ final class DataLoaderModule extends AbstractModule {
     DataLoaderRegistry registry = new DataLoaderRegistry();
 
     registry.register("books", new DataLoader<>(bookBatchLoader));
+
     return registry;
   }
 }

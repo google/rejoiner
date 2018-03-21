@@ -19,21 +19,18 @@ import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.RelayNode;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.example.library.book.v1.Book;
-import com.google.example.library.book.v1.BookServiceGrpc;
-import com.google.example.library.book.v1.CreateBookRequest;
-import com.google.example.library.book.v1.GetBookRequest;
-import com.google.example.library.book.v1.ListBooksRequest;
-import com.google.example.library.book.v1.ListBooksResponse;
+import com.google.example.library.book.v1.*;
+import net.javacrumbs.futureconverter.java8guava.FutureConverter;
+import org.dataloader.DataLoaderRegistry;
 
 /** A GraphQL {@link SchemaModule} backed by a gRPC service. */
 final class BookSchemaModule extends SchemaModule {
 
   @Query("getBook")
   @RelayNode
-  ListenableFuture<Book> getBook(
-      GetBookRequest request, BookServiceGrpc.BookServiceFutureStub client) {
-    return client.getBook(request);
+  ListenableFuture<Book> getBook(GetBookRequest request, DataLoaderRegistry dataLoaderRegistry) {
+    return FutureConverter.toListenableFuture(
+        dataLoaderRegistry.<String, Book>getDataLoader("books").load(request.getId()));
   }
 
   @Query("listBooks")

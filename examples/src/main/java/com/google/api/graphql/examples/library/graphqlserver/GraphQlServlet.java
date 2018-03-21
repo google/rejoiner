@@ -27,10 +27,13 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.execution.instrumentation.ChainedInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
+import graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentation;
 import graphql.execution.instrumentation.tracing.TracingInstrumentation;
 import graphql.schema.GraphQLSchema;
+import org.dataloader.DataLoaderRegistry;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -40,25 +43,28 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @Singleton
-class GraphQlServlet extends HttpServlet {
+final class GraphQlServlet extends HttpServlet {
 
   private static final Gson GSON = new GsonBuilder().serializeNulls().create();
   private static final TypeToken<Map<String, Object>> MAP_TYPE_TOKEN =
       new TypeToken<Map<String, Object>>() {};
 
-  private static final Instrumentation instrumentation =
-      new ChainedInstrumentation(
-          Arrays.asList(
-              GuavaListenableFutureSupport.listenableFutureInstrumentation(),
-              new TracingInstrumentation()));
-
+  private static final Logger logger = Logger.getLogger(GraphQlServlet.class.getName());
   @Inject @Schema GraphQLSchema schema;
+  @Inject Provider<DataLoaderRegistry> registryProvider;
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
+    Instrumentation instrumentation =
+        new ChainedInstrumentation(
+            Arrays.asList(
+                GuavaListenableFutureSupport.listenableFutureInstrumentation(),
+                new DataLoaderDispatcherInstrumentation(registryProvider.get()),
+                new TracingInstrumentation()));
     GraphQL graphql = GraphQL.newGraphQL(schema).instrumentation(instrumentation).build();
 
     Map<String, Object> json = readJson(req);
@@ -81,6 +87,7 @@ class GraphQlServlet extends HttpServlet {
     resp.setContentType("application/json");
     resp.setStatus(HttpServletResponse.SC_OK);
     GSON.toJson(executionResult.toSpecification(), resp.getWriter());
+    logger.info("stats: " + registryProvider.get().getStatistics());
   }
 
   private static Map<String, Object> getVariables(Object variables) {
