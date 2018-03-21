@@ -12,22 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.api.graphql.examples.library.graphqlserver;
+package com.google.api.graphql.examples.library.graphqlserver.schema;
 
 import com.google.api.graphql.rejoiner.Arg;
 import com.google.api.graphql.rejoiner.Mutation;
 import com.google.api.graphql.rejoiner.SchemaModification;
 import com.google.api.graphql.rejoiner.SchemaModule;
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.example.library.book.v1.Book;
 import com.google.example.library.book.v1.BookServiceGrpc;
 import com.google.example.library.book.v1.CreateBookRequest;
-import com.google.example.library.book.v1.GetBookRequest;
 import com.google.example.library.shelf.v1.GetShelfRequest;
 import com.google.example.library.shelf.v1.Shelf;
 import com.google.example.library.shelf.v1.ShelfServiceGrpc;
+import graphql.schema.DataFetchingEnvironment;
+import net.javacrumbs.futureconverter.java8guava.FutureConverter;
+import org.dataloader.DataLoaderRegistry;
+
 import java.util.List;
 
 /** A GraphQL {@link SchemaModule} backed by a gRPC service. */
@@ -47,14 +48,11 @@ final class LibrarySchemaModule extends SchemaModule {
   }
 
   @SchemaModification(addField = "books", onType = Shelf.class)
-  ListenableFuture<List<Book>> shelfToBooks(
-      Shelf shelf, BookServiceGrpc.BookServiceFutureStub bookClient) {
-    // TODO: use a data loader or batch endpoint
-    return Futures.allAsList(
-        shelf
-            .getBookIdsList()
-            .stream()
-            .map(id -> bookClient.getBook(GetBookRequest.newBuilder().setId(id).build()))
-            .collect(ImmutableList.toImmutableList()));
+  ListenableFuture<List<Book>> shelfToBooks(Shelf shelf, DataFetchingEnvironment environment) {
+    return FutureConverter.toListenableFuture(
+        environment
+            .<DataLoaderRegistry>getContext()
+            .<String, Book>getDataLoader("books")
+            .loadMany(shelf.getBookIdsList()));
   }
 }

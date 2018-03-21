@@ -66,15 +66,18 @@ message GetBookRequest {
 }
 
 message ListBooksRequest {
+  // The ids of the book to retrieve.
+  repeated string ids = 1;
+
   // Requested page size. Server may return fewer books than requested.
   // If unspecified, server will pick an appropriate default.
-  int32 page_size = 1;
+  int32 page_size = 2;
 
   // A token identifying a page of results the server should return.
   // Typically, this is the value of
   // [ListBooksResponse.next_page_token][google.example.library.v1.ListBooksResponse.next_page_token].
   // returned from the previous call to `ListBooks` method.
-  string page_token = 2;
+  string page_token = 3;
 }
 
 message ListBooksResponse {

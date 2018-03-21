@@ -12,20 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.api.graphql.examples.library.graphqlserver;
+package com.google.api.graphql.examples.library.graphqlserver.schema;
 
 import com.google.api.graphql.rejoiner.Mutation;
 import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.RelayNode;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.example.library.shelf.v1.CreateShelfRequest;
-import com.google.example.library.shelf.v1.GetShelfRequest;
-import com.google.example.library.shelf.v1.ListShelvesRequest;
-import com.google.example.library.shelf.v1.ListShelvesResponse;
-import com.google.example.library.shelf.v1.MergeShelvesRequest;
-import com.google.example.library.shelf.v1.Shelf;
-import com.google.example.library.shelf.v1.ShelfServiceGrpc;
+import com.google.example.library.shelf.v1.*;
 
 /** A GraphQL {@link SchemaModule} backed by a gRPC service. */
 final class ShelfSchemaModule extends SchemaModule {
