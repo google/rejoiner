@@ -14,6 +14,8 @@
 
 package com.google.api.graphql.examples.library.graphqlserver;
 
+import com.google.api.graphql.examples.library.graphqlserver.client.ClientModule;
+import com.google.api.graphql.examples.library.graphqlserver.schema.SchemaModule;
 import com.google.api.graphql.rejoiner.SchemaProviderModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -41,8 +43,7 @@ public class GraphQlServer {
   public static void main(String[] args) throws Exception {
     Server server = new Server(HTTP_PORT);
 
-    ServletContextHandler context =
-        new ServletContextHandler(server, "/", SESSIONS);
+    ServletContextHandler context = new ServletContextHandler(server, "/", SESSIONS);
 
     context.addEventListener(
         new GuiceServletContextListener() {
@@ -58,12 +59,8 @@ public class GraphQlServer {
                 new DataLoaderModule(),
                 new SchemaProviderModule(), // Part of Rejoiner framework (Provides `@Schema
                 // GraphQLSchema`)
-                new BookClientModule(), // Configures the Book gRPC client
-                new ShelfClientModule(), // Configures the Shelf gRPC client
-                new BookSchemaModule(), // Creates queries and mutations for the Book service
-                new ShelfSchemaModule(), // Creates queries and mutations for the Shelf service
-                new LibrarySchemaModule(), // Joins together Shelf and Book services
-                new SeedLibrarySchemaModule() // Fills the Shelf and Book services with data
+                new ClientModule(), // Installs all of the client modules
+                new SchemaModule() // Installs all of the schema modules
                 );
           }
         });

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.api.graphql.examples.library.graphqlserver;
+package com.google.api.graphql.examples.library.graphqlserver.client;
 
 import com.google.example.library.shelf.v1.ShelfServiceGrpc;
 import com.google.inject.AbstractModule;

@@ -22,7 +22,6 @@ import com.google.example.library.book.v1.BookServiceGrpc;
 import com.google.example.library.book.v1.ListBooksRequest;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import com.google.inject.servlet.RequestScoped;
 import net.javacrumbs.futureconverter.java8guava.FutureConverter;
 import org.dataloader.BatchLoader;
 import org.dataloader.DataLoader;
@@ -33,7 +32,6 @@ import java.util.List;
 final class DataLoaderModule extends AbstractModule {
 
   @Provides
-  @RequestScoped
   DataLoaderRegistry dataLoaderRegistry(BookServiceGrpc.BookServiceFutureStub bookService) {
 
     // TODO: Use multibinder to modularize this, or automate this somehow
@@ -48,14 +46,11 @@ final class DataLoaderModule extends AbstractModule {
                           .build()),
                   resp -> resp.getBooksList(),
                   MoreExecutors.directExecutor());
-          //  ServletScopes.transferRequest(() -> ... ); ??
           return FutureConverter.toCompletableFuture(listenableFuture);
         };
 
     DataLoaderRegistry registry = new DataLoaderRegistry();
-
     registry.register("books", new DataLoader<>(bookBatchLoader));
-
     return registry;
   }
 }

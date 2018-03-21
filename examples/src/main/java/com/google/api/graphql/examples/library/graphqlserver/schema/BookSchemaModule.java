@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.api.graphql.examples.library.graphqlserver;
+package com.google.api.graphql.examples.library.graphqlserver.schema;
 
 import com.google.api.graphql.rejoiner.Mutation;
 import com.google.api.graphql.rejoiner.Query;
@@ -20,6 +20,7 @@ import com.google.api.graphql.rejoiner.RelayNode;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.example.library.book.v1.*;
+import graphql.schema.DataFetchingEnvironment;
 import net.javacrumbs.futureconverter.java8guava.FutureConverter;
 import org.dataloader.DataLoaderRegistry;
 
@@ -28,9 +29,13 @@ final class BookSchemaModule extends SchemaModule {
 
   @Query("getBook")
   @RelayNode
-  ListenableFuture<Book> getBook(GetBookRequest request, DataLoaderRegistry dataLoaderRegistry) {
+  ListenableFuture<Book> getBook(
+      GetBookRequest request, DataFetchingEnvironment dataFetchingEnvironment) {
     return FutureConverter.toListenableFuture(
-        dataLoaderRegistry.<String, Book>getDataLoader("books").load(request.getId()));
+        dataFetchingEnvironment
+            .<DataLoaderRegistry>getContext()
+            .<String, Book>getDataLoader("books")
+            .load(request.getId()));
   }
 
   @Query("listBooks")

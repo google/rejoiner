@@ -59,11 +59,12 @@ final class GraphQlServlet extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
+    DataLoaderRegistry dataLoaderRegistry = registryProvider.get();
     Instrumentation instrumentation =
         new ChainedInstrumentation(
             Arrays.asList(
                 GuavaListenableFutureSupport.listenableFutureInstrumentation(),
-                new DataLoaderDispatcherInstrumentation(registryProvider.get()),
+                new DataLoaderDispatcherInstrumentation(dataLoaderRegistry),
                 new TracingInstrumentation()));
     GraphQL graphql = GraphQL.newGraphQL(schema).instrumentation(instrumentation).build();
 
@@ -81,13 +82,13 @@ final class GraphQlServlet extends HttpServlet {
             .query(query)
             .operationName(operationName)
             .variables(variables)
-            .context(new Object())
+            .context(dataLoaderRegistry)
             .build();
     ExecutionResult executionResult = graphql.execute(executionInput);
     resp.setContentType("application/json");
     resp.setStatus(HttpServletResponse.SC_OK);
     GSON.toJson(executionResult.toSpecification(), resp.getWriter());
-    logger.info("stats: " + registryProvider.get().getStatistics());
+    logger.info("stats: " + dataLoaderRegistry.getStatistics());
   }
 
   private static Map<String, Object> getVariables(Object variables) {
