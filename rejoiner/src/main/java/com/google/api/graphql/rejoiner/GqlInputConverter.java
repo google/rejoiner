@@ -119,7 +119,7 @@ final class GqlInputConverter {
     if (field.getType() == FieldDescriptor.Type.ENUM) {
       EnumDescriptor enumDescriptor =
           enumMapping.get(ProtoToGql.getReferenceName(field.getEnumType()));
-      return enumDescriptor.findValueByNumber((int) value);
+      return enumDescriptor.findValueByName(value.toString());
     }
 
     return value;
