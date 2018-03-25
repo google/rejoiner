@@ -41,7 +41,7 @@
   <groupId>com.google.api.graphql</groupId>
   <artifactId>rejoiner</artifactId>
   <name>Rejoiner</name>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <description>Generating GraphQL schemas from Protobufs.</description>
   <url>https://github.com/google/rejoiner</url>
   <packaging>jar</packaging>
@@ -176,7 +176,7 @@
        <artifactId>protobuf-maven-plugin</artifactId>
        <version>0.5.1</version>
        <configuration>
-         <protocExecutable>/usr/local/sbin/protoc</protocExecutable>
+         <protocExecutable>/usr/local/bin/protoc</protocExecutable>
        </configuration>
        <executions>
          <execution>
