@@ -109,7 +109,17 @@ final class ProtoToGql {
           type = ((GraphQLNonNull) type).getWrappedType();
         }
         if (type instanceof GraphQLList) {
-          return call(source, "get" + LOWER_CAMEL_TO_UPPER.convert(name) + "List");
+
+          Object listValue = call(source, "get" + LOWER_CAMEL_TO_UPPER.convert(name) + "List");
+          if (listValue != null) {
+            return listValue;
+          }
+          Object mapValue = call(source, "get" + LOWER_CAMEL_TO_UPPER.convert(name) + "Map");
+          if (mapValue == null) {
+            return null;
+          }
+          Map<?, ?> map = (Map<?, ?>) mapValue;
+          return map.entrySet().stream().map(entry -> ImmutableMap.of("key", entry.getKey(), "value", entry.getValue())).collect(toImmutableList());
         }
         if (type instanceof GraphQLEnumType) {
           Object o = call(source, "get" + LOWER_CAMEL_TO_UPPER.convert(name));
@@ -133,7 +143,7 @@ final class ProtoToGql {
           throw new RuntimeException(e);
         }
       }
-    };
+    }
 
     @Override
     public GraphQLFieldDefinition apply(FieldDescriptor fieldDescriptor) {
