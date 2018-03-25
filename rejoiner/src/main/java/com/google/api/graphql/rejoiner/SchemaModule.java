@@ -25,6 +25,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Message;
@@ -152,6 +153,10 @@ public abstract class SchemaModule extends AbstractModule {
         .build()
         .forEach(descriptor -> extraTypesMultibinder.addBinding().toInstance(descriptor.getFile()));
     requestInjection(this);
+  }
+
+  void addExtraType(Descriptors.Descriptor descriptor) {
+    referencedDescriptors.add(descriptor);
   }
 
   /**
