@@ -29,19 +29,27 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Message;
-import graphql.schema.*;
+import graphql.schema.DataFetcher;
+import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.DataFetchingEnvironmentBuilder;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
+
+import javax.annotation.Nullable;
+import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import javax.annotation.Nullable;
-import javax.inject.Provider;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Module for registering parts of a {@link graphql.schema.GraphQLSchema}.
- *
- * <p>
  *
  * <p>Any public fields of type {@link GraphQLFieldDefinition} annotated with {@link Query} or
  * {@link Mutation} will be added to the top level query or mutation. Fields of type {@link
@@ -87,15 +95,20 @@ public abstract class SchemaModule extends AbstractModule {
     Multibinder<NodeDataFetcher> relayIdMultibinder =
         Multibinder.newSetBinder(
             binder(), new TypeLiteral<NodeDataFetcher>() {}, Annotations.Queries.class);
+
+    List<GraphQLFieldDefinition> allQueriesInModule = new ArrayList<>();
+    List<GraphQLFieldDefinition> allMutationsInModule = new ArrayList<>();
+    allMutationsInModule.addAll(extraMutations());
+
     try {
       for (Field field : findQueryFields(getClass())) {
         field.setAccessible(true);
-        queryMultibinder.addBinding().toInstance((GraphQLFieldDefinition) field.get(this));
+        allQueriesInModule.add((GraphQLFieldDefinition) field.get(this));
       }
 
       for (Field field : findMutationFields(getClass())) {
         field.setAccessible(true);
-        mutationMultibinder.addBinding().toInstance((GraphQLFieldDefinition) field.get(this));
+        allMutationsInModule.add((GraphQLFieldDefinition) field.get(this));
       }
 
       for (Field field : findTypeModificationFields(getClass())) {
@@ -110,12 +123,53 @@ public abstract class SchemaModule extends AbstractModule {
 
       for (Method method : findMethods(getClass(), Query.class)) {
         String name = method.getAnnotationsByType(Query.class)[0].value();
-        queryMultibinder.addBinding().toInstance(methodToFieldDefinition(method, name, null));
+        allQueriesInModule.add(methodToFieldDefinition(method, name, null));
       }
       for (Method method : findMethods(getClass(), Mutation.class)) {
         String name = method.getAnnotationsByType(Mutation.class)[0].value();
-        mutationMultibinder.addBinding().toInstance(methodToFieldDefinition(method, name, null));
+        allMutationsInModule.add(methodToFieldDefinition(method, name, null));
       }
+
+      Namespace namespaceAnnotation = findClassAnnotation(getClass(), Namespace.class);
+
+      if (namespaceAnnotation == null) {
+        allMutationsInModule.forEach(
+            mutation -> mutationMultibinder.addBinding().toInstance(mutation));
+        allQueriesInModule.forEach(query -> queryMultibinder.addBinding().toInstance(query));
+      } else {
+        String namespace = namespaceAnnotation.value();
+        if (!allQueriesInModule.isEmpty()) {
+          queryMultibinder
+              .addBinding()
+              .toInstance(
+                  GraphQLFieldDefinition.newFieldDefinition()
+                      .staticValue("")
+                      .name(namespace)
+                      .description(namespace)
+                      .type(
+                          GraphQLObjectType.newObject()
+                              .name("__QUERY_FIELD_GROUP__" + namespace)
+                              .fields(allQueriesInModule)
+                              .build())
+                      .build());
+        }
+        if (!allMutationsInModule.isEmpty()) {
+          mutationMultibinder
+              .addBinding()
+              .toInstance(
+                  GraphQLFieldDefinition.newFieldDefinition()
+                      .staticValue("")
+                      .name(namespace)
+                      .description(namespace)
+                      .type(
+                          GraphQLObjectType.newObject()
+                              .name("__MUTATION_FIELD_GROUP__" + namespace)
+                              .fields(allMutationsInModule)
+                              .build())
+                      .build());
+        }
+      }
+
       for (Method method : findMethods(getClass(), RelayNode.class)) {
         GraphQLFieldDefinition graphQLFieldDefinition =
             methodToFieldDefinition(method, "_NOT_USED_", null);
@@ -219,6 +273,23 @@ public abstract class SchemaModule extends AbstractModule {
       clazz = clazz.getSuperclass();
     }
     return nodesBuilder.build();
+  }
+
+  /**
+   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
+   * that have the expected type and annotation.
+   */
+  private static <T extends Annotation> T findClassAnnotation(
+      Class<? extends SchemaModule> moduleClass, Class<T> targetAnnotation) {
+    Class<?> clazz = moduleClass;
+    while (clazz != null && !SchemaModule.class.equals(clazz)) {
+      T annotation = clazz.getAnnotation(targetAnnotation);
+      if (annotation != null) {
+        return annotation;
+      }
+      clazz = clazz.getSuperclass();
+    }
+    return null;
   }
 
   /**

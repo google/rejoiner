@@ -15,6 +15,7 @@
 package com.google.api.graphql.schema.cloud.container;
 
 import com.google.api.graphql.rejoiner.GaxSchemaModule;
+import com.google.api.graphql.rejoiner.Namespace;
 import com.google.api.graphql.rejoiner.Query;
 import com.google.cloud.container.v1.ClusterManagerClient;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -25,6 +26,7 @@ import com.google.container.v1.ListClustersResponse;
 
 import static com.google.api.graphql.schema.FuturesConverter.apiFutureToListenableFuture;
 
+@Namespace("clusterManager")
 public final class ContainerSchemaModule extends GaxSchemaModule {
 
   @Query("listClusters")

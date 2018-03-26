@@ -15,6 +15,7 @@
 package com.google.api.graphql.schema.firestore;
 
 import com.google.api.graphql.rejoiner.GaxSchemaModule;
+import com.google.api.graphql.rejoiner.Namespace;
 import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.cloud.firestore.v1beta1.FirestoreClient;
@@ -36,7 +37,7 @@ import static com.google.api.graphql.schema.FuturesConverter.apiFutureToListenab
  *
  * <p>https://github.com/googleapis/googleapis/blob/master/google/firestore/v1beta1/firestore.proto
  */
-// TODO: @Namespace("Firestore")
+@Namespace("firestore")
 public final class FirestoreSchemaModule extends GaxSchemaModule {
 
   @Query("getDocument")
