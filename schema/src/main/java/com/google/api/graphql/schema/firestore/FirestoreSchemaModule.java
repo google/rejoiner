@@ -16,18 +16,9 @@ package com.google.api.graphql.schema.firestore;
 
 import com.google.api.graphql.rejoiner.GaxSchemaModule;
 import com.google.api.graphql.rejoiner.Namespace;
-import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.cloud.firestore.v1beta1.FirestoreClient;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.firestore.v1beta1.Document;
-import com.google.firestore.v1beta1.GetDocumentRequest;
-import com.google.firestore.v1beta1.ListDocumentsRequest;
-import com.google.firestore.v1beta1.ListDocumentsResponse;
-import graphql.schema.GraphQLFieldDefinition;
-
-import static com.google.api.graphql.schema.FuturesConverter.apiFutureToListenableFuture;
 
 /**
  * A GraphQL {@link SchemaModule} backed by a gRPC service.
@@ -40,23 +31,13 @@ import static com.google.api.graphql.schema.FuturesConverter.apiFutureToListenab
 @Namespace("firestore")
 public final class FirestoreSchemaModule extends GaxSchemaModule {
 
-  @Query("getDocument")
-  ListenableFuture<Document> getDocument(GetDocumentRequest request, FirestoreClient client) {
-//     TODO: consider using a dataloader
-    return apiFutureToListenableFuture(client.getDocumentCallable().futureCall(request));
-  }
-
-  @Query("listDocuments")
-  ListenableFuture<ListDocumentsResponse> listDocuments(
-      ListDocumentsRequest request, FirestoreClient client) {
-    return apiFutureToListenableFuture(client.listDocumentsCallable().futureCall(request));
-  }
-
   @Override
-  protected ImmutableList<GraphQLFieldDefinition> extraMutations() {
-    return serviceToFields(
-        FirestoreClient.class,
-        ImmutableList.of("createDocument", "updateDocument", "deleteDocument"));
+  protected void configureSchema() {
+    addMutationList(
+        serviceToFields(
+            FirestoreClient.class,
+            ImmutableList.of("createDocument", "updateDocument", "deleteDocument")));
+    addQueryList(
+        serviceToFields(FirestoreClient.class, ImmutableList.of("getDocument", "listDocuments")));
   }
-
 }

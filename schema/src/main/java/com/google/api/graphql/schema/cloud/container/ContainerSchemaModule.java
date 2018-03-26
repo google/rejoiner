@@ -16,27 +16,59 @@ package com.google.api.graphql.schema.cloud.container;
 
 import com.google.api.graphql.rejoiner.GaxSchemaModule;
 import com.google.api.graphql.rejoiner.Namespace;
-import com.google.api.graphql.rejoiner.Query;
+import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.cloud.container.v1.ClusterManagerClient;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.container.v1.Cluster;
-import com.google.container.v1.GetClusterRequest;
-import com.google.container.v1.ListClustersRequest;
-import com.google.container.v1.ListClustersResponse;
+import com.google.common.collect.ImmutableList;
 
-import static com.google.api.graphql.schema.FuturesConverter.apiFutureToListenableFuture;
-
+/**
+ * A GraphQL {@link SchemaModule} backed by a gRPC service.
+ *
+ * <p>Calls to this gRPC API is managed by an generated client library, which manages the channel,
+ * authentication, etc.
+ *
+ * <p>https://github.com/googleapis/googleapis/blob/master/google/container/v1/cluster_service.proto
+ */
 @Namespace("clusterManager")
 public final class ContainerSchemaModule extends GaxSchemaModule {
 
-  @Query("listClusters")
-  ListenableFuture<ListClustersResponse> listClusters(
-      ClusterManagerClient client, ListClustersRequest request) {
-    return apiFutureToListenableFuture(client.listClustersCallable().futureCall(request));
-  }
-
-  @Query("getCluster")
-  ListenableFuture<Cluster> getCluster(ClusterManagerClient client, GetClusterRequest request) {
-    return apiFutureToListenableFuture(client.getClusterCallable().futureCall(request));
+  @Override
+  protected void configureSchema() {
+    addQueryList(
+        serviceToFields(
+            ClusterManagerClient.class,
+            ImmutableList.of(
+                "listClusters",
+                "getCluster",
+                "listOperations",
+                "getOperation",
+                "getServerConfig",
+                "listNodePools",
+                "getNodePool")));
+    addMutationList(
+        serviceToFields(
+            ClusterManagerClient.class,
+            ImmutableList.of(
+                "createCluster",
+                "updateCluster",
+                "setNodePoolAutoscaling",
+                "setLoggingService",
+                "setMonitoringService",
+                "setAddonsConfig",
+                "setLocations",
+                "updateMaster",
+                "setMasterAuth",
+                "deleteCluster",
+                "cancelOperation",
+                "createNodePool",
+                "deleteNodePool",
+                "rollbackNodePoolUpgrade",
+                "setNodePoolManagement",
+                "setLabels",
+                "setLabels",
+                "startIPRotation",
+                "completeIPRotation",
+                "setNodePoolSize",
+                "setNetworkPolicy",
+                "setMaintenancePolicy")));
   }
 }

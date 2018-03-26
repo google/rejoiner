@@ -61,6 +61,8 @@ import java.util.List;
 public abstract class SchemaModule extends AbstractModule {
 
   private final ImmutableSet.Builder<Descriptor> referencedDescriptors = ImmutableSet.builder();
+  private final List<GraphQLFieldDefinition> allQueriesInModule = new ArrayList<>();
+  private final List<GraphQLFieldDefinition> allMutationsInModule = new ArrayList<>();
 
   /**
    * Returns a reference to the GraphQL type corresponding to the supplied proto.
@@ -76,28 +78,40 @@ public abstract class SchemaModule extends AbstractModule {
     return ImmutableList.of();
   }
 
+  protected void addQuery(GraphQLFieldDefinition query) {
+    allQueriesInModule.add(query);
+  }
+  protected void addMutation(GraphQLFieldDefinition mutation) {
+    allMutationsInModule.add(mutation);
+  }
+  protected void addQueryList(List<GraphQLFieldDefinition> queries) {
+    allQueriesInModule.addAll(queries);
+  }
+  protected void addMutationList(List<GraphQLFieldDefinition> mutations) {
+    allMutationsInModule.addAll(mutations);
+  }
+
+  protected void configureSchema() {}
+
   @Override
   protected final void configure() {
+    configureSchema();
     Multibinder<GraphQLFieldDefinition> queryMultibinder =
         Multibinder.newSetBinder(
             binder(), new TypeLiteral<GraphQLFieldDefinition>() {}, Annotations.Queries.class);
     Multibinder<GraphQLFieldDefinition> mutationMultibinder =
         Multibinder.newSetBinder(
             binder(), new TypeLiteral<GraphQLFieldDefinition>() {}, Annotations.Mutations.class);
-    extraMutations().forEach(mutation -> mutationMultibinder.addBinding().toInstance(mutation));
     Multibinder<TypeModification> typeModificationMultibinder =
         Multibinder.newSetBinder(
             binder(), new TypeLiteral<TypeModification>() {}, Annotations.GraphModifications.class);
     Multibinder<FileDescriptor> extraTypesMultibinder =
         Multibinder.newSetBinder(
             binder(), new TypeLiteral<FileDescriptor>() {}, Annotations.ExtraTypes.class);
-
     Multibinder<NodeDataFetcher> relayIdMultibinder =
         Multibinder.newSetBinder(
             binder(), new TypeLiteral<NodeDataFetcher>() {}, Annotations.Queries.class);
 
-    List<GraphQLFieldDefinition> allQueriesInModule = new ArrayList<>();
-    List<GraphQLFieldDefinition> allMutationsInModule = new ArrayList<>();
     allMutationsInModule.addAll(extraMutations());
 
     try {
