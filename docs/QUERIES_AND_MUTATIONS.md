@@ -38,6 +38,23 @@ final class TodoMutationSchemaModule extends SchemaModule {
 }
 ```
 
+## Nesting Queries and Mutations in a Namespace
+
+Namespaces allow queries and mutations to be nested in logical groups. They
+can help organize a large number of RPCs and can be useful for avoiding RPC name
+collisions.
+
+```java
+@Namespace("todo")
+final class TodoMutationSchemaModule extends SchemaModule {
+  @Mutation("createTodo")
+  ListenableFuture<Todo> createTodo(
+      CreateTodoRequest request, TodoService todoService, @AuthenticatedUser String email) {
+    return todoService.createTodo(request, email);
+  }
+}
+```
+
 ## Supported return types
 
 All generated proto messages extend `Message`.
