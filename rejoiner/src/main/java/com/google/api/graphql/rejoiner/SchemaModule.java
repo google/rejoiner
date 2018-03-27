@@ -29,6 +29,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Message;
+import graphql.Scalars;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingEnvironmentBuilder;
@@ -37,6 +38,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLScalarType;
 
 import javax.annotation.Nullable;
 import javax.inject.Provider;
@@ -81,12 +83,15 @@ public abstract class SchemaModule extends AbstractModule {
   protected void addQuery(GraphQLFieldDefinition query) {
     allQueriesInModule.add(query);
   }
+
   protected void addMutation(GraphQLFieldDefinition mutation) {
     allMutationsInModule.add(mutation);
   }
+
   protected void addQueryList(List<GraphQLFieldDefinition> queries) {
     allQueriesInModule.addAll(queries);
   }
+
   protected void addMutationList(List<GraphQLFieldDefinition> mutations) {
     allMutationsInModule.addAll(mutations);
   }
@@ -411,22 +416,39 @@ public abstract class SchemaModule extends AbstractModule {
     }
   }
 
+  ImmutableMap<java.lang.reflect.Type, GraphQLScalarType> javaTypeToScalarMap =
+      ImmutableMap.of(
+          String.class, Scalars.GraphQLString,
+          Integer.class, Scalars.GraphQLInt,
+          Boolean.class, Scalars.GraphQLBoolean,
+          Long.class, Scalars.GraphQLLong,
+          Float.class, Scalars.GraphQLFloat);
+
   private GraphQLOutputType getReturnType(Method method)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-    // Currently it's assumed the response is of type Message or ListenableFuture<? extends
-    // Message>.
+    // Currently it's assumed the response is of type Message, ListenableFuture<? extends
+    // Message>, ImmutableList<Message>, ListenableFuture<ImmutableList<? extend Message>>, oe
+    // any Scalar type.
 
-    // Assume Message
+    // Assume Message or Scalar
     if (!(method.getGenericReturnType() instanceof ParameterizedType)) {
-      @SuppressWarnings("unchecked")
-      Class<? extends Message> responseClass = (Class<? extends Message>) method.getReturnType();
-      Descriptor responseDescriptor =
-          (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
-      referencedDescriptors.add(responseDescriptor);
-      return ProtoToGql.getReference(responseDescriptor);
+      java.lang.reflect.Type returnType = method.getReturnType();
+      if (returnType instanceof Message) {
+        @SuppressWarnings("unchecked")
+        Class<? extends Message> responseClass = (Class<? extends Message>) method.getReturnType();
+        Descriptor responseDescriptor =
+            (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
+        referencedDescriptors.add(responseDescriptor);
+        return ProtoToGql.getReference(responseDescriptor);
+      }
+      if (javaTypeToScalarMap.containsKey(returnType)) {
+        return javaTypeToScalarMap.get(returnType);
+      }
+      throw new RuntimeException("Unknown scalar type: " + returnType.getTypeName());
     }
 
     ParameterizedType genericReturnType = (ParameterizedType) method.getGenericReturnType();
+    // TODO: handle collections of Java Scalars
 
     // Assume ListenableFuture<ImmutableList<? extends Message>>
     java.lang.reflect.Type genericTypeValue = genericReturnType.getActualTypeArguments()[0];
@@ -483,6 +505,7 @@ public abstract class SchemaModule extends AbstractModule {
         } else {
           GqlInputConverter inputConverter =
               GqlInputConverter.newBuilder().add(requestDescriptor.getFile()).build();
+          addExtraType(requestDescriptor);
           Message message =
               ((Message.Builder) requestClass.getMethod("newBuilder").invoke(null)).build();
           String argName = getArgName(method.getParameterAnnotations()[i]);
@@ -496,6 +519,21 @@ public abstract class SchemaModule extends AbstractModule {
           GraphQLArgument argument = GqlInputConverter.createArgument(requestDescriptor, argName);
           listBuilder.add(MethodMetadata.create(function, argument));
         }
+      } else if (isArg(method.getParameterAnnotations()[i])) {
+        if (javaTypeToScalarMap.containsKey(parameterType)) {
+          String argName = getArgName(method.getParameterAnnotations()[i]);
+          Function<DataFetchingEnvironment, ?> function =
+              environment -> environment.getArgument(argName);
+          GraphQLArgument argument =
+              GraphQLArgument.newArgument()
+                  .name(argName)
+                  .type(javaTypeToScalarMap.get(parameterType))
+                  .build();
+          listBuilder.add(MethodMetadata.create(function, argument));
+        } else {
+          throw new RuntimeException("Unknown arg type: " + parameterType.getName());
+        }
+
       } else if (DataFetchingEnvironment.class.isAssignableFrom(parameterType)) {
         listBuilder.add(MethodMetadata.create(Functions.identity()));
       } else {
@@ -516,6 +554,15 @@ public abstract class SchemaModule extends AbstractModule {
       }
     }
     return listBuilder.build();
+  }
+
+  private static boolean isArg(Annotation[] annotations) {
+    for (Annotation annotation : annotations) {
+      if (annotation.annotationType().isAssignableFrom(Arg.class)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static String getArgName(Annotation[] annotations) {
