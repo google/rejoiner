@@ -22,9 +22,10 @@ This is useful for providing rpc services or database access objects for
 fetching data. Authentication data can also be provided here.
 
 Common implementations for these annotated methods:
- - Make gRPC calls to microservices which can be implemented in any language
- - Load protobuf messages directly from storage
- - Perform arbitrary logic to produce the result
+
+* Make gRPC calls to microservices which can be implemented in any language
+* Load protobuf messages directly from storage
+* Perform arbitrary logic to produce the result
 
 ## GraphQL Mutation
 
@@ -58,7 +59,9 @@ final class TodoMutationSchemaModule extends SchemaModule {
 ## Supported return types
 
 All generated proto messages extend `Message`.
- - Any subclass of `Message`
- - `ImmutableList<? extends Message>`
- - `ListenableFuture<? extends Message>`
- - `ListenableFuture<ImmutableList<? extends Message>>`
+
+* Any subclass of `Message`
+* Java types, including: `String`, `Boolean`, `Integer`, `Long`, ...
+* `ImmutableList<? extends Message>`
+* `ListenableFuture<? extends Message>`
+* `ListenableFuture<ImmutableList<? extends Message>>`
