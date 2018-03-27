@@ -29,6 +29,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Message;
+import graphql.Scalars;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingEnvironmentBuilder;
@@ -81,12 +82,15 @@ public abstract class SchemaModule extends AbstractModule {
   protected void addQuery(GraphQLFieldDefinition query) {
     allQueriesInModule.add(query);
   }
+
   protected void addMutation(GraphQLFieldDefinition mutation) {
     allMutationsInModule.add(mutation);
   }
+
   protected void addQueryList(List<GraphQLFieldDefinition> queries) {
     allQueriesInModule.addAll(queries);
   }
+
   protected void addMutationList(List<GraphQLFieldDefinition> mutations) {
     allMutationsInModule.addAll(mutations);
   }
@@ -411,22 +415,39 @@ public abstract class SchemaModule extends AbstractModule {
     }
   }
 
+  ImmutableMap<java.lang.reflect.Type, GraphQLOutputType> javaTypeToScalarMap =
+      ImmutableMap.of(
+          String.class, Scalars.GraphQLString,
+          Integer.class, Scalars.GraphQLInt,
+          Boolean.class, Scalars.GraphQLBoolean,
+          Long.class, Scalars.GraphQLLong,
+          Float.class, Scalars.GraphQLFloat);
+
   private GraphQLOutputType getReturnType(Method method)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-    // Currently it's assumed the response is of type Message or ListenableFuture<? extends
-    // Message>.
+    // Currently it's assumed the response is of type Message, ListenableFuture<? extends
+    // Message>, ImmutableList<Message>, ListenableFuture<ImmutableList<? extend Message>>, oe
+    // any Scalar type.
 
-    // Assume Message
+    // Assume Message or Scalar
     if (!(method.getGenericReturnType() instanceof ParameterizedType)) {
-      @SuppressWarnings("unchecked")
-      Class<? extends Message> responseClass = (Class<? extends Message>) method.getReturnType();
-      Descriptor responseDescriptor =
-          (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
-      referencedDescriptors.add(responseDescriptor);
-      return ProtoToGql.getReference(responseDescriptor);
+      java.lang.reflect.Type returnType = method.getReturnType();
+      if (returnType instanceof Message) {
+        @SuppressWarnings("unchecked")
+        Class<? extends Message> responseClass = (Class<? extends Message>) method.getReturnType();
+        Descriptor responseDescriptor =
+            (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
+        referencedDescriptors.add(responseDescriptor);
+        return ProtoToGql.getReference(responseDescriptor);
+      }
+      if (javaTypeToScalarMap.containsKey(returnType)) {
+        return javaTypeToScalarMap.get(returnType);
+      }
+      throw new RuntimeException("Unknown scalar type: " + returnType.getTypeName());
     }
 
     ParameterizedType genericReturnType = (ParameterizedType) method.getGenericReturnType();
+    // TODO: handle collections of Java Scalars
 
     // Assume ListenableFuture<ImmutableList<? extends Message>>
     java.lang.reflect.Type genericTypeValue = genericReturnType.getActualTypeArguments()[0];

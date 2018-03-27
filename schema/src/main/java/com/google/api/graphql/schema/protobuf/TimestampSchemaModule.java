@@ -14,27 +14,28 @@
 
 package com.google.api.graphql.schema.protobuf;
 
+import com.google.api.graphql.rejoiner.Arg;
 import com.google.api.graphql.rejoiner.SchemaModification;
 import com.google.api.graphql.rejoiner.SchemaModule;
-import com.google.api.graphql.rejoiner.Type;
-import com.google.api.graphql.rejoiner.TypeModification;
 import com.google.protobuf.Timestamp;
-import graphql.Scalars;
-import graphql.schema.GraphQLFieldDefinition;
 
 import java.time.Instant;
+import java.time.ZoneId;
 
 public final class TimestampSchemaModule extends SchemaModule {
 
-  @SchemaModification
-  TypeModification isoString =
-      Type.find(Timestamp.getDescriptor())
-          .addField(
-              GraphQLFieldDefinition.newFieldDefinition()
-                  .name("iso")
-                  .type(Scalars.GraphQLString)
-                  .dataFetcher(
-                      env ->
-                          Instant.ofEpochSecond(env.<Timestamp>getSource().getSeconds()).toString())
-                  .build());
+  @SchemaModification(addField = "iso", onType = Timestamp.class)
+  String isoString(Timestamp timestamp) {
+    return Instant.ofEpochSecond(timestamp.getSeconds()).toString();
+  }
+
+  @SchemaModification(addField = "afterNow", onType = Timestamp.class)
+  Boolean isAfterNow(Timestamp timestamp) {
+    return Instant.ofEpochSecond(timestamp.getSeconds()).isAfter(Instant.now());
+  }
+
+  @SchemaModification(addField = "afterNow", onType = Timestamp.class)
+  String localTime(Timestamp timestamp, @Arg("timezone") String timezone) {
+    return Instant.ofEpochSecond(timestamp.getSeconds()).atZone(ZoneId.of(timezone)).toString();
+  }
 }
