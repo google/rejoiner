@@ -38,6 +38,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLScalarType;
 
 import javax.annotation.Nullable;
 import javax.inject.Provider;
@@ -415,7 +416,7 @@ public abstract class SchemaModule extends AbstractModule {
     }
   }
 
-  ImmutableMap<java.lang.reflect.Type, GraphQLOutputType> javaTypeToScalarMap =
+  ImmutableMap<java.lang.reflect.Type, GraphQLScalarType> javaTypeToScalarMap =
       ImmutableMap.of(
           String.class, Scalars.GraphQLString,
           Integer.class, Scalars.GraphQLInt,
@@ -504,6 +505,7 @@ public abstract class SchemaModule extends AbstractModule {
         } else {
           GqlInputConverter inputConverter =
               GqlInputConverter.newBuilder().add(requestDescriptor.getFile()).build();
+          addExtraType(requestDescriptor);
           Message message =
               ((Message.Builder) requestClass.getMethod("newBuilder").invoke(null)).build();
           String argName = getArgName(method.getParameterAnnotations()[i]);
@@ -517,6 +519,21 @@ public abstract class SchemaModule extends AbstractModule {
           GraphQLArgument argument = GqlInputConverter.createArgument(requestDescriptor, argName);
           listBuilder.add(MethodMetadata.create(function, argument));
         }
+      } else if (isArg(method.getParameterAnnotations()[i])) {
+        if (javaTypeToScalarMap.containsKey(parameterType)) {
+          String argName = getArgName(method.getParameterAnnotations()[i]);
+          Function<DataFetchingEnvironment, ?> function =
+              environment -> environment.getArgument(argName);
+          GraphQLArgument argument =
+              GraphQLArgument.newArgument()
+                  .name(argName)
+                  .type(javaTypeToScalarMap.get(parameterType))
+                  .build();
+          listBuilder.add(MethodMetadata.create(function, argument));
+        } else {
+          throw new RuntimeException("Unknown arg type: " + parameterType.getName());
+        }
+
       } else if (DataFetchingEnvironment.class.isAssignableFrom(parameterType)) {
         listBuilder.add(MethodMetadata.create(Functions.identity()));
       } else {
@@ -537,6 +554,15 @@ public abstract class SchemaModule extends AbstractModule {
       }
     }
     return listBuilder.build();
+  }
+
+  private static boolean isArg(Annotation[] annotations) {
+    for (Annotation annotation : annotations) {
+      if (annotation.annotationType().isAssignableFrom(Arg.class)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static String getArgName(Annotation[] annotations) {

@@ -34,8 +34,9 @@ public final class TimestampSchemaModule extends SchemaModule {
     return Instant.ofEpochSecond(timestamp.getSeconds()).isAfter(Instant.now());
   }
 
-  @SchemaModification(addField = "afterNow", onType = Timestamp.class)
+  @SchemaModification(addField = "localTime", onType = Timestamp.class)
   String localTime(Timestamp timestamp, @Arg("timezone") String timezone) {
+    // TODO: Arg should be required, optional should be optional
     return Instant.ofEpochSecond(timestamp.getSeconds()).atZone(ZoneId.of(timezone)).toString();
   }
 }
