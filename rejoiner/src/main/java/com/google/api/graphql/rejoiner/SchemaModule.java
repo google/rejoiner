@@ -432,8 +432,8 @@ public abstract class SchemaModule extends AbstractModule {
 
     // Assume Message or Scalar
     if (!(method.getGenericReturnType() instanceof ParameterizedType)) {
-      java.lang.reflect.Type returnType = method.getReturnType();
-      if (returnType instanceof Message) {
+      Class<?> returnType = method.getReturnType();
+      if (Message.class.isAssignableFrom(returnType)) {
         @SuppressWarnings("unchecked")
         Class<? extends Message> responseClass = (Class<? extends Message>) method.getReturnType();
         Descriptor responseDescriptor =
