@@ -33,7 +33,7 @@ dependencies {
   compile "io.grpc:grpc-netty:${grpcVersion}"
   compile "io.grpc:grpc-protobuf:${grpcVersion}"
   compile "io.grpc:grpc-stub:${grpcVersion}"
-  compile "com.google.api.graphql:rejoiner:0.0.1-SNAPSHOT"
+  compile "com.google.api.graphql:rejoiner:0.0.2-SNAPSHOT"
   compile "com.google.api.graphql:execution:0.0.1-SNAPSHOT"
   compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.3.8.v20160314'
   compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.2'
