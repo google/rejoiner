@@ -18,6 +18,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 
 import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import graphql.relay.Relay;
 import graphql.schema.GraphQLFieldDefinition;
@@ -101,6 +102,9 @@ public final class SchemaProviderModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(GraphQLSchema.class).annotatedWith(Schema.class).toProvider(SchemaImpl.class);
+    bind(GraphQLSchema.class)
+      .annotatedWith(Schema.class)
+      .toProvider(SchemaImpl.class)
+      .in(Singleton.class);
   }
 }
