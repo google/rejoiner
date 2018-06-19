@@ -78,11 +78,6 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>23.5-jre</version>
-    </dependency>
-    <dependency>
-      <groupId>net.javacrumbs.future-converter</groupId>
-      <artifactId>future-converter-java8-guava</artifactId>
-      <version>1.1.0</version>
-    </dependency>
+    </dependency>  
   </dependencies>
 </project>
