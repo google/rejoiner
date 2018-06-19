@@ -14,12 +14,17 @@
 
 package com.google.api.graphql.execution;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.execution.instrumentation.NoOpInstrumentation;
 import graphql.execution.instrumentation.parameters.InstrumentationFieldFetchParameters;
 import graphql.schema.DataFetcher;
-import net.javacrumbs.futureconverter.java8guava.FutureConverter;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+
 
 public final class GuavaListenableFutureSupport {
   private GuavaListenableFutureSupport() {}
@@ -41,7 +46,20 @@ public final class GuavaListenableFutureSupport {
             dataFetchingEnvironment -> {
               Object data = dataFetcher.get(dataFetchingEnvironment);
               if (data instanceof ListenableFuture) {
-                return FutureConverter.<Object>toCompletableFuture((ListenableFuture<Object>) data);
+                ListenableFuture<Object> listenableFuture = (ListenableFuture<Object>) data;
+                CompletableFuture<Object> completableFuture= new CompletableFuture<>();
+                Futures.addCallback(listenableFuture, new FutureCallback<Object>() {
+                  @Override
+                  public void onSuccess(Object result) {
+                    completableFuture.complete(result);
+                  }
+
+                  @Override
+                  public void onFailure(Throwable t) {
+                    completableFuture.completeExceptionally(t);
+                  }
+                }, MoreExecutors.directExecutor());
+                return completableFuture;
               }
               return data;
             };
