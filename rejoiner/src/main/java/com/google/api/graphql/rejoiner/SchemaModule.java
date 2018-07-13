@@ -167,7 +167,7 @@ public abstract class SchemaModule extends AbstractModule {
                       .description(namespace)
                       .type(
                           GraphQLObjectType.newObject()
-                              .name("__QUERY_FIELD_GROUP__" + namespace)
+                              .name("_QUERY_FIELD_GROUP_" + namespace)
                               .fields(allQueriesInModule)
                               .build())
                       .build());
@@ -182,7 +182,7 @@ public abstract class SchemaModule extends AbstractModule {
                       .description(namespace)
                       .type(
                           GraphQLObjectType.newObject()
-                              .name("__MUTATION_FIELD_GROUP__" + namespace)
+                              .name("_MUTATION_FIELD_GROUP_" + namespace)
                               .fields(allMutationsInModule)
                               .build())
                       .build());
