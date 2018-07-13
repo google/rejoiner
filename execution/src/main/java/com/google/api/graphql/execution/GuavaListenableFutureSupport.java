@@ -19,13 +19,12 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import graphql.execution.instrumentation.Instrumentation;
-import graphql.execution.instrumentation.NoOpInstrumentation;
+import graphql.execution.instrumentation.SimpleInstrumentation;
 import graphql.execution.instrumentation.parameters.InstrumentationFieldFetchParameters;
 import graphql.schema.DataFetcher;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 
-
+/** Adds support for ListenableFuture return values. */
 public final class GuavaListenableFutureSupport {
   private GuavaListenableFutureSupport() {}
 
@@ -38,7 +37,7 @@ public final class GuavaListenableFutureSupport {
    * <p>Note: This should be installed before any other instrumentation.
    */
   public static Instrumentation listenableFutureInstrumentation() {
-    return new NoOpInstrumentation() {
+    return new SimpleInstrumentation() {
       @Override
       public DataFetcher<?> instrumentDataFetcher(
           DataFetcher<?> dataFetcher, InstrumentationFieldFetchParameters parameters) {
@@ -47,18 +46,21 @@ public final class GuavaListenableFutureSupport {
               Object data = dataFetcher.get(dataFetchingEnvironment);
               if (data instanceof ListenableFuture) {
                 ListenableFuture<Object> listenableFuture = (ListenableFuture<Object>) data;
-                CompletableFuture<Object> completableFuture= new CompletableFuture<>();
-                Futures.addCallback(listenableFuture, new FutureCallback<Object>() {
-                  @Override
-                  public void onSuccess(Object result) {
-                    completableFuture.complete(result);
-                  }
+                CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+                Futures.addCallback(
+                    listenableFuture,
+                    new FutureCallback<Object>() {
+                      @Override
+                      public void onSuccess(Object result) {
+                        completableFuture.complete(result);
+                      }
 
-                  @Override
-                  public void onFailure(Throwable t) {
-                    completableFuture.completeExceptionally(t);
-                  }
-                }, MoreExecutors.directExecutor());
+                      @Override
+                      public void onFailure(Throwable t) {
+                        completableFuture.completeExceptionally(t);
+                      }
+                    },
+                    MoreExecutors.directExecutor());
                 return completableFuture;
               }
               return data;
