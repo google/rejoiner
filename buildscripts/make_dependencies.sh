@@ -46,6 +46,8 @@ if [[ -L /tmp/protobuf ]]; then
 fi
 ln -s "$INSTALL_DIR" /tmp/protobuf
 
+ln -s ${INSTALL_DIR}/bin/protoc /usr/local/bin/protoc
+
 cat <<EOF
 To compile with the build dependencies:
 export LDFLAGS=-L/tmp/protobuf/lib
