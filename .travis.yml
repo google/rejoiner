@@ -13,6 +13,9 @@ before_install:
 install:
   - pushd rejoiner && mvn verify && popd
 
+script:
+  - pushd rejoiner && mvn test && popd
+
 os:
   - linux
 
