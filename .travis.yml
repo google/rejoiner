@@ -7,8 +7,11 @@ env:
     - GRADLE_OPTS=-Xmx512m
 
 before_install:
-  - sed -i 's#/usr/local/bin/protoc#/tmp/protobuf/bin/protoc#g' pom.xml
-  - buildscripts/make_dependencies.sh # build protoc into /tmp/protobuf
+  - sed -i 's#/usr/local/bin/protoc#/tmp/protobuf/bin/protoc#g' rejoiner/pom.xml
+  - travis_before_install.sh # build protoc into /tmp/protobuf
+
+install:
+  - pushd rejoiner && mvn verify && popd
 
 os:
   - linux
