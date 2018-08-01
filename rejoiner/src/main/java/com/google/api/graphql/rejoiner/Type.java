@@ -18,6 +18,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Descriptors.GenericDescriptor;
+import graphql.AssertException;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 
@@ -119,6 +120,10 @@ public final class Type {
 
     @Override
     public GraphQLObjectType apply(GraphQLObjectType input) {
+      if (input.getFieldDefinition(field.getName()) != null) {
+        throw new AssertException(
+            String.format("Field already added with name %s", field.getName()));
+      }
       return toBuilder(input).field(field).build();
     }
   }

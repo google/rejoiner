@@ -1,0 +1,31 @@
+sudo: true
+
+language: java
+
+env:
+  global:
+    - GRADLE_OPTS=-Xmx512m
+
+before_install:
+  - sed -i 's#/usr/local/bin/protoc#/tmp/protobuf/bin/protoc#g' rejoiner/pom.xml
+  - ./travis_before_install.sh # build protoc into /tmp/protobuf
+
+install:
+  - pushd rejoiner && mvn verify && popd
+
+script:
+  - pushd rejoiner && mvn test && popd
+
+os:
+  - linux
+
+notifications:
+  email: false
+
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/

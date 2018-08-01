@@ -32,6 +32,9 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import graphql.Scalars;
+import graphql.execution.ExecutionContext;
+import graphql.execution.ExecutionContextBuilder;
+import graphql.execution.ExecutionId;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingEnvironmentBuilder;
 import graphql.schema.GraphQLFieldDefinition;
@@ -149,6 +152,7 @@ public final class SchemaModuleTest {
             .getDataFetcher()
             .get(
                 DataFetchingEnvironmentBuilder.newDataFetchingEnvironment()
+                    .executionContext(ExecutionContextBuilder.newExecutionContextBuilder().executionId(ExecutionId.from("1")).build())
                     .arguments(ImmutableMap.of("input", ImmutableMap.of("id", "123")))
                     .build());
 
