@@ -7,6 +7,7 @@ env:
     - GRADLE_OPTS=-Xmx512m
 
 before_install:
+  - sed -i 's#/usr/local/bin/protoc#/tmp/protobuf/bin/protoc#g' pom.xml
   - buildscripts/make_dependencies.sh # build protoc into /tmp/protobuf
 
 os:

@@ -176,7 +176,7 @@
        <artifactId>protobuf-maven-plugin</artifactId>
        <version>0.5.1</version>
        <configuration>
-         <protocExecutable>/tmp/protobuf/bin/protoc</protocExecutable>
+         <protocExecutable>/usr/local/bin/protoc</protocExecutable>
        </configuration>
        <executions>
          <execution>
