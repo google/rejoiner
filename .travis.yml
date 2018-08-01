@@ -6,6 +6,9 @@ env:
   global:
     - GRADLE_OPTS=-Xmx512m
 
+before_install:
+  - buildscripts/make_dependencies.sh # build protoc into /tmp/protobuf
+
 os:
   - linux
 
