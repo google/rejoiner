@@ -17,6 +17,7 @@ package com.google.api.graphql.grpc;
 import com.google.api.graphql.rejoiner.TestProto;
 import com.google.api.graphql.rejoiner.TestProto.Proto1;
 import com.google.api.graphql.rejoiner.TestProto.Proto2;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.truth.extensions.proto.ProtoTruth;
 import org.junit.Test;
@@ -35,15 +36,18 @@ public final class QueryResponseToProtoTest {
                 ImmutableMap.of(
                     "id",
                     "abc",
-                    "int_field",
+                    "intField",
                     123,
-                    "test_proto",
-                    ImmutableMap.of("inner_id", "abc_inner"))))
+                    "testProto",
+                    ImmutableMap.of("innerId", "abc_inner", "enums", ImmutableList.of("FOO")))))
         .isEqualTo(
             Proto1.newBuilder()
                 .setId("abc")
                 .setIntField(123)
-                .setTestProto(Proto2.newBuilder().setInnerId("abc_inner"))
+                .setTestProto(
+                    Proto2.newBuilder()
+                        .setInnerId("abc_inner")
+                        .addEnumsValue(Proto2.TestEnum.FOO_VALUE))
                 .build());
   }
 }

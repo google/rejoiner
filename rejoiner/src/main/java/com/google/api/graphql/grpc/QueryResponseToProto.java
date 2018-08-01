@@ -14,6 +14,8 @@
 
 package com.google.api.graphql.grpc;
 
+import com.google.common.base.CaseFormat;
+import com.google.common.base.Converter;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
@@ -73,6 +75,9 @@ public final class QueryResponseToProto {
   }
 
   private static FieldDescriptor getField(Descriptor descriptor, String name) {
-    return descriptor.findFieldByName(name);
+    return descriptor.findFieldByName(CAMEL_TO_UNDERSCORE.convert(name));
   }
+
+  private static final Converter<String, String> CAMEL_TO_UNDERSCORE =
+      CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.LOWER_UNDERSCORE);
 }
