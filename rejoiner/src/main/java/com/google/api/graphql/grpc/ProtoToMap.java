@@ -25,7 +25,7 @@ import java.util.Map;
 public final class ProtoToMap {
 
   public static Map<String, Object> messageToMap(Message message) {
-    ImmutableMap.Builder<String, Object> variablesBuilder = new ImmutableMap.Builder();
+    ImmutableMap.Builder<String, Object> variablesBuilder = new ImmutableMap.Builder<>();
     message
         .getAllFields()
         .forEach((field, value) -> variablesBuilder.put(field.getName(), mapValues(field, value)));
