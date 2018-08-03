@@ -17,7 +17,7 @@ script:
   - pushd rejoiner && mvn test && popd
 
 after_success:
-  - mvn clean test jacoco:report coveralls:report
+  - pushd rejoiner && mvn clean test jacoco:report coveralls:report && popd
 
 os:
   - linux
