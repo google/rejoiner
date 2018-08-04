@@ -36,8 +36,6 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <grpc.version>1.7.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
-    <junit.jupiter.version>5.2.0</junit.jupiter.version>
-    <junit.platform.version>1.2.0</junit.platform.version>
   </properties>
 
   <groupId>com.google.api.graphql</groupId>
@@ -139,11 +137,10 @@
       <artifactId>proto-google-common-protos</artifactId>
       <version>0.1.9</version>
     </dependency>
-
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter.version}</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -219,11 +216,30 @@
       <groupId>org.jacoco</groupId>
       <artifactId>jacoco-maven-plugin</artifactId>
       <version>0.7.6.201602180812</version>
+      <configuration>
+        <excludes>
+          <exclude>**/*AutoValue_*</exclude>
+        </excludes>
+      </configuration>
       <executions>
         <execution>
           <id>prepare-agent</id>
           <goals>
             <goal>prepare-agent</goal>
+          </goals>
+        </execution>
+        <execution>
+          <id>report</id>
+          <phase>prepare-package</phase>
+          <goals>
+            <goal>report</goal>
+          </goals>
+        </execution>
+        <execution>
+          <id>post-unit-test</id>
+          <phase>test</phase>
+          <goals>
+            <goal>report</goal>
           </goals>
         </execution>
       </executions>
@@ -232,17 +248,6 @@
       <groupId>org.eluder.coveralls</groupId>
       <artifactId>coveralls-maven-plugin</artifactId>
       <version>4.3.0</version>
-    </plugin>
-    <plugin>
-      <artifactId>maven-surefire-plugin</artifactId>
-      <version>2.21.0</version>
-      <dependencies>
-        <dependency>
-          <groupId>org.junit.platform</groupId>
-          <artifactId>junit-platform-surefire-provider</artifactId>
-          <version>${junit.platform.version}</version>
-        </dependency>
-      </dependencies>
     </plugin>
   </plugins>
 </build>

@@ -15,7 +15,6 @@
 package com.google.api.graphql.rejoiner;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.api.graphql.rejoiner.Annotations.ExtraTypes;
 import com.google.api.graphql.rejoiner.Annotations.GraphModifications;
@@ -34,7 +33,6 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import graphql.Scalars;
-import graphql.execution.ExecutionContext;
 import graphql.execution.ExecutionContextBuilder;
 import graphql.execution.ExecutionId;
 import graphql.schema.DataFetchingEnvironment;
@@ -45,7 +43,6 @@ import graphql.schema.GraphQLFieldDefinition;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -126,7 +123,7 @@ public final class SchemaModuleTest {
             });
     assertThat(injector.getInstance(QUERY_KEY)).hasSize(2);
     assertThat(injector.getInstance(MUTATION_KEY)).hasSize(2);
-    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).isEmpty();
+    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).hasSize(1);
     assertThat(injector.getInstance(MODIFICATION_KEY)).isEmpty();
   }
 
@@ -164,7 +161,7 @@ public final class SchemaModuleTest {
     Injector injector = Guice.createInjector(new NamespacedSchemaModule());
     assertThat(injector.getInstance(QUERY_KEY)).hasSize(1);
     assertThat(injector.getInstance(MUTATION_KEY)).hasSize(1);
-    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).isEmpty();
+    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).hasSize(1);
     assertThat(injector.getInstance(MODIFICATION_KEY)).isEmpty();
   }
 
@@ -274,14 +271,11 @@ public final class SchemaModuleTest {
         .isEqualTo(GreetingsResponse.newBuilder().setId("123").build());
   }
 
-  @Test
+  @Test(expected = CreationException.class)
   public void schemaModuleShouldFailIfWrongTypeIsAnnotated() {
-    assertThrows(
-        CreationException.class,
-        () ->
-            Guice.createInjector(
-                new SchemaModule() {
-                  @Query String greeting = "hi";
-                }));
+    Guice.createInjector(
+        new SchemaModule() {
+          @Query String greeting = "hi";
+        });
   }
 }
