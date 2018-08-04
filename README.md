@@ -1,6 +1,7 @@
 # Rejoiner
 
 [![Build Status](https://travis-ci.org/google/rejoiner.svg?branch=master)](https://travis-ci.org/google/rejoiner)
+[![Coverage Status](https://coveralls.io/repos/github/google/rejoiner/badge.svg)](https://coveralls.io/github/google/rejoiner)
 
  - Creates a uniform GraphQL schema from microservices
  - Allows the GraphQL schema to be flexibly defined and composed as shared components
