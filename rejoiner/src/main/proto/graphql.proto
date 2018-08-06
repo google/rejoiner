@@ -1,0 +1,48 @@
+
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.google.api.graphql";
+option java_outer_classname = "GraphqlProto";
+
+// GraphQL Error
+message GraphqlError {
+  // Description of the error intended for the developer.
+  string message = 1;
+  // The source location for the error.
+  repeated SourceLocation locations = 2;
+  // The type of error.
+  ErrorType type = 3;
+}
+// The source location of an error.
+message SourceLocation {
+  // The line the error occurred at.
+  int32 line = 1;
+  // The column the error occurred at.
+  int32 column = 2;
+}
+// The type of error.
+enum ErrorType {
+  // The error type is unknown or unset.
+  UNKNOWN = 0;
+  // The query has a syntax error.
+  INVALID_SYNTAX = 1;
+  // The query does not match the schema.
+  VALIDATION_ERROR = 2;
+  // There was en error executing the query.
+  DATA_FETCHING_EXCEPTION = 3;
+}
