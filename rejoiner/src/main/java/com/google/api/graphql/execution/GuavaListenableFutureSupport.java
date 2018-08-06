@@ -24,7 +24,6 @@ import graphql.execution.instrumentation.parameters.InstrumentationFieldFetchPar
 import graphql.schema.DataFetcher;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 /** Adds support for ListenableFuture return values. */
 public final class GuavaListenableFutureSupport {
