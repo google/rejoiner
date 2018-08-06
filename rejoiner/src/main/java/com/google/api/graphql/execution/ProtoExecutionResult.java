@@ -24,7 +24,7 @@ abstract class ProtoExecutionResult<T extends Message> {
 
   static <T extends Message> ProtoExecutionResult<T> create(
       T message, ImmutableList<GraphqlError> errors) {
-    return new AutoValue_ProtoExecutionResult(message, errors);
+    return new AutoValue_ProtoExecutionResult<>(message, errors);
   }
 
   abstract T message();
