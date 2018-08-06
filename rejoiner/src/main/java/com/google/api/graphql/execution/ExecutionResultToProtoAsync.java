@@ -1,6 +1,7 @@
 package com.google.api.graphql.execution;
 
 import com.google.api.graphql.grpc.QueryResponseToProto;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Message;
 import graphql.ExecutionResult;
 
@@ -16,7 +17,9 @@ public final class ExecutionResultToProtoAsync {
     return executionResultCompletableFuture.thenApply(
         executionResult ->
             ProtoExecutionResult.create(
-                QueryResponseToProto.buildMessage(message, executionResult.toSpecification())));
+                QueryResponseToProto.buildMessage(message, executionResult.toSpecification()),
+                // TODO: fill in errors
+                ImmutableList.of()));
   }
   /**
    * Transforms an async ExecutionResult into a proto Messages.

@@ -14,17 +14,20 @@
 
 package com.google.api.graphql.execution;
 
+import com.google.api.graphql.GraphqlError;
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Message;
 
 @AutoValue
 abstract class ProtoExecutionResult<T extends Message> {
 
-  static <T extends Message> ProtoExecutionResult<T> create(T message) {
-    return new AutoValue_ProtoExecutionResult(message);
+  static <T extends Message> ProtoExecutionResult<T> create(
+      T message, ImmutableList<GraphqlError> errors) {
+    return new AutoValue_ProtoExecutionResult(message, errors);
   }
 
   abstract T message();
-  // TODO: add abstract GraphQLError proto message
 
+  abstract ImmutableList<GraphqlError> errors();
 }
