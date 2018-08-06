@@ -14,14 +14,17 @@
 
 package com.google.api.graphql.execution;
 
+import com.google.api.graphql.GraphqlError;
+import com.google.api.graphql.SourceLocation;
 import com.google.api.graphql.grpc.QueryResponseToProto;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Message;
 import graphql.ExecutionResult;
 import graphql.ErrorType;
-import graphql.ExecutionResult;
 import graphql.GraphQLError;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /** Transforms ExecutionResult into generated proto Messages. */
@@ -35,8 +38,7 @@ public final class ExecutionResultToProtoAsync {
         executionResult ->
             ProtoExecutionResult.create(
                 QueryResponseToProto.buildMessage(message, executionResult.toSpecification()),
-                // TODO: fill in errors
-                ImmutableList.of()));
+                errorsToProto(executionResult.getErrors())));
   }
   /**
    * Transforms an async ExecutionResult into a proto Messages.
@@ -49,43 +51,38 @@ public final class ExecutionResultToProtoAsync {
         executionResult ->
             QueryResponseToProto.buildMessage(message, executionResult.toSpecification()));
   }
-  
-  
-   private static final ImmutableMap<
-            ErrorType, com.google.api.graphql.ErrorType>
-        ERROR_TYPE_MAP =
-            ImmutableMap.of(
-                ErrorType.DataFetchingException,
-                com.google.api.graphql.ErrorType.DATA_FETCHING_EXCEPTION,
-                ErrorType.InvalidSyntax,
-                com.google.api.graphql.ErrorType.INVALID_SYNTAX,
-                ErrorType.ValidationError,
-                com.google.api.graphql.ErrorType.VALIDATION_ERROR);
 
-    private static ImmutableList<GraphQlError> errorsToProto(List<GraphQLError> errors) {
-      return errors
-          .stream()
-          .map(
-              error ->
-                  GraphQlError.newBuilder()
-                      .setMessage(error.getMessage())
-                      .setType(
-                          ERROR_TYPE_MAP.getOrDefault(
-                              error.getErrorType(),
-                              com.google.api.graphql.ErrorType.UNKNOWN))
-                      .addAllLocations(
-                          error
-                              .getLocations()
-                              .stream()
-                              .map(
-                                  location ->
-                                      SourceLocation.newBuilder()
-                                          .setLine(location.getLine())
-                                          .setColumn(location.getColumn())
-                                          .build())
-                              .collect(ImmutableList.toImmutableList()))
-                      .build())
-          .collect(ImmutableList.toImmutableList());
-    }
+  private static final ImmutableMap<ErrorType, com.google.api.graphql.ErrorType> ERROR_TYPE_MAP =
+      ImmutableMap.of(
+          ErrorType.DataFetchingException,
+          com.google.api.graphql.ErrorType.DATA_FETCHING_EXCEPTION,
+          ErrorType.InvalidSyntax,
+          com.google.api.graphql.ErrorType.INVALID_SYNTAX,
+          ErrorType.ValidationError,
+          com.google.api.graphql.ErrorType.VALIDATION_ERROR);
 
+  private static ImmutableList<GraphqlError> errorsToProto(List<GraphQLError> errors) {
+    return errors
+        .stream()
+        .map(
+            error ->
+                GraphqlError.newBuilder()
+                    .setMessage(error.getMessage())
+                    .setType(
+                        ERROR_TYPE_MAP.getOrDefault(
+                            error.getErrorType(), com.google.api.graphql.ErrorType.UNKNOWN))
+                    .addAllLocations(
+                        error
+                            .getLocations()
+                            .stream()
+                            .map(
+                                location ->
+                                    SourceLocation.newBuilder()
+                                        .setLine(location.getLine())
+                                        .setColumn(location.getColumn())
+                                        .build())
+                            .collect(ImmutableList.toImmutableList()))
+                    .build())
+        .collect(ImmutableList.toImmutableList());
+  }
 }
