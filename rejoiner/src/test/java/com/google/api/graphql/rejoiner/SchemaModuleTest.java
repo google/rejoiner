@@ -22,6 +22,7 @@ import com.google.api.graphql.rejoiner.Annotations.Mutations;
 import com.google.api.graphql.rejoiner.Annotations.Queries;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsRequest;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsResponse;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -32,19 +33,22 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import graphql.Scalars;
-import graphql.execution.ExecutionContext;
 import graphql.execution.ExecutionContextBuilder;
 import graphql.execution.ExecutionId;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingEnvironmentBuilder;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
+
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link com.google.api.graphql.rejoiner.SchemaModule}. */
+/** Unit tests for {@link SchemaModule}. */
 @RunWith(JUnit4.class)
 public final class SchemaModuleTest {
 
@@ -83,6 +87,109 @@ public final class SchemaModuleTest {
     assertThat(injector.getInstance(MUTATION_KEY)).isEmpty();
     assertThat(injector.getInstance(EXTRA_TYPE_KEY)).isEmpty();
     assertThat(injector.getInstance(MODIFICATION_KEY)).isEmpty();
+  }
+
+  @Test
+  public void schemaModuleShouldProvideQueryAndMutationFields() {
+    Injector injector =
+        Guice.createInjector(
+            new SchemaModule() {
+              @Query
+              GraphQLFieldDefinition greeting =
+                  GraphQLFieldDefinition.newFieldDefinition()
+                      .name("queryField")
+                      .type(Scalars.GraphQLString)
+                      .staticValue("hello world")
+                      .build();
+
+              @Mutation
+              GraphQLFieldDefinition mutationField =
+                  GraphQLFieldDefinition.newFieldDefinition()
+                      .name("mutationField")
+                      .type(Scalars.GraphQLString)
+                      .staticValue("hello world")
+                      .build();
+
+              @Query("queryMethod")
+              GreetingsResponse queryMethod(GreetingsRequest request) {
+                return GreetingsResponse.newBuilder().setId(request.getId()).build();
+              }
+
+              @Mutation("mutationMethod")
+              ListenableFuture<GreetingsResponse> mutationMethod(GreetingsRequest request) {
+                return Futures.immediateFuture(
+                    GreetingsResponse.newBuilder().setId(request.getId()).build());
+              }
+            });
+    assertThat(injector.getInstance(QUERY_KEY)).hasSize(2);
+    assertThat(injector.getInstance(MUTATION_KEY)).hasSize(2);
+    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).hasSize(1);
+    assertThat(injector.getInstance(MODIFICATION_KEY)).isEmpty();
+  }
+
+  @Test
+  public void schemaModuleShouldNamespaceQueriesAndMutations() {
+    @Namespace("namespace")
+    class NamespacedSchemaModule extends SchemaModule {
+      @Query
+      GraphQLFieldDefinition greeting =
+          GraphQLFieldDefinition.newFieldDefinition()
+              .name("queryField")
+              .type(Scalars.GraphQLString)
+              .staticValue("hello world")
+              .build();
+
+      @Mutation
+      GraphQLFieldDefinition mutationField =
+          GraphQLFieldDefinition.newFieldDefinition()
+              .name("mutationField")
+              .type(Scalars.GraphQLString)
+              .staticValue("hello world")
+              .build();
+
+      @Query("queryMethod")
+      GreetingsResponse queryMethod(GreetingsRequest request) {
+        return GreetingsResponse.newBuilder().setId(request.getId()).build();
+      }
+
+      @Mutation("mutationMethod")
+      ListenableFuture<GreetingsResponse> mutationMethod(GreetingsRequest request) {
+        return Futures.immediateFuture(
+            GreetingsResponse.newBuilder().setId(request.getId()).build());
+      }
+    }
+    Injector injector = Guice.createInjector(new NamespacedSchemaModule());
+    assertThat(injector.getInstance(QUERY_KEY)).hasSize(1);
+    assertThat(injector.getInstance(MUTATION_KEY)).hasSize(1);
+    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).hasSize(1);
+    assertThat(injector.getInstance(MODIFICATION_KEY)).isEmpty();
+  }
+
+  @Test
+  public void schemaModuleShouldApplyArgs() {
+
+    Injector injector =
+        Guice.createInjector(
+            new SchemaModule() {
+
+              @Mutation("mutationMethodWithArgs")
+              ListenableFuture<GreetingsResponse> mutationMethod(
+                  GreetingsRequest request, @Arg("showDeleted") Boolean showDeleted) {
+
+                return Futures.immediateFuture(
+                    GreetingsResponse.newBuilder().setId(request.getId()).build());
+              }
+            });
+    assertThat(injector.getInstance(MUTATION_KEY)).hasSize(1);
+    List<GraphQLArgument> arguments =
+        injector.getInstance(MUTATION_KEY).iterator().next().getArguments();
+    assertThat(arguments).hasSize(2);
+    assertThat(
+            arguments
+                .stream()
+                .map(argument -> argument.getName())
+                .collect(ImmutableList.toImmutableList()))
+        .containsExactly("input", "showDeleted");
   }
 
   @Test
@@ -152,7 +259,10 @@ public final class SchemaModuleTest {
             .getDataFetcher()
             .get(
                 DataFetchingEnvironmentBuilder.newDataFetchingEnvironment()
-                    .executionContext(ExecutionContextBuilder.newExecutionContextBuilder().executionId(ExecutionId.from("1")).build())
+                    .executionContext(
+                        ExecutionContextBuilder.newExecutionContextBuilder()
+                            .executionId(ExecutionId.from("1"))
+                            .build())
                     .arguments(ImmutableMap.of("input", ImmutableMap.of("id", "123")))
                     .build());
 

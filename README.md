@@ -1,6 +1,7 @@
 # Rejoiner
 
 [![Build Status](https://travis-ci.org/google/rejoiner.svg?branch=master)](https://travis-ci.org/google/rejoiner)
+[![Coverage Status](https://coveralls.io/repos/github/google/rejoiner/badge.svg)](https://coveralls.io/github/google/rejoiner)
 
  - Creates a uniform GraphQL schema from microservices
  - Allows the GraphQL schema to be flexibly defined and composed as shared components
@@ -111,23 +112,23 @@ public final class TodoModule extends AbstractModule {
 
 ## Getting started
 
-Currently we are only publishing SNAPSHOT builds to sonatype.
+### Dependency information
 
-Here is an example build.gradle file, also see the examples directory for a
-complete example.
-
+Apache Maven
 ```
-  repositories {
-    // ...
-    maven {
-      url 'https://oss.sonatype.org/content/repositories/snapshots/'
-    }
-  }
-
-  // ...
-  compile "com.google.api.graphql:rejoiner:0.0.1-SNAPSHOT"
-  compile "com.google.api.graphql:execution:0.0.1-SNAPSHOT"
+<dependency>
+    <groupId>com.google.api.graphql</groupId>
+    <artifactId>rejoiner</artifactId>
+    <version>0.0.4</version>
+</dependency>
 ```
+
+Gradle/Grails
+`compile 'com.google.api.graphql:rejoiner:0.0.4'`
+
+Scala SBT
+`libraryDependencies += "com.google.api.graphql" % "rejoiner" % "0.0.4"`
+
 
 ## Supported return types
 

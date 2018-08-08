@@ -16,6 +16,9 @@ install:
 script:
   - pushd rejoiner && mvn test && popd
 
+after_success:
+  - pushd rejoiner && mvn clean test jacoco:report coveralls:report && popd
+
 os:
   - linux
 

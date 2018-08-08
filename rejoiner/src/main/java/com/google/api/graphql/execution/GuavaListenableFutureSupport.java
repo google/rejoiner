@@ -23,6 +23,7 @@ import graphql.execution.instrumentation.SimpleInstrumentation;
 import graphql.execution.instrumentation.parameters.InstrumentationFieldFetchParameters;
 import graphql.schema.DataFetcher;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /** Adds support for ListenableFuture return values. */
 public final class GuavaListenableFutureSupport {
@@ -37,6 +38,18 @@ public final class GuavaListenableFutureSupport {
    * <p>Note: This should be installed before any other instrumentation.
    */
   public static Instrumentation listenableFutureInstrumentation() {
+    return listenableFutureInstrumentation(MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Converts a {@link ListenableFuture} to a Java8 {@link java.util.concurrent.CompletableFuture}.
+   *
+   * <p>{@see CompletableFuture} is supported by the provided {@link
+   * graphql.execution.AsyncExecutionStrategy}.
+   *
+   * <p>Note: This should be installed before any other instrumentation.
+   */
+  public static Instrumentation listenableFutureInstrumentation(Executor executor) {
     return new SimpleInstrumentation() {
       @Override
       public DataFetcher<?> instrumentDataFetcher(
@@ -60,7 +73,7 @@ public final class GuavaListenableFutureSupport {
                         completableFuture.completeExceptionally(t);
                       }
                     },
-                    MoreExecutors.directExecutor());
+                    executor);
                 return completableFuture;
               }
               return data;
@@ -68,4 +81,5 @@ public final class GuavaListenableFutureSupport {
       }
     };
   }
+
 }
