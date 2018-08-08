@@ -11,7 +11,7 @@ before_install:
   - ./travis_before_install.sh # build protoc into /tmp/protobuf
 
 install:
-  - pushd rejoiner && mvn verify && popd
+  - pushd rejoiner && mvn verify -Dgpg.skip && popd
 
 script:
   - pushd rejoiner && mvn test && popd
