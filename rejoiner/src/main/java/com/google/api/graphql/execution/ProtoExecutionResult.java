@@ -17,17 +17,22 @@ package com.google.api.graphql.execution;
 import com.google.api.graphql.GraphqlError;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
+import com.google.errorprone.annotations.Immutable;
 import com.google.protobuf.Message;
 
+/** GraphQL execution result represented using a generated proto for the message. */
 @AutoValue
-abstract class ProtoExecutionResult<T extends Message> {
+@Immutable
+public abstract class ProtoExecutionResult<T extends Message> {
 
   static <T extends Message> ProtoExecutionResult<T> create(
       T message, ImmutableList<GraphqlError> errors) {
     return new AutoValue_ProtoExecutionResult(message, errors);
   }
 
-  abstract T message();
+  /** Returns the message */
+  public abstract T message();
 
-  abstract ImmutableList<GraphqlError> errors();
+  /** Returns errors or an empty list. */
+  public abstract ImmutableList<GraphqlError> errors();
 }
