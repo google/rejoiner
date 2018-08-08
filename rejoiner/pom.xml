@@ -41,7 +41,7 @@
   <groupId>com.google.api.graphql</groupId>
   <artifactId>rejoiner</artifactId>
   <name>Rejoiner</name>
-  <version>0.0.3-SNAPSHOT</version>
+  <version>0.0.4</version>
   <description>Generating GraphQL schemas from Protobufs.</description>
   <url>https://github.com/google/rejoiner</url>
   <packaging>jar</packaging>
@@ -167,9 +167,81 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.7.0</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <compilerId>javac-with-errorprone</compilerId>
+          <forceJavacCompilerUse>true</forceJavacCompilerUse>
+          <!-- maven-compiler-plugin defaults to targeting Java 5, but our javac
+               only supports >=6 -->
+          <source>8</source>
+          <target>8</target>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-compiler-javac-errorprone</artifactId>
+            <version>2.8.3</version>
+          </dependency>
+          <!-- override plexus-compiler-javac-errorprone's dependency on
+               Error Prone with the latest version -->
+          <dependency>
+            <groupId>com.google.errorprone</groupId>
+            <artifactId>error_prone_core</artifactId>
+            <version>2.3.1</version>
+          </dependency>
+        </dependencies>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-source-plugin</artifactId>
+      <version>2.2.1</version>
+      <executions>
+        <execution>
+          <id>attach-sources</id>
+          <goals>
+            <goal>jar-no-fork</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-javadoc-plugin</artifactId>
+      <version>2.9.1</version>
+      <executions>
+        <execution>
+          <id>attach-javadocs</id>
+          <goals>
+            <goal>jar</goal>
+          </goals>
+        </execution>
+      </executions>
+      <configuration>
+        <additionalparam>-Xdoclint:none</additionalparam>
+      </configuration>
+    </plugin>
+    <plugin>
+     <groupId>org.apache.maven.plugins</groupId>
+     <artifactId>maven-gpg-plugin</artifactId>
+     <version>1.5</version>
+     <executions>
+       <execution>
+         <id>sign-artifacts</id>
+         <phase>verify</phase>
+         <goals>
+           <goal>sign</goal>
+         </goals>
+       </execution>
+     </executions>
+   </plugin>
+    <plugin>
+      <groupId>org.sonatype.plugins</groupId>
+      <artifactId>nexus-staging-maven-plugin</artifactId>
+      <version>1.6.7</version>
+      <extensions>true</extensions>
+      <configuration>
+         <serverId>ossrh</serverId>
+         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+         <autoReleaseAfterClose>true</autoReleaseAfterClose>
+      </configuration>
     </plugin>
     <plugin>
        <groupId>org.xolstice.maven.plugins</groupId>
@@ -186,34 +258,7 @@
            </goals>
          </execution>
        </executions>
-    </plugin>
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-compiler-plugin</artifactId>
-      <version>3.3</version>
-      <configuration>
-        <compilerId>javac-with-errorprone</compilerId>
-        <forceJavacCompilerUse>true</forceJavacCompilerUse>
-        <!-- maven-compiler-plugin defaults to targeting Java 5, but our javac
-             only supports >=6 -->
-        <source>8</source>
-        <target>8</target>
-      </configuration>
-      <dependencies>
-        <dependency>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-compiler-javac-errorprone</artifactId>
-          <version>2.8.3</version>
-        </dependency>
-        <!-- override plexus-compiler-javac-errorprone's dependency on
-             Error Prone with the latest version -->
-        <dependency>
-          <groupId>com.google.errorprone</groupId>
-          <artifactId>error_prone_core</artifactId>
-          <version>2.3.1</version>
-        </dependency>
-      </dependencies>
-    </plugin>
+    </plugin>  
   </plugins>
 </build>
 </project>
