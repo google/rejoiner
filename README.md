@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/google/rejoiner.svg?branch=master)](https://travis-ci.org/google/rejoiner)
 [![Coverage Status](https://coveralls.io/repos/github/google/rejoiner/badge.svg)](https://coveralls.io/github/google/rejoiner)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.google.api.graphql/rejoiner/badge.svg)](http://mvnrepository.com/artifact/com.google.api.graphql/rejoiner/0.0.4)
+
 
  - Creates a uniform GraphQL schema from microservices
  - Allows the GraphQL schema to be flexibly defined and composed as shared components
