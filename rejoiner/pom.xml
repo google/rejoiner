@@ -257,6 +257,44 @@
          </execution>
        </executions>
     </plugin>
+    <plugin>
+      <groupId>org.jacoco</groupId>
+      <artifactId>jacoco-maven-plugin</artifactId>
+      <version>0.7.6.201602180812</version>
+      <configuration>
+        <excludes>
+          <exclude>**/*AutoValue_*</exclude>
+          <exclude>**/generated-sources/**/*</exclude>
+        </excludes>
+      </configuration>
+      <executions>
+        <execution>
+          <id>prepare-agent</id>
+          <goals>
+            <goal>prepare-agent</goal>
+          </goals>
+        </execution>
+        <execution>
+          <id>report</id>
+          <phase>prepare-package</phase>
+          <goals>
+            <goal>report</goal>
+          </goals>
+        </execution>
+        <execution>
+          <id>post-unit-test</id>
+          <phase>test</phase>
+          <goals>
+            <goal>report</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+    <plugin>
+      <groupId>org.eluder.coveralls</groupId>
+      <artifactId>coveralls-maven-plugin</artifactId>
+      <version>4.3.0</version>
+    </plugin>
   </plugins>
 </build>
 </project>
