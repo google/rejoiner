@@ -24,16 +24,13 @@ import com.google.common.truth.Truth;
 import com.google.common.truth.extensions.proto.ProtoTruth;
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionResultImpl;
-import graphql.GraphQLError;
-import graphql.InvalidSyntaxError;
 import graphql.execution.ExecutionPath;
 import graphql.language.SourceLocation;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /** Unit tests for {@link ExecutionResultToProtoAsync}. */
 @RunWith(JUnit4.class)
