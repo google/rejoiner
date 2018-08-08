@@ -37,7 +37,7 @@ public final class ExecutionResultToProtoAsync {
     return executionResultCompletableFuture.thenApply(
         executionResult ->
             ProtoExecutionResult.create(
-                QueryResponseToProto.buildMessage(message, executionResult.toSpecification()),
+                QueryResponseToProto.buildMessage(message, executionResult.getData()),
                 errorsToProto(executionResult.getErrors())));
   }
   /**
