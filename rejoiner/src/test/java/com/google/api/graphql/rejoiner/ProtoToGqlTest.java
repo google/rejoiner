@@ -21,6 +21,7 @@ import com.google.api.graphql.rejoiner.TestProto.Proto1.InnerProto;
 import com.google.api.graphql.rejoiner.TestProto.Proto2;
 import com.google.api.graphql.rejoiner.TestProto.Proto2.TestEnum;
 import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLEnumValueDefinition;
 import graphql.schema.GraphQLObjectType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +56,7 @@ public final class ProtoToGqlTest {
     GraphQLObjectType result = ProtoToGql.convert(Proto1.getDescriptor(), null);
     assertThat(result.getName())
         .isEqualTo("javatests_com_google_api_graphql_rejoiner_proto_Proto1");
-    assertThat(result.getFieldDefinitions()).hasSize(4);
+    assertThat(result.getFieldDefinitions()).hasSize(5);
   }
 
   @Test
@@ -64,8 +65,16 @@ public final class ProtoToGqlTest {
     assertThat(result.getName())
         .isEqualTo("javatests_com_google_api_graphql_rejoiner_proto_Proto2_TestEnum");
     assertThat(result.getValues()).hasSize(3);
-    assertThat(result.getValues().stream().map(a -> a.getName()).toArray())
+    assertThat(result.getValues().stream().map(GraphQLEnumValueDefinition::getName).toArray())
         .asList()
         .containsExactly("UNKNOWN", "FOO", "BAR");
+  }
+
+  @Test
+  public void checkFieldNameCamelCase() {
+    GraphQLObjectType result = ProtoToGql.convert(Proto1.getDescriptor(), null);
+    assertThat(result.getFieldDefinitions()).hasSize(5);
+    assertThat(result.getFieldDefinition("intField")).isNotNull();
+    assertThat(result.getFieldDefinition("camelCaseName")).isNotNull();
   }
 }

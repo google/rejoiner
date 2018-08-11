@@ -23,6 +23,7 @@ message Proto1 {
   int64 int_field = 2;
   Proto2 test_proto = 3;
   InnerProto test_inner_proto = 4;
+  int64 camelCaseName = 5;
 
   message InnerProto {
     string foo = 1;

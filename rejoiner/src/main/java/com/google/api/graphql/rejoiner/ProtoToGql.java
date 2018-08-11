@@ -147,12 +147,14 @@ final class ProtoToGql {
 
     @Override
     public GraphQLFieldDefinition apply(FieldDescriptor fieldDescriptor) {
+      String fieldName = fieldDescriptor.getName();
+      String convertedFieldName = fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
       GraphQLFieldDefinition.Builder builder =
           GraphQLFieldDefinition.newFieldDefinition()
               .type(convertType(fieldDescriptor))
               .dataFetcher(
-                  new ProtoDataFetcher(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName())))
-              .name(UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName()));
+                  new ProtoDataFetcher(convertedFieldName))
+              .name(convertedFieldName);
       if (fieldDescriptor.getFile().toProto().getSourceCodeInfo().getLocationCount()
           > fieldDescriptor.getIndex()) {
         builder.description(
