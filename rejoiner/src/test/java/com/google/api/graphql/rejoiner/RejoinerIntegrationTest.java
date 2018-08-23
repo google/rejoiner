@@ -26,7 +26,9 @@ import com.google.inject.Guice;
 import com.google.inject.Key;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +50,11 @@ public final class RejoinerIntegrationTest {
     ListenableFuture<ImmutableList<ExtraProto>> listOfStuff() {
       return Futures.immediateFuture(
           ImmutableList.of(ExtraProto.newBuilder().setSomeValue("1").build()));
+    }
+
+    @Query("listOfStuffSync")
+    ImmutableList<ExtraProto> listOfStuffSync() {
+      return ImmutableList.of(ExtraProto.newBuilder().setSomeValue("1").build());
     }
 
     @Query("greeting")
@@ -77,13 +84,21 @@ public final class RejoinerIntegrationTest {
 
   @Test
   public void schemaShouldHaveOneQuery() {
-    assertThat(schema.getQueryType().getFieldDefinitions()).hasSize(3);
+    assertThat(schema.getQueryType().getFieldDefinitions()).hasSize(4);
   }
 
   @Test
   public void schemaShouldList() {
-    assertThat(schema.getQueryType().getFieldDefinition("listOfStuff").getType())
-        .isInstanceOf(GraphQLList.class);
+    GraphQLOutputType listOfStuff = schema.getQueryType().getFieldDefinition("listOfStuff").getType();
+    assertThat(listOfStuff).isInstanceOf(GraphQLList.class);
+    assertThat(((GraphQLList)listOfStuff).getWrappedType()).isInstanceOf(GraphQLNonNull.class);
+  }
+
+  @Test
+  public void schemaShouldListSync() {
+    GraphQLOutputType listOfStuff = schema.getQueryType().getFieldDefinition("listOfStuffSync").getType();
+    assertThat(listOfStuff).isInstanceOf(GraphQLList.class);
+    assertThat(((GraphQLList)listOfStuff).getWrappedType()).isInstanceOf(GraphQLNonNull.class);
   }
 
   @Test
