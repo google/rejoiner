@@ -36,6 +36,7 @@ import graphql.schema.DataFetchingEnvironmentBuilder;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
@@ -460,7 +461,7 @@ public abstract class SchemaModule extends AbstractModule {
       Descriptor responseDescriptor =
           (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
       referencedDescriptors.add(responseDescriptor);
-      return new GraphQLList(ProtoToGql.getReference(responseDescriptor));
+      return new GraphQLList(new GraphQLNonNull(ProtoToGql.getReference(responseDescriptor)));
     }
 
     // ImmutableList<? extends Message>
@@ -470,7 +471,7 @@ public abstract class SchemaModule extends AbstractModule {
       Descriptor responseDescriptor =
           (Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
       referencedDescriptors.add(responseDescriptor);
-      return new GraphQLList(ProtoToGql.getReference(responseDescriptor));
+      return new GraphQLList(new GraphQLNonNull(ProtoToGql.getReference(responseDescriptor)));
     }
 
     // ListenableFuture<? extends Message>
