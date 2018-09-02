@@ -21,6 +21,9 @@ import com.google.common.truth.Truth;
 import com.google.common.truth.extensions.proto.ProtoTruth;
 import com.google.protobuf.Message;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLInputType;
+import graphql.schema.GraphQLType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -63,6 +66,16 @@ public final class GqlInputConverterTest {
     Truth.assertThat(argument.getType().getName())
         .isEqualTo("Input_javatests_com_google_api_graphql_rejoiner_proto_Proto1");
   }
+
+  @Test
+  public void inputConverterShouldCreateInputTypeWithCamelCaseName() {
+    GqlInputConverter inputConverter =
+            GqlInputConverter.newBuilder().add(TestProto.getDescriptor().getFile()).build();
+    GraphQLInputObjectType input = (GraphQLInputObjectType) inputConverter.getInputType(Proto1.getDescriptor());
+    Truth.assertThat(input.getField("intField")).isNotNull();
+    Truth.assertThat(input.getField("camelCaseName")).isNotNull();
+  }
+
 
   @Test
   public void inputConverterShouldCreateArgumentForMessagesInSameFile() {

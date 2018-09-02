@@ -16,6 +16,8 @@ package com.google.api.graphql.rejoiner;
 
 import static graphql.Scalars.GraphQLString;
 
+import com.google.common.base.CaseFormat;
+import com.google.common.base.Converter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -47,6 +49,9 @@ final class GqlInputConverter {
 
   private final BiMap<String, Descriptor> descriptorMapping;
   private final BiMap<String, EnumDescriptor> enumMapping;
+
+  private static final Converter<String, String> UNDERSCORE_TO_CAMEL =
+          CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
 
   private GqlInputConverter(
       BiMap<String, Descriptor> descriptorMapping, BiMap<String, EnumDescriptor> enumMapping) {
@@ -94,8 +99,10 @@ final class GqlInputConverter {
     }
     for (FieldDescriptor field : descriptor.getFields()) {
       GraphQLType fieldType = getFieldType(field);
+      String fieldName = field.getName();
+      String convertedFieldName = fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
       GraphQLInputObjectField.Builder inputBuilder =
-          GraphQLInputObjectField.newInputObjectField().name(field.getName());
+          GraphQLInputObjectField.newInputObjectField().name(convertedFieldName);
       if (field.isRepeated()) {
         inputBuilder.type(new GraphQLList(fieldType));
       } else {
