@@ -16,20 +16,32 @@ package com.google.api.graphql.rejoiner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.api.graphql.rejoiner.Greetings.ExtraProto;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsRequest;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsResponse;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Guice;
 import com.google.inject.Key;
+import graphql.ErrorType;
+import graphql.ExecutionInput;
+import graphql.ExecutionResult;
+import graphql.GraphQL;
+import graphql.GraphQLError;
+import graphql.language.SourceLocation;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
+import io.grpc.Status;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -38,9 +50,33 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class RejoinerIntegrationTest {
 
+  static class SampleGraphQLException extends RuntimeException implements GraphQLError {
+    @Override
+    public String getMessage() {
+      return "Test GraphQLError";
+    }
+
+    @Override
+    public List<SourceLocation> getLocations() {
+      return null;
+    }
+
+    @Override
+    public ErrorType getErrorType() {
+      return ErrorType.DataFetchingException;
+    }
+
+    @Override
+    public Map<String, Object> getExtensions() {
+      HashMap<String, Object> extensions = Maps.newHashMap();
+      extensions.put("error", "message");
+      return extensions;
+    }
+  }
+
   static class GreetingsSchemaModule extends SchemaModule {
 
-    @Query("grettingXL")
+    @Query("greetingXL")
     ListenableFuture<GreetingsResponse> greetingXl(
         GreetingsRequest req, DataFetchingEnvironment env) {
       return Futures.immediateFuture(GreetingsResponse.newBuilder().setId(req.getId()).build());
@@ -67,6 +103,18 @@ public final class RejoinerIntegrationTest {
         ExtraProto request, GreetingsResponse source) {
       return Futures.immediateFuture(request.toBuilder().setSomeValue(source.getId()).build());
     }
+
+      @Query("greetingWithException")
+      ListenableFuture<GreetingsResponse> greetingsWithException(GreetingsRequest request) {
+        throw Status.UNIMPLEMENTED
+                .withDescription("message from service")
+                .asRuntimeException();
+      }
+
+      @Query("greetingWithGraphQLError")
+      ListenableFuture<GreetingsResponse> greetingsWithGraphqlError(GreetingsRequest request) {
+        throw new SampleGraphQLException();
+      }
   }
 
   static class GreetingsAddonSchemaModule extends SchemaModule {
@@ -84,7 +132,7 @@ public final class RejoinerIntegrationTest {
 
   @Test
   public void schemaShouldHaveOneQuery() {
-    assertThat(schema.getQueryType().getFieldDefinitions()).hasSize(4);
+    assertThat(schema.getQueryType().getFieldDefinitions()).hasSize(6);
   }
 
   @Test
@@ -115,5 +163,42 @@ public final class RejoinerIntegrationTest {
     assertThat(obj.getFieldDefinition("id")).isNotNull();
     assertThat(obj.getFieldDefinition("extraField")).isNotNull();
     assertThat(obj.getFieldDefinition("greeting")).isNull();
+  }
+
+  @Test
+  public void handlesRuntimeExceptionMessage() {
+    GraphQL graphQL = GraphQL.newGraphQL(schema)
+            .build();
+
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+            .query("query { greetingWithException { id } }")
+            .build();
+
+    ExecutionResult executionResult = graphQL.execute(executionInput);
+
+    assertThat(executionResult.getErrors()).hasSize(1);
+    GraphQLError graphQLError = executionResult.getErrors().get(0);
+    assertThat(graphQLError.getMessage()).isEqualTo("Exception while fetching data (/greetingWithException) : UNIMPLEMENTED: message from service");
+    assertThat(graphQLError.getPath()).hasSize(1);
+    assertThat(graphQLError.getPath().get(0)).isEqualTo("greetingWithException");
+  }
+
+  @Test
+  public void handlesGraphQLError() {
+    GraphQL graphQL = GraphQL.newGraphQL(schema)
+            .build();
+
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+            .query("query { greetingWithGraphQLError { id } }")
+            .build();
+
+    ExecutionResult executionResult = graphQL.execute(executionInput);
+
+    assertThat(executionResult.getErrors()).hasSize(1);
+    GraphQLError graphQLError = executionResult.getErrors().get(0);
+    assertThat(graphQLError.getMessage()).isEqualTo("Exception while fetching data (/greetingWithGraphQLError) : Test GraphQLError");
+    assertThat(graphQLError.getExtensions()).containsEntry("error", "message");
+    assertThat(graphQLError.getPath()).hasSize(1);
+    assertThat(graphQLError.getPath().get(0)).isEqualTo("greetingWithGraphQLError");
   }
 }

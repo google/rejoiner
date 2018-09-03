@@ -394,6 +394,12 @@ public abstract class SchemaModule extends AbstractModule {
             }
             try {
               return method.invoke(this, methodParameterValues);
+            } catch (InvocationTargetException e) {
+              Throwable cause = e.getCause();
+              if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+              }
+              throw new RuntimeException(cause);
             } catch (Exception e) {
               throw new RuntimeException(e);
             }
