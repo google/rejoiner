@@ -19,8 +19,8 @@
 
 These features are actively being developed.
 
- - Relay support [[Example](./examples/java/com/google/api/graphql/examples/library)]
- - GraphQL Stream (based on gRPC streaming) [[Example](./examples/java/com/google/api/graphql/examples/streaming)]
+ - Relay support [[Example](./examples/src/main/java/com/google/api/graphql/examples/library)]
+ - GraphQL Stream (based on gRPC streaming) [[Example](./examples/src/main/java/com/google/api/graphql/examples/streaming)]
 
 ## Schema Module
 
