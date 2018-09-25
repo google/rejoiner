@@ -15,7 +15,6 @@
 package com.google.api.graphql.rejoiner;
 
 import static graphql.Scalars.GraphQLString;
-
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
 import com.google.common.collect.BiMap;
@@ -35,6 +34,7 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +51,7 @@ final class GqlInputConverter {
   private final BiMap<String, EnumDescriptor> enumMapping;
 
   private static final Converter<String, String> UNDERSCORE_TO_CAMEL =
-          CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
+      CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
 
   private GqlInputConverter(
       BiMap<String, Descriptor> descriptorMapping, BiMap<String, EnumDescriptor> enumMapping) {
@@ -69,22 +69,29 @@ final class GqlInputConverter {
     if (input == null) {
       return builder.build();
     }
-    for (FieldDescriptor field : descriptor.getFields()) {
-      String fieldName = field.getName();
 
-      if (!input.containsKey(fieldName)) {
+    Map<String, Object> remainingInput = new HashMap<>(input);
+    for (FieldDescriptor field : descriptor.getFields()) {
+      String fieldName = getFieldName(field);
+
+      if (!remainingInput.containsKey(fieldName)) {
         // TODO: validate required fields
         continue;
       }
 
       if (field.isRepeated()) {
-        List<Object> values = (List<Object>) input.get(fieldName);
+        List<Object> values = (List<Object>) remainingInput.remove(fieldName);
         for (Object value : values) {
           builder.addRepeatedField(field, getValueForField(field, value, builder));
         }
       } else {
-        builder.setField(field, getValueForField(field, input.get(fieldName), builder));
+        builder.setField(field, getValueForField(field, remainingInput.remove(fieldName), builder));
       }
+    }
+
+    if (!remainingInput.isEmpty()) {
+      throw new AssertionError(
+          "All fields in input should have been consumed. Remaining: " + remainingInput);
     }
 
     return builder.build();
@@ -99,10 +106,8 @@ final class GqlInputConverter {
     }
     for (FieldDescriptor field : descriptor.getFields()) {
       GraphQLType fieldType = getFieldType(field);
-      String fieldName = field.getName();
-      String convertedFieldName = fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
       GraphQLInputObjectField.Builder inputBuilder =
-          GraphQLInputObjectField.newInputObjectField().name(convertedFieldName);
+          GraphQLInputObjectField.newInputObjectField().name(getFieldName(field));
       if (field.isRepeated()) {
         inputBuilder.type(new GraphQLList(fieldType));
       } else {
@@ -138,6 +143,12 @@ final class GqlInputConverter {
 
   static String getReferenceName(GenericDescriptor descriptor) {
     return "Input_" + ProtoToGql.getReferenceName(descriptor);
+  }
+
+  /** Field names with under_scores are converted to camelCase. */
+  private String getFieldName(FieldDescriptor field) {
+    String fieldName = field.getName();
+    return fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
   }
 
   private GraphQLType getFieldType(FieldDescriptor field) {
