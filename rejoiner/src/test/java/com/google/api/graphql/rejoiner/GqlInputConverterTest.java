@@ -16,6 +16,7 @@ package com.google.api.graphql.rejoiner;
 
 import com.google.api.graphql.rejoiner.TestProto.Proto1;
 import com.google.api.graphql.rejoiner.TestProto.Proto2;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.truth.Truth;
 import com.google.common.truth.extensions.proto.ProtoTruth;
@@ -47,13 +48,17 @@ public final class GqlInputConverterTest {
             Proto1.getDescriptor(),
             Proto1.newBuilder(),
             ImmutableMap.of(
-                "id", "id", "intField", 123, "testProto", ImmutableMap.of("innerId", "1")));
+                "id", "id", "intField", 123, "testProto",
+                ImmutableMap.of("innerId", "1", "enums", ImmutableList.of(Proto2.TestEnum.FOO, Proto2.TestEnum.BAR))));
     ProtoTruth.assertThat(protoBuf)
         .isEqualTo(
             Proto1.newBuilder()
                 .setId("id")
                 .setIntField(123)
-                .setTestProto(Proto2.newBuilder().setInnerId("1").build())
+                .setTestProto(Proto2.newBuilder().setInnerId("1")
+                    .addEnums(Proto2.TestEnum.FOO)
+                    .addEnums(Proto2.TestEnum.BAR)
+                    .build())
                 .build());
   }
 
