@@ -22,8 +22,6 @@ import com.google.common.truth.extensions.proto.ProtoTruth;
 import com.google.protobuf.Message;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectType;
-import graphql.schema.GraphQLInputType;
-import graphql.schema.GraphQLType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -47,7 +45,7 @@ public final class GqlInputConverterTest {
             Proto1.getDescriptor(),
             Proto1.newBuilder(),
             ImmutableMap.of(
-                "id", "id", "int_field", 123, "test_proto", ImmutableMap.of("inner_id", "1")));
+                "id", "id", "intField", 123, "testProto", ImmutableMap.of("innerId", "1")));
     ProtoTruth.assertThat(protoBuf)
         .isEqualTo(
             Proto1.newBuilder()
@@ -70,12 +68,12 @@ public final class GqlInputConverterTest {
   @Test
   public void inputConverterShouldCreateInputTypeWithCamelCaseName() {
     GqlInputConverter inputConverter =
-            GqlInputConverter.newBuilder().add(TestProto.getDescriptor().getFile()).build();
-    GraphQLInputObjectType input = (GraphQLInputObjectType) inputConverter.getInputType(Proto1.getDescriptor());
+        GqlInputConverter.newBuilder().add(TestProto.getDescriptor().getFile()).build();
+    GraphQLInputObjectType input =
+        (GraphQLInputObjectType) inputConverter.getInputType(Proto1.getDescriptor());
     Truth.assertThat(input.getField("intField")).isNotNull();
     Truth.assertThat(input.getField("camelCaseName")).isNotNull();
   }
-
 
   @Test
   public void inputConverterShouldCreateArgumentForMessagesInSameFile() {
