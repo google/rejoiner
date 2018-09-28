@@ -20,11 +20,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.truth.Truth;
 import com.google.common.truth.extensions.proto.ProtoTruth;
 import com.google.protobuf.Message;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLInputObjectType;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLInputObjectType;
 
 /** Unit tests for {@link com.google.api.graphql.rejoiner.GqlInputConverter}. */
 @RunWith(JUnit4.class)
@@ -53,6 +55,17 @@ public final class GqlInputConverterTest {
                 .setIntField(123)
                 .setTestProto(Proto2.newBuilder().setInnerId("1").build())
                 .build());
+  }
+
+  @Test(expected = AssertionError.class)
+  public void inputConverterShouldFillProtoBufAllFields() {
+    GqlInputConverter inputConverter =
+        GqlInputConverter.newBuilder().add(TestProto.getDescriptor().getFile()).build();
+    inputConverter.createProtoBuf(
+        Proto1.getDescriptor(),
+        Proto1.newBuilder(),
+        ImmutableMap.of(
+            "id", "id", "intField", 123, "test_proto", ImmutableMap.of("innerId", "1")));
   }
 
   @Test
