@@ -200,12 +200,16 @@ public abstract class SchemaModule extends AbstractModule {
                   @Override
                   public Object apply(String s) {
                     // TODO: Don't hardcode the arguments structure.
-                    return graphQLFieldDefinition
-                        .getDataFetcher()
-                        .get(
-                            DataFetchingEnvironmentBuilder.newDataFetchingEnvironment()
-                                .arguments(ImmutableMap.of("input", ImmutableMap.of("id", s)))
-                                .build());
+                    try {
+                      return graphQLFieldDefinition
+                          .getDataFetcher()
+                          .get(
+                              DataFetchingEnvironmentBuilder.newDataFetchingEnvironment()
+                                  .arguments(ImmutableMap.of("input", ImmutableMap.of("id", s)))
+                                  .build());
+                    } catch (Exception e) {
+                      throw new RuntimeException(e);
+                    }
                   }
                 });
       }
