@@ -14,11 +14,6 @@
 
 package com.google.api.graphql.rejoiner;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
-import static graphql.Scalars.GraphQLID;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-
 import com.google.api.graphql.options.RelayOptionsProto;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
@@ -33,6 +28,12 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.GenericDescriptor;
 import com.google.protobuf.Message;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Optional;
+
 import graphql.Scalars;
 import graphql.relay.Relay;
 import graphql.schema.DataFetcher;
@@ -47,10 +48,11 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Optional;
+
+import static com.google.common.collect.ImmutableList.toImmutableList;
+import static graphql.Scalars.GraphQLID;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 /** Converts Protos to GraphQL Types. */
 final class ProtoToGql {
@@ -79,6 +81,8 @@ final class ProtoToGql {
 
   private static final Converter<String, String> LOWER_CAMEL_TO_UPPER =
       CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL);
+  private static final Converter<String, String> UNDERSCORE_TO_CAMEL =
+      CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
   private static final FieldConverter FIELD_CONVERTER = new FieldConverter();
   private static final ImmutableList<GraphQLFieldDefinition> STATIC_FIELD =
       ImmutableList.of(newFieldDefinition().type(GraphQLString).name("_").staticValue("-").build());
@@ -108,36 +112,33 @@ final class ProtoToGql {
         }
         if (type instanceof GraphQLList) {
 
-          Object listValue = call(source, "get" + LOWER_CAMEL_TO_UPPER.convert(name) + "List");
+          Object listValue = call(source, "get" + name + "List");
           if (listValue != null) {
             return listValue;
           }
-          Object mapValue = call(source, "get" + LOWER_CAMEL_TO_UPPER.convert(name) + "Map");
+          Object mapValue = call(source, "get" + name + "Map");
           if (mapValue == null) {
             return null;
           }
           Map<?, ?> map = (Map<?, ?>) mapValue;
-          return map.entrySet().stream().map(entry -> ImmutableMap.of("key", entry.getKey(), "value", entry.getValue())).collect(toImmutableList());
+          return map.entrySet().stream().map(entry -> ImmutableMap.of("key", entry.getKey(),
+              "value", entry.getValue())).collect(toImmutableList());
         }
         if (type instanceof GraphQLEnumType) {
-          Object o = call(source, "get" + LOWER_CAMEL_TO_UPPER.convert(name));
+          Object o = call(source, "get" + name);
           if (o != null) {
             return o.toString();
           }
         }
 
-        return call(source, "get" + LOWER_CAMEL_TO_UPPER.convert(name));
+        return call(source, "get" + name);
       }
 
       private static Object call(Object object, String methodName) {
         try {
           Method method = object.getClass().getMethod(methodName);
           return method.invoke(object);
-        } catch (NoSuchMethodException e) {
-          return null;
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
           throw new RuntimeException(e);
         }
       }
@@ -145,15 +146,19 @@ final class ProtoToGql {
 
     @Override
     public GraphQLFieldDefinition apply(FieldDescriptor fieldDescriptor) {
-      String fieldName = fieldDescriptor.getJsonName();
       GraphQLFieldDefinition.Builder builder =
           GraphQLFieldDefinition.newFieldDefinition()
               .type(convertType(fieldDescriptor))
               .dataFetcher(
-                  new ProtoDataFetcher(fieldName))
-              .name(fieldName);
-      if (fieldDescriptor.getFile().toProto().getSourceCodeInfo().getLocationCount()
-          > fieldDescriptor.getIndex()) {
+                  new ProtoDataFetcher(
+                      LOWER_CAMEL_TO_UPPER.convert(
+                          UNDERSCORE_TO_CAMEL.convert(fieldDescriptor.getName())
+                      )
+                  )
+              )
+              .name(fieldDescriptor.getJsonName());
+      if (fieldDescriptor.getFile().toProto().
+          getSourceCodeInfo().getLocationCount() > fieldDescriptor.getIndex()) {
         builder.description(
             fieldDescriptor
                 .getFile()

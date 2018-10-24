@@ -29,7 +29,9 @@ import org.junit.runners.JUnit4;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectType;
 
-/** Unit tests for {@link com.google.api.graphql.rejoiner.GqlInputConverter}. */
+/**
+ * Unit tests for {@link com.google.api.graphql.rejoiner.GqlInputConverter}.
+ */
 @RunWith(JUnit4.class)
 public final class GqlInputConverterTest {
 
@@ -49,7 +51,8 @@ public final class GqlInputConverterTest {
             Proto1.newBuilder(),
             ImmutableMap.of(
                 "id", "id", "intField", 123, "testProto",
-                ImmutableMap.of("innerId", "1", "enums", ImmutableList.of(Proto2.TestEnum.FOO, Proto2.TestEnum.BAR))));
+                ImmutableMap.of("innerId", "1", "enums", ImmutableList.of(Proto2.TestEnum.FOO, Proto2.TestEnum.BAR))
+                , "RenamedField", "someName"));
     ProtoTruth.assertThat(protoBuf)
         .isEqualTo(
             Proto1.newBuilder()
@@ -59,6 +62,7 @@ public final class GqlInputConverterTest {
                     .addEnums(Proto2.TestEnum.FOO)
                     .addEnums(Proto2.TestEnum.BAR)
                     .build())
+                .setNameField("someName")
                 .build());
   }
 

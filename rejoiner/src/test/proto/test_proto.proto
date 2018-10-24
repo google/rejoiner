@@ -24,6 +24,7 @@ message Proto1 {
   Proto2 test_proto = 3;
   InnerProto test_inner_proto = 4;
   int64 camelCaseName = 5;
+  string name_field = 6 [json_name="RenamedField"];
 
   message InnerProto {
     string foo = 1;
