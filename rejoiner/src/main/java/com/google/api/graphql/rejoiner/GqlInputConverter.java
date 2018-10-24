@@ -50,9 +50,6 @@ final class GqlInputConverter {
   private final BiMap<String, Descriptor> descriptorMapping;
   private final BiMap<String, EnumDescriptor> enumMapping;
 
-  private static final Converter<String, String> UNDERSCORE_TO_CAMEL =
-      CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
-
   private GqlInputConverter(
       BiMap<String, Descriptor> descriptorMapping, BiMap<String, EnumDescriptor> enumMapping) {
     this.descriptorMapping = descriptorMapping;
@@ -72,7 +69,7 @@ final class GqlInputConverter {
 
     Map<String, Object> remainingInput = new HashMap<>(input);
     for (FieldDescriptor field : descriptor.getFields()) {
-      String fieldName = getFieldName(field);
+      String fieldName = field.getJsonName();
 
       if (!remainingInput.containsKey(fieldName)) {
         // TODO: validate required fields
@@ -107,7 +104,7 @@ final class GqlInputConverter {
     for (FieldDescriptor field : descriptor.getFields()) {
       GraphQLType fieldType = getFieldType(field);
       GraphQLInputObjectField.Builder inputBuilder =
-          GraphQLInputObjectField.newInputObjectField().name(getFieldName(field));
+          GraphQLInputObjectField.newInputObjectField().name(field.getJsonName());
       if (field.isRepeated()) {
         inputBuilder.type(new GraphQLList(fieldType));
       } else {
@@ -143,12 +140,6 @@ final class GqlInputConverter {
 
   static String getReferenceName(GenericDescriptor descriptor) {
     return "Input_" + ProtoToGql.getReferenceName(descriptor);
-  }
-
-  /** Field names with under_scores are converted to camelCase. */
-  private String getFieldName(FieldDescriptor field) {
-    String fieldName = field.getName();
-    return fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
   }
 
   private GraphQLType getFieldType(FieldDescriptor field) {
