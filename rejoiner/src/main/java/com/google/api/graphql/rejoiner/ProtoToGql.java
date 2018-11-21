@@ -155,16 +155,7 @@ final class ProtoToGql {
               .dataFetcher(
                   new ProtoDataFetcher(convertedFieldName))
               .name(convertedFieldName);
-      if (fieldDescriptor.getFile().toProto().getSourceCodeInfo().getLocationCount()
-          > fieldDescriptor.getIndex()) {
-        builder.description(
-            fieldDescriptor
-                .getFile()
-                .toProto()
-                .getSourceCodeInfo()
-                .getLocation(fieldDescriptor.getIndex())
-                .getLeadingComments());
-      }
+      builder.description(DescriptorSet.COMMENTS.get(fieldDescriptor.getFullName()));
       if (fieldDescriptor.getOptions().hasDeprecated()
           && fieldDescriptor.getOptions().getDeprecated()) {
         builder.deprecate("deprecated in proto");
@@ -246,6 +237,7 @@ final class ProtoToGql {
 
     return GraphQLObjectType.newObject()
         .name(getReferenceName(descriptor))
+        .description(DescriptorSet.COMMENTS.get(descriptor.getFullName()))
         .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions)
         .build();
   }
@@ -253,7 +245,8 @@ final class ProtoToGql {
   static GraphQLEnumType convert(EnumDescriptor descriptor) {
     GraphQLEnumType.Builder builder = GraphQLEnumType.newEnum().name(getReferenceName(descriptor));
     for (EnumValueDescriptor value : descriptor.getValues()) {
-      builder.value(value.getName());
+      builder.value(value.getName(), value.getName(), DescriptorSet.COMMENTS.get(value.getFullName()),
+          value.getOptions().getDeprecated() ? "deprecated in proto" : null);
     }
     return builder.build();
   }

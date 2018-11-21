@@ -142,12 +142,12 @@ public abstract class SchemaModule extends AbstractModule {
       }
 
       for (Method method : findMethods(getClass(), Query.class)) {
-        String name = method.getAnnotationsByType(Query.class)[0].value();
-        allQueriesInModule.add(methodToFieldDefinition(method, name, null));
+        Query query = method.getAnnotationsByType(Query.class)[0];
+        allQueriesInModule.add(methodToFieldDefinition(method, query.value(), query.fullName(), null));
       }
       for (Method method : findMethods(getClass(), Mutation.class)) {
-        String name = method.getAnnotationsByType(Mutation.class)[0].value();
-        allMutationsInModule.add(methodToFieldDefinition(method, name, null));
+        Mutation mutation = method.getAnnotationsByType(Mutation.class)[0];
+        allMutationsInModule.add(methodToFieldDefinition(method, mutation.value(), mutation.fullName(), null));
       }
 
       Namespace namespaceAnnotation = findClassAnnotation(getClass(), Namespace.class);
@@ -192,7 +192,7 @@ public abstract class SchemaModule extends AbstractModule {
 
       for (Method method : findMethods(getClass(), RelayNode.class)) {
         GraphQLFieldDefinition graphQLFieldDefinition =
-            methodToFieldDefinition(method, "_NOT_USED_", null);
+            methodToFieldDefinition(method, "_NOT_USED_", "_NOT_USED_", null);
         relayIdMultibinder
             .addBinding()
             .toInstance(
@@ -381,12 +381,12 @@ public abstract class SchemaModule extends AbstractModule {
 
   private TypeModification methodToTypeModification(
       Method method, String name, Descriptor typeDescriptor) {
-    GraphQLFieldDefinition fieldDef = methodToFieldDefinition(method, name, typeDescriptor);
+    GraphQLFieldDefinition fieldDef = methodToFieldDefinition(method, name, name, typeDescriptor);
     return Type.find(typeDescriptor).addField(fieldDef);
   }
 
   private GraphQLFieldDefinition methodToFieldDefinition(
-      Method method, String name, @Nullable Descriptor descriptor) {
+      Method method, String name, @Nullable String fullName, @Nullable Descriptor descriptor) {
     method.setAccessible(true);
     try {
       ImmutableList<MethodMetadata> methodParameters = getMethodMetadata(method, descriptor);
@@ -415,6 +415,7 @@ public abstract class SchemaModule extends AbstractModule {
       GraphQLFieldDefinition.Builder fieldDef = GraphQLFieldDefinition.newFieldDefinition();
       fieldDef.type(returnType);
       fieldDef.name(name);
+      fieldDef.description(DescriptorSet.COMMENTS.get(fullName));
       for (MethodMetadata methodMetadata : methodParameters) {
         if (methodMetadata.hasArgument()) {
           fieldDef.argument(methodMetadata.argument());
