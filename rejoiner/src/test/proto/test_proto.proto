@@ -32,11 +32,22 @@ message Proto1 {
   }
 }
 
+//Enum comment
+enum TestEnumWithComments {
+  FOO = 0; //Some trailing comment
+  BAR = 1;
+}
+
 message Proto2 {
   string inner_id = 1;
   repeated TestEnum enums = 2;
 
-  //Enum comment
+  // Nested type comment
+  message NestedProto {
+    string nested_id = 1; //Some nested id
+  }
+
+    //Enum comment
   enum TestEnum {
     UNKNOWN = 0; //Some trailing comment
     FOO = 1;
