@@ -114,8 +114,11 @@ final class GqlInputConverter {
         inputBuilder.type((GraphQLInputType) fieldType);
       }
 
+      inputBuilder.description(DescriptorSet.COMMENTS.get(field.getFullName()));
+
       builder.field(inputBuilder.build());
     }
+    builder.description(DescriptorSet.COMMENTS.get(descriptor.getFullName()));
     return builder.build();
   }
 

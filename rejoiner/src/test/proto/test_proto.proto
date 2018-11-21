@@ -20,9 +20,11 @@ option java_package = "com.google.api.graphql.rejoiner";
 
 message Proto1 {
   string id = 1;
-  int64 int_field = 2;
-  Proto2 test_proto = 3;
+  //Some leading comment
+  int64 int_field = 2;//Some trailing comment
+  Proto2 test_proto = 3;//Some trailing comment
   InnerProto test_inner_proto = 4;
+  //Some leading comment
   int64 camelCaseName = 5;
 
   message InnerProto {
@@ -30,12 +32,24 @@ message Proto1 {
   }
 }
 
+//Enum comment
+enum TestEnumWithComments {
+  FOO = 0; //Some trailing comment
+  BAR = 1;
+}
+
 message Proto2 {
   string inner_id = 1;
   repeated TestEnum enums = 2;
 
+  // Nested type comment
+  message NestedProto {
+    string nested_id = 1; //Some nested id
+  }
+
+    //Enum comment
   enum TestEnum {
-    UNKNOWN = 0;
+    UNKNOWN = 0; //Some trailing comment
     FOO = 1;
     BAR = 2;
   }
