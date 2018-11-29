@@ -80,6 +80,7 @@ final class GqlInputConverter {
       }
 
       if (field.isRepeated()) {
+        @SuppressWarnings("unchecked")
         List<Object> values = (List<Object>) remainingInput.remove(fieldName);
         for (Object value : values) {
           builder.addRepeatedField(field, getValueForField(field, value, builder));
