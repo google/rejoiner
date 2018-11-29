@@ -193,8 +193,7 @@ public final class SchemaModuleTest {
   }
 
   @Test
-  public void schemaShouldValidateWhenIncludingDataFetchingEnvironment()
-      throws ExecutionException, InterruptedException {
+  public void schemaShouldValidateWhenIncludingDataFetchingEnvironment() throws Exception {
     Injector injector =
         Guice.createInjector(
             new SchemaModule() {
@@ -209,8 +208,7 @@ public final class SchemaModuleTest {
   }
 
   @Test
-  public void schemaShouldValidateWhenProvidingJustRequest()
-      throws ExecutionException, InterruptedException {
+  public void schemaShouldValidateWhenProvidingJustRequest() throws Exception {
     Injector injector =
         Guice.createInjector(
             new SchemaModule() {
@@ -224,8 +222,7 @@ public final class SchemaModuleTest {
   }
 
   @Test
-  public void schemaShouldValidateWhenInjectingParameterUsingGuice()
-      throws ExecutionException, InterruptedException {
+  public void schemaShouldValidateWhenInjectingParameterUsingGuice() throws Exception {
     Injector injector =
         Guice.createInjector(
             new SchemaModule() {
@@ -238,7 +235,7 @@ public final class SchemaModuleTest {
     validateSchema(injector);
   }
 
-  private void validateSchema(Injector injector) throws ExecutionException, InterruptedException {
+  private void validateSchema(Injector injector) throws Exception {
     assertThat(injector.getInstance(QUERY_KEY)).hasSize(1);
     assertThat(injector.getInstance(MUTATION_KEY)).isEmpty();
     assertThat(injector.getInstance(EXTRA_TYPE_KEY)).hasSize(1);
