@@ -41,8 +41,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
 
-import javax.annotation.Nullable;
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -50,6 +48,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
+import javax.inject.Provider;
 
 /**
  * Module for registering parts of a {@link graphql.schema.GraphQLSchema}.
