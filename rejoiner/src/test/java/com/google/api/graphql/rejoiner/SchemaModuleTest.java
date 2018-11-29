@@ -42,7 +42,6 @@ import graphql.schema.GraphQLFieldDefinition;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
