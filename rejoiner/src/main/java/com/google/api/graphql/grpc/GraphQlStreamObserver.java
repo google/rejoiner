@@ -42,7 +42,7 @@ public abstract class GraphQlStreamObserver<T extends Message, R extends Message
   public void onNext(T value) {
     List<Value> path =
         dataFetchingEnvironment
-            .getFieldTypeInfo()
+            .getExecutionStepInfo()
             .getPath()
             .toList()
             .stream()
