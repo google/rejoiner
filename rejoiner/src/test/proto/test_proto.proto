@@ -34,8 +34,9 @@ message Proto1 {
 
 //Enum comment
 enum TestEnumWithComments {
-  FOO = 0; //Some trailing comment
-  BAR = 1;
+  UNSPECIFIED = 0;
+  FOO = 1; //Some trailing comment
+  BAR = 2;
 }
 
 message Proto2 {
