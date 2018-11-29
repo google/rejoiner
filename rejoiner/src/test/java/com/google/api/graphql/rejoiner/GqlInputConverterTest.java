@@ -32,8 +32,7 @@ public final class GqlInputConverterTest {
 
   @Test
   public void unknownProtoShouldPass() {
-    GqlInputConverter inputConverter = GqlInputConverter.newBuilder().build();
-    Truth.assertThat(inputConverter.createArgument(Proto1.getDescriptor(), "input")).isNotNull();
+    Truth.assertThat(GqlInputConverter.createArgument(Proto1.getDescriptor(), "input")).isNotNull();
   }
 
   @Test
@@ -57,9 +56,7 @@ public final class GqlInputConverterTest {
 
   @Test
   public void inputConverterShouldCreateArgument() {
-    GqlInputConverter inputConverter =
-        GqlInputConverter.newBuilder().add(TestProto.getDescriptor().getFile()).build();
-    GraphQLArgument argument = inputConverter.createArgument(Proto1.getDescriptor(), "input");
+    GraphQLArgument argument = GqlInputConverter.createArgument(Proto1.getDescriptor(), "input");
     Truth.assertThat(argument.getName()).isEqualTo("input");
     Truth.assertThat(argument.getType().getName())
         .isEqualTo("Input_javatests_com_google_api_graphql_rejoiner_proto_Proto1");
@@ -77,9 +74,7 @@ public final class GqlInputConverterTest {
 
   @Test
   public void inputConverterShouldCreateArgumentForMessagesInSameFile() {
-    GqlInputConverter inputConverter =
-        GqlInputConverter.newBuilder().add(TestProto.getDescriptor().getFile()).build();
-    GraphQLArgument argument = inputConverter.createArgument(Proto2.getDescriptor(), "input");
+    GraphQLArgument argument = GqlInputConverter.createArgument(Proto2.getDescriptor(), "input");
     Truth.assertThat(argument.getName()).isEqualTo("input");
     Truth.assertThat(argument.getType().getName())
         .isEqualTo("Input_javatests_com_google_api_graphql_rejoiner_proto_Proto2");
