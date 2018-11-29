@@ -273,15 +273,6 @@ public abstract class SchemaModule extends AbstractModule {
 
   /**
    * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
-   * that are annotated with {@link RelayNode}.
-   */
-  private static ImmutableSet<Method> findRelayIdMethods(
-      Class<? extends SchemaModule> moduleClass) {
-    return findMethods(moduleClass, RelayNode.class);
-  }
-
-  /**
-   * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
    * that have the expected type and annotation.
    */
   private static ImmutableSet<Method> findMethods(
