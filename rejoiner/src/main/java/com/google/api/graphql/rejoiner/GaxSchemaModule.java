@@ -48,7 +48,7 @@ public abstract class GaxSchemaModule extends SchemaModule {
                               requestMessage.toBuilder(),
                               env.getArgument("input"));
                       try {
-                        Object callableInstance = methodWrapper.invoke(service.get(), null);
+                        Object callableInstance = methodWrapper.invoke(service.get());
                         Method method = callableInstance.getClass().getMethod("futureCall", Object.class);
                         method.setAccessible(true);
                         Object[] methodParameterValues = new Object[]{input};
