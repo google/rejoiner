@@ -137,9 +137,7 @@ final class ProtoToGql {
           return method.invoke(object);
         } catch (NoSuchMethodException e) {
           return null;
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
           throw new RuntimeException(e);
         }
       }
@@ -154,7 +152,7 @@ final class ProtoToGql {
               .type(convertType(fieldDescriptor))
               .dataFetcher(
                   new ProtoDataFetcher(convertedFieldName))
-              .name(convertedFieldName);
+              .name(fieldDescriptor.getJsonName());
       builder.description(DescriptorSet.COMMENTS.get(fieldDescriptor.getFullName()));
       if (fieldDescriptor.getOptions().hasDeprecated()
           && fieldDescriptor.getOptions().getDeprecated()) {

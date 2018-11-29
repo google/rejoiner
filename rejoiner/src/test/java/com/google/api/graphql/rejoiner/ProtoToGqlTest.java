@@ -57,7 +57,7 @@ public final class ProtoToGqlTest {
     GraphQLObjectType result = ProtoToGql.convert(Proto1.getDescriptor(), null);
     assertThat(result.getName())
         .isEqualTo("javatests_com_google_api_graphql_rejoiner_proto_Proto1");
-    assertThat(result.getFieldDefinitions()).hasSize(5);
+    assertThat(result.getFieldDefinitions()).hasSize(6);
   }
 
   @Test
@@ -74,9 +74,10 @@ public final class ProtoToGqlTest {
   @Test
   public void checkFieldNameCamelCase() {
     GraphQLObjectType result = ProtoToGql.convert(Proto1.getDescriptor(), null);
-    assertThat(result.getFieldDefinitions()).hasSize(5);
+    assertThat(result.getFieldDefinitions()).hasSize(6);
     assertThat(result.getFieldDefinition("intField")).isNotNull();
     assertThat(result.getFieldDefinition("camelCaseName")).isNotNull();
+    assertThat(result.getFieldDefinition("RenamedField")).isNotNull();
   }
 
   @Test
