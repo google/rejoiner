@@ -117,7 +117,7 @@ public final class TodoModule extends AbstractModule {
 ### Dependency information
 
 Apache Maven
-```
+```xml
 <dependency>
     <groupId>com.google.api.graphql</groupId>
     <artifactId>rejoiner</artifactId>
