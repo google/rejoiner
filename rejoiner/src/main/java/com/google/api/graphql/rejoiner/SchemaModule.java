@@ -76,6 +76,11 @@ public abstract class SchemaModule extends AbstractModule {
     referencedDescriptors.add(descriptor);
     return ProtoToGql.getReference(descriptor);
   }
+  
+  protected final GraphQLTypeReference getInputTypeReference(Descriptor descriptor) {
+    referencedDescriptors.add(descriptor);
+    return new GraphQLTypeReference(GqlInputConverter.getReferenceName(descriptor));
+  }
 
   protected ImmutableList<GraphQLFieldDefinition> extraMutations() {
     return ImmutableList.of();
