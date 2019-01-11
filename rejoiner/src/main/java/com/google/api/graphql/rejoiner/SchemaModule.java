@@ -40,6 +40,9 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
+import graphql.schema.GraphQLTypeReference;
+import io.grpc.CallOptions;
+import io.grpc.stub.AbstractStub;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -63,6 +66,7 @@ import javax.inject.Provider;
  */
 public abstract class SchemaModule extends AbstractModule {
 
+  public static final CallOptions.Key<ImmutableMap<String, Object>> GQL_CONTEXT = CallOptions.Key.create("gql_context");
   private final ImmutableSet.Builder<Descriptor> referencedDescriptors = ImmutableSet.builder();
   private final List<GraphQLFieldDefinition> allQueriesInModule = new ArrayList<>();
   private final List<GraphQLFieldDefinition> allMutationsInModule = new ArrayList<>();
@@ -390,7 +394,14 @@ public abstract class SchemaModule extends AbstractModule {
           (DataFetchingEnvironment environment) -> {
             Object[] methodParameterValues = new Object[methodParameters.size()];
             for (int i = 0; i < methodParameters.size(); i++) {
-              methodParameterValues[i] = methodParameters.get(i).getParameterValue(environment);
+              Object parameterValue = methodParameters.get(i).getParameterValue(environment);
+              if (parameterValue instanceof AbstractStub) {
+                  Object ctx = environment.getContext();
+                  if (ctx instanceof ImmutableMap) {
+                      parameterValue = ((AbstractStub) parameterValue).withOption(GQL_CONTEXT, ctx);
+                  }
+              }
+              methodParameterValues[i] = parameterValue;
             }
             try {
               return method.invoke(this, methodParameterValues);

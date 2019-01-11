@@ -1,0 +1,29 @@
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'idea'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'net.ltgt.apt'
+apply plugin: 'net.ltgt.apt-idea'
+apply plugin: 'maven-publish'
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+group = 'com.loopme.graphql'
+
+dependencies {
+    annotationProcessor 'com.google.auto.value:auto-value:1.6.3'
+    api 'com.google.auto.value:auto-value-annotations:1.6.3'
+
+    api 'com.google.inject:guice:4.2.2'
+    api 'com.graphql-java:graphql-java:11.0'
+    implementation 'com.google.guava:guava:27.0.1-jre'
+
+    implementation 'com.google.protobuf:protobuf-java-util:3.6.1'
+
+    testImplementation 'com.google.truth:truth:0.42'
+    testImplementation 'com.google.truth.extensions:truth-proto-extension:0.42'
+    testImplementation 'junit:junit:4.12'
+
+}
+

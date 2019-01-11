@@ -99,11 +99,11 @@ public final class SchemaToProtoTest {
                 + "\n"
                 + "message queryType {\n"
                 + "option (jspb.message_id) = \"graphql.queryType\";\n"
-                + "bool boolean = 1;\n"
-                + "float float = 2;\n"
-                + "int32 int = 3;\n"
-                + "int64 long = 4;\n"
-                + "string string = 5;\n"
+                + "string string = 1;\n"
+                + "bool boolean = 2;\n"
+                + "float float = 3;\n"
+                + "int32 int = 4;\n"
+                + "int64 long = 5;\n"
                 + "}");
   }
 
