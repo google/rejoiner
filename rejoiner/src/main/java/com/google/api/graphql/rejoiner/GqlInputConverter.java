@@ -35,10 +35,12 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Converts GraphQL inputs into Protobuf message.
@@ -71,6 +73,10 @@ final class GqlInputConverter {
     }
 
     Map<String, Object> remainingInput = new HashMap<>(input);
+    Set<FieldDescriptor> oneOfFields = descriptor.getOneofs().stream()
+        .flatMap(oneOfDescriptor->oneOfDescriptor.getFields().stream()).collect(Collectors.toSet());
+    Set<FieldDescriptor> fields =new LinkedHashSet<>(descriptor.getFields());
+    fields.addAll(oneOfFields);
     for (FieldDescriptor field : descriptor.getFields()) {
       String fieldName = getFieldName(field);
 

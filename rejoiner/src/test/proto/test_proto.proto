@@ -27,9 +27,16 @@ message Proto1 {
   //Some leading comment
   int64 camelCaseName = 5;
   string name_field = 6 [json_name="RenamedField"];
-
+  oneof some_oneof  {
+    string val_a =7;
+    int64 val_b =8;
+  }
   message InnerProto {
     string foo = 1;
+    oneof some_oneof{
+      string val_a=2;
+      int64 val_b=3;
+    }
   }
 }
 
