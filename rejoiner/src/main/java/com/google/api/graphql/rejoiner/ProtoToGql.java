@@ -119,7 +119,10 @@ final class ProtoToGql {
             return null;
           }
           Map<?, ?> map = (Map<?, ?>) mapValue;
-          return map.entrySet().stream().map(entry -> ImmutableMap.of("key", entry.getKey(), "value", entry.getValue())).collect(toImmutableList());
+          return map.entrySet()
+              .stream()
+              .map(entry -> ImmutableMap.of("key", entry.getKey(), "value", entry.getValue()))
+              .collect(toImmutableList());
         }
         if (type instanceof GraphQLEnumType) {
           Object o = call(source, "get" + LOWER_CAMEL_TO_UPPER.convert(name));
@@ -146,12 +149,12 @@ final class ProtoToGql {
     @Override
     public GraphQLFieldDefinition apply(FieldDescriptor fieldDescriptor) {
       String fieldName = fieldDescriptor.getName();
-      String convertedFieldName = fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
+      String convertedFieldName =
+          fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
       GraphQLFieldDefinition.Builder builder =
           GraphQLFieldDefinition.newFieldDefinition()
               .type(convertType(fieldDescriptor))
-              .dataFetcher(
-                  new ProtoDataFetcher(convertedFieldName))
+              .dataFetcher(new ProtoDataFetcher(convertedFieldName))
               .name(fieldDescriptor.getJsonName());
       builder.description(DescriptorSet.COMMENTS.get(fieldDescriptor.getFullName()));
       if (fieldDescriptor.getOptions().hasDeprecated()
@@ -211,27 +214,27 @@ final class ProtoToGql {
                         .build())
             .findFirst();
 
-    if (relayId.isPresent()) {
-      return GraphQLObjectType.newObject()
-          .name(getReferenceName(descriptor))
-          .withInterface(nodeInterface)
-          .field(relayId.get())
-          .fields(
-              graphQLFieldDefinitions
-                  .stream()
-                  .map(
-                      field ->
-                          field.getName().equals("id")
-                              ? GraphQLFieldDefinition.newFieldDefinition()
-                                  .name("rawId")
-                                  .description(field.getDescription())
-                                  .type(field.getType())
-                                  .dataFetcher(field.getDataFetcher())
-                                  .build()
-                              : field)
-                  .collect(ImmutableList.toImmutableList()))
-          .build();
-    }
+    //   if (relayId.isPresent()) {
+    //      return GraphQLObjectType.newObject()
+    //          .name(getReferenceName(descriptor))
+    //          .withInterface(nodeInterface)
+    //          .field(relayId.get())
+    //          .fields(
+    //              graphQLFieldDefinitions
+    //                  .stream()
+    //                  .map(
+    //                      field ->
+    //                          field.getName().equals("id")
+    //                              ? GraphQLFieldDefinition.newFieldDefinition()
+    //                                  .name("rawId")
+    //                                  .description(field.getDescription())
+    //                                  .type(field.getType())
+    //                                  .dataFetcher(field.getDataFetcher())
+    //                                  .build()
+    //                              : field)
+    //                  .collect(ImmutableList.toImmutableList()))
+    //          .build();
+    //    }
 
     return GraphQLObjectType.newObject()
         .name(getReferenceName(descriptor))
@@ -243,7 +246,10 @@ final class ProtoToGql {
   static GraphQLEnumType convert(EnumDescriptor descriptor) {
     GraphQLEnumType.Builder builder = GraphQLEnumType.newEnum().name(getReferenceName(descriptor));
     for (EnumValueDescriptor value : descriptor.getValues()) {
-      builder.value(value.getName(), value.getName(), DescriptorSet.COMMENTS.get(value.getFullName()),
+      builder.value(
+          value.getName(),
+          value.getName(),
+          DescriptorSet.COMMENTS.get(value.getFullName()),
           value.getOptions().getDeprecated() ? "deprecated in proto" : null);
     }
     return builder.build();

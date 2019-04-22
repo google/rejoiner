@@ -34,7 +34,6 @@ public final class TypeTest {
           .field(
               GraphQLFieldDefinition.newFieldDefinition()
                   .name("name")
-                  .staticValue("rejoiner")
                   .type(Scalars.GraphQLString)
                   .build())
           .build();
@@ -46,7 +45,6 @@ public final class TypeTest {
             .addField(
                 GraphQLFieldDefinition.newFieldDefinition()
                     .name("isTheBest")
-                    .staticValue(true)
                     .type(Scalars.GraphQLBoolean)
                     .build());
 
@@ -66,16 +64,10 @@ public final class TypeTest {
             .replaceField(
                 GraphQLFieldDefinition.newFieldDefinition()
                     .name("name")
-                    .staticValue("rejoinerv2")
-                    .type(Scalars.GraphQLString)
+                    .type(Scalars.GraphQLInt)
                     .build());
-    assertThat(
-            typeModification
-                .apply(OBJECT_TYPE)
-                .getFieldDefinition("name")
-                .getDataFetcher()
-                .get(null))
-        .isEqualTo("rejoinerv2");
+    assertThat(typeModification.apply(OBJECT_TYPE).getFieldDefinition("name").getType())
+        .isEqualTo(Scalars.GraphQLInt);
   }
 
   @Test(expected = AssertException.class)
@@ -84,7 +76,6 @@ public final class TypeTest {
         .addField(
             GraphQLFieldDefinition.newFieldDefinition()
                 .name("name")
-                .staticValue("rejoiner2")
                 .type(Scalars.GraphQLString)
                 .build())
         .apply(OBJECT_TYPE);

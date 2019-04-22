@@ -30,16 +30,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Message;
 import graphql.Scalars;
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.DataFetchingEnvironmentBuilder;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLNonNull;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLScalarType;
+import graphql.schema.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -72,11 +63,11 @@ public abstract class SchemaModule extends AbstractModule {
    *
    * <p>All types in the proto are made available to be included in the GraphQL schema.
    */
-  protected final GraphQLOutputType getTypeReference(Descriptor descriptor) {
+  protected final GraphQLTypeReference getTypeReference(Descriptor descriptor) {
     referencedDescriptors.add(descriptor);
     return ProtoToGql.getReference(descriptor);
   }
-  
+
   protected final GraphQLTypeReference getInputTypeReference(Descriptor descriptor) {
     referencedDescriptors.add(descriptor);
     return new GraphQLTypeReference(GqlInputConverter.getReferenceName(descriptor));
@@ -107,134 +98,151 @@ public abstract class SchemaModule extends AbstractModule {
   @Override
   protected final void configure() {
     configureSchema();
-    Multibinder<GraphQLFieldDefinition> queryMultibinder =
+    Multibinder<SchemaBundle> schemaBundleProviders =
         Multibinder.newSetBinder(
-            binder(), new TypeLiteral<GraphQLFieldDefinition>() {}, Annotations.Queries.class);
-    Multibinder<GraphQLFieldDefinition> mutationMultibinder =
-        Multibinder.newSetBinder(
-            binder(), new TypeLiteral<GraphQLFieldDefinition>() {}, Annotations.Mutations.class);
-    Multibinder<TypeModification> typeModificationMultibinder =
-        Multibinder.newSetBinder(
-            binder(), new TypeLiteral<TypeModification>() {}, Annotations.GraphModifications.class);
-    Multibinder<FileDescriptor> extraTypesMultibinder =
-        Multibinder.newSetBinder(
-            binder(), new TypeLiteral<FileDescriptor>() {}, Annotations.ExtraTypes.class);
-    Multibinder<NodeDataFetcher> relayIdMultibinder =
-        Multibinder.newSetBinder(
-            binder(), new TypeLiteral<NodeDataFetcher>() {}, Annotations.Queries.class);
+            binder(), new TypeLiteral<SchemaBundle>() {}, Annotations.SchemaBundles.class);
 
-    allMutationsInModule.addAll(extraMutations());
+    final Class<? extends SchemaModule> moduleClass = getClass();
 
-    try {
-      for (Field field : findQueryFields(getClass())) {
-        field.setAccessible(true);
-        allQueriesInModule.add((GraphQLFieldDefinition) field.get(this));
-      }
+    schemaBundleProviders
+        .addBinding()
+        .toProvider(
+            () -> {
+              SchemaBundle.Builder schemaBundleBuilder = SchemaBundle.builder();
 
-      for (Field field : findMutationFields(getClass())) {
-        field.setAccessible(true);
-        allMutationsInModule.add((GraphQLFieldDefinition) field.get(this));
-      }
+              allMutationsInModule.addAll(extraMutations());
 
-      for (Field field : findTypeModificationFields(getClass())) {
-        field.setAccessible(true);
-        typeModificationMultibinder.addBinding().toInstance((TypeModification) field.get(this));
-      }
+              try {
+                for (Field field : findQueryFields(moduleClass)) {
+                  field.setAccessible(true);
+                  allQueriesInModule.add((GraphQLFieldDefinition) field.get(this));
+                }
 
-      for (Field field : findExtraTypeFields(getClass())) {
-        field.setAccessible(true);
-        extraTypesMultibinder.addBinding().toInstance((FileDescriptor) field.get(this));
-      }
+                for (Field field : findMutationFields(moduleClass)) {
+                  field.setAccessible(true);
+                  allMutationsInModule.add((GraphQLFieldDefinition) field.get(this));
+                }
 
-      for (Method method : findMethods(getClass(), Query.class)) {
-        Query query = method.getAnnotationsByType(Query.class)[0];
-        allQueriesInModule.add(methodToFieldDefinition(method, query.value(), query.fullName(), null));
-      }
-      for (Method method : findMethods(getClass(), Mutation.class)) {
-        Mutation mutation = method.getAnnotationsByType(Mutation.class)[0];
-        allMutationsInModule.add(methodToFieldDefinition(method, mutation.value(), mutation.fullName(), null));
-      }
+                for (Field field : findTypeModificationFields(moduleClass)) {
+                  field.setAccessible(true);
+                  schemaBundleBuilder
+                      .modificationsBuilder()
+                      .add((TypeModification) field.get(this));
+                }
 
-      Namespace namespaceAnnotation = findClassAnnotation(getClass(), Namespace.class);
+                for (Field field : findExtraTypeFields(moduleClass)) {
+                  field.setAccessible(true);
+                  schemaBundleBuilder
+                      .fileDescriptorsBuilder()
+                      .add((FileDescriptor) field.get(this));
+                }
 
-      if (namespaceAnnotation == null) {
-        allMutationsInModule.forEach(
-            mutation -> mutationMultibinder.addBinding().toInstance(mutation));
-        allQueriesInModule.forEach(query -> queryMultibinder.addBinding().toInstance(query));
-      } else {
-        String namespace = namespaceAnnotation.value();
-        if (!allQueriesInModule.isEmpty()) {
-          queryMultibinder
-              .addBinding()
-              .toInstance(
-                  GraphQLFieldDefinition.newFieldDefinition()
-                      .staticValue("")
-                      .name(namespace)
-                      .description(namespace)
-                      .type(
-                          GraphQLObjectType.newObject()
-                              .name("_QUERY_FIELD_GROUP_" + namespace)
-                              .fields(allQueriesInModule)
-                              .build())
-                      .build());
-        }
-        if (!allMutationsInModule.isEmpty()) {
-          mutationMultibinder
-              .addBinding()
-              .toInstance(
-                  GraphQLFieldDefinition.newFieldDefinition()
-                      .staticValue("")
-                      .name(namespace)
-                      .description(namespace)
-                      .type(
-                          GraphQLObjectType.newObject()
-                              .name("_MUTATION_FIELD_GROUP_" + namespace)
-                              .fields(allMutationsInModule)
-                              .build())
-                      .build());
-        }
-      }
+                for (Method method : findMethods(moduleClass, Query.class)) {
+                  Query query = method.getAnnotationsByType(Query.class)[0];
+                  allQueriesInModule.add(
+                      methodToFieldDefinition(method, query.value(), query.fullName(), null));
+                }
+                for (Method method : findMethods(moduleClass, Mutation.class)) {
+                  Mutation mutation = method.getAnnotationsByType(Mutation.class)[0];
+                  allMutationsInModule.add(
+                      methodToFieldDefinition(method, mutation.value(), mutation.fullName(), null));
+                }
 
-      for (Method method : findMethods(getClass(), RelayNode.class)) {
-        GraphQLFieldDefinition graphQLFieldDefinition =
-            methodToFieldDefinition(method, "_NOT_USED_", "_NOT_USED_", null);
-        relayIdMultibinder
-            .addBinding()
-            .toInstance(
-                new NodeDataFetcher(graphQLFieldDefinition.getType().getName()) {
-                  @Override
-                  public Object apply(String s) {
-                    // TODO: Don't hardcode the arguments structure.
-                    try {
-                      return graphQLFieldDefinition
-                          .getDataFetcher()
-                          .get(
-                              DataFetchingEnvironmentBuilder.newDataFetchingEnvironment()
-                                  .arguments(ImmutableMap.of("input", ImmutableMap.of("id", s)))
-                                  .build());
-                    } catch (Exception e) {
-                      throw new RuntimeException(e);
-                    }
+                Namespace namespaceAnnotation = findClassAnnotation(moduleClass, Namespace.class);
+
+                if (namespaceAnnotation == null) {
+
+                  schemaBundleBuilder.mutationFieldsBuilder().addAll(allMutationsInModule);
+                  schemaBundleBuilder.queryFieldsBuilder().addAll(allQueriesInModule);
+                } else {
+                  String namespace = namespaceAnnotation.value();
+                  if (!allQueriesInModule.isEmpty()) {
+                    schemaBundleBuilder
+                        .queryFieldsBuilder()
+                        .add(
+                            GraphQLFieldDefinition.newFieldDefinition()
+                                .staticValue("")
+                                .name(namespace)
+                                .description(namespace)
+                                .type(
+                                    GraphQLObjectType.newObject()
+                                        .name("_QUERY_FIELD_GROUP_" + namespace)
+                                        .fields(allQueriesInModule)
+                                        .build())
+                                .build());
                   }
-                });
-      }
+                  if (!allMutationsInModule.isEmpty()) {
+                    schemaBundleBuilder
+                        .mutationFieldsBuilder()
+                        .add(
+                            GraphQLFieldDefinition.newFieldDefinition()
+                                .staticValue("")
+                                .name(namespace)
+                                .description(namespace)
+                                .type(
+                                    GraphQLObjectType.newObject()
+                                        .name("_MUTATION_FIELD_GROUP_" + namespace)
+                                        .fields(allMutationsInModule)
+                                        .build())
+                                .build());
+                  }
+                }
 
-      for (Method method : findMethods(getClass(), SchemaModification.class)) {
-        SchemaModification annotation = method.getAnnotationsByType(SchemaModification.class)[0];
-        String name = annotation.addField();
-        Class<?> typeClass = annotation.onType();
-        Descriptor typeDescriptor = (Descriptor) typeClass.getMethod("getDescriptor").invoke(null);
-        extraTypesMultibinder.addBinding().toInstance(typeDescriptor.getFile());
-        typeModificationMultibinder
-            .addBinding()
-            .toInstance(methodToTypeModification(method, name, typeDescriptor));
-      }
-    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
-    referencedDescriptors
-        .build()
-        .forEach(descriptor -> extraTypesMultibinder.addBinding().toInstance(descriptor.getFile()));
+                for (Method method : findMethods(moduleClass, RelayNode.class)) {
+                  GraphQLFieldDefinition graphQLFieldDefinition =
+                      methodToFieldDefinition(method, "_NOT_USED_", "_NOT_USED_", null);
+                  schemaBundleBuilder
+                      .nodeDataFetchersBuilder()
+                      .add(
+                          new NodeDataFetcher(graphQLFieldDefinition.getType().getName()) {
+                            @Override
+                            public Object apply(String s) {
+                              // TODO: Don't hardcode the arguments structure.
+                              try {
+                                return null;
+                                //                      return graphQLFieldDefinition
+                                //                              .getDataFetcher()
+                                //                              .get(
+                                //
+                                // DataFetchingEnvironmentImpl.newDataFetchingEnvironment()
+                                //
+                                // .arguments(ImmutableMap.of("input", ImmutableMap.of("id",
+                                // s)))
+                                //                                  .build());
+                              } catch (Exception e) {
+                                throw new RuntimeException(e);
+                              }
+                            }
+                          });
+                }
+
+                for (Method method : findMethods(moduleClass, SchemaModification.class)) {
+                  SchemaModification annotation =
+                      method.getAnnotationsByType(SchemaModification.class)[0];
+                  String name = annotation.addField();
+                  Class<?> typeClass = annotation.onType();
+                  Descriptor typeDescriptor =
+                      (Descriptor) typeClass.getMethod("getDescriptor").invoke(null);
+                  schemaBundleBuilder.fileDescriptorsBuilder().add(typeDescriptor.getFile());
+                  schemaBundleBuilder
+                      .modificationsBuilder()
+                      .add(methodToTypeModification(method, name, typeDescriptor));
+                }
+              } catch (IllegalAccessException
+                  | NoSuchMethodException
+                  | InvocationTargetException e) {
+                throw new RuntimeException(e);
+              }
+
+              referencedDescriptors
+                  .build()
+                  .forEach(
+                      descriptor ->
+                          schemaBundleBuilder.fileDescriptorsBuilder().add(descriptor.getFile()));
+
+              return schemaBundleBuilder.build();
+            });
+
     requestInjection(this);
   }
 

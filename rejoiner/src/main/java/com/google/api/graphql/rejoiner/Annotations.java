@@ -23,6 +23,10 @@ final class Annotations {
 
   private Annotations() {}
 
+
+  @Retention(RetentionPolicy.RUNTIME)
+  @Qualifier
+  @interface SchemaBundles {}
   @Retention(RetentionPolicy.RUNTIME)
   @Qualifier
   @interface Mutations {}

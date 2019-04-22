@@ -63,27 +63,22 @@ public final class SchemaToProtoTest {
                             .field(
                                 GraphQLFieldDefinition.newFieldDefinition()
                                     .name("string")
-                                    .staticValue(new Object())
                                     .type(Scalars.GraphQLString))
                             .field(
                                 GraphQLFieldDefinition.newFieldDefinition()
                                     .name("boolean")
-                                    .staticValue(new Object())
                                     .type(Scalars.GraphQLBoolean))
                             .field(
                                 GraphQLFieldDefinition.newFieldDefinition()
                                     .name("float")
-                                    .staticValue(new Object())
                                     .type(Scalars.GraphQLFloat))
                             .field(
                                 GraphQLFieldDefinition.newFieldDefinition()
                                     .name("int")
-                                    .staticValue(new Object())
                                     .type(Scalars.GraphQLInt))
                             .field(
                                 GraphQLFieldDefinition.newFieldDefinition()
                                     .name("long")
-                                    .staticValue(new Object())
                                     .type(Scalars.GraphQLLong)))
                     .build()))
         .isEqualTo(
