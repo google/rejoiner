@@ -105,17 +105,69 @@ public abstract class SchemaModule extends AbstractModule {
 
   @Override
   protected final void configure() {
-    configureSchema();
     Multibinder<SchemaBundle> schemaBundleProviders =
         Multibinder.newSetBinder(
             binder(), new TypeLiteral<SchemaBundle>() {}, Annotations.SchemaBundles.class);
 
     final Class<? extends SchemaModule> moduleClass = getClass();
 
+    for (Method method : findMethods(moduleClass, Query.class)) {
+      Query query = method.getAnnotationsByType(Query.class)[0];
+      allQueriesInModule.add(
+          methodToFieldDefinition(method, query.value(), query.fullName(), null));
+    }
+    for (Method method : findMethods(moduleClass, Mutation.class)) {
+      Mutation mutation = method.getAnnotationsByType(Mutation.class)[0];
+      allMutationsInModule.add(
+          methodToFieldDefinition(method, mutation.value(), mutation.fullName(), null));
+    }
+
+    final List<NodeDataFetcher> nodeDataFetchers = new ArrayList<>();
+    final List<TypeModification> schemaModifications = new ArrayList<>();
+
+    for (Method method : findMethods(moduleClass, RelayNode.class)) {
+      GraphQLFieldDefinition graphQLFieldDefinition =
+          methodToFieldDefinition(method, "_NOT_USED_", "_NOT_USED_", null);
+      nodeDataFetchers.add(
+          new NodeDataFetcher(graphQLFieldDefinition.getType().getName()) {
+            @Override
+            public Object apply(String s) {
+              // TODO: Don't hardcode the arguments structure.
+              try {
+                return null;
+                //                      return graphQLFieldDefinition
+                //                              .getDataFetcher()
+                //                              .get(
+                //
+                // DataFetchingEnvironmentImpl.newDataFetchingEnvironment()
+                //
+                // .arguments(ImmutableMap.of("input", ImmutableMap.of("id",
+                // s)))
+                //                                  .build());
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+            }
+          });
+    }
+    try {
+      for (Method method : findMethods(moduleClass, SchemaModification.class)) {
+        SchemaModification annotation = method.getAnnotationsByType(SchemaModification.class)[0];
+        String name = annotation.addField();
+        Class<?> typeClass = annotation.onType();
+        Descriptor typeDescriptor = (Descriptor) typeClass.getMethod("getDescriptor").invoke(null);
+        referencedDescriptors.add(typeDescriptor);
+        schemaModifications.add(methodToTypeModification(method, name, typeDescriptor));
+      }
+    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
+
     schemaBundleProviders
         .addBinding()
         .toProvider(
             () -> {
+              configureSchema();
               SchemaBundle.Builder schemaBundleBuilder = SchemaBundle.builder();
 
               allMutationsInModule.addAll(extraMutations());
@@ -145,21 +197,9 @@ public abstract class SchemaModule extends AbstractModule {
                       .add((FileDescriptor) field.get(this));
                 }
 
-                for (Method method : findMethods(moduleClass, Query.class)) {
-                  Query query = method.getAnnotationsByType(Query.class)[0];
-                  allQueriesInModule.add(
-                      methodToFieldDefinition(method, query.value(), query.fullName(), null));
-                }
-                for (Method method : findMethods(moduleClass, Mutation.class)) {
-                  Mutation mutation = method.getAnnotationsByType(Mutation.class)[0];
-                  allMutationsInModule.add(
-                      methodToFieldDefinition(method, mutation.value(), mutation.fullName(), null));
-                }
-
                 Namespace namespaceAnnotation = findClassAnnotation(moduleClass, Namespace.class);
 
                 if (namespaceAnnotation == null) {
-
                   schemaBundleBuilder.mutationFieldsBuilder().addAll(allMutationsInModule);
                   schemaBundleBuilder.queryFieldsBuilder().addAll(allQueriesInModule);
                 } else {
@@ -196,49 +236,10 @@ public abstract class SchemaModule extends AbstractModule {
                   }
                 }
 
-                for (Method method : findMethods(moduleClass, RelayNode.class)) {
-                  GraphQLFieldDefinition graphQLFieldDefinition =
-                      methodToFieldDefinition(method, "_NOT_USED_", "_NOT_USED_", null);
-                  schemaBundleBuilder
-                      .nodeDataFetchersBuilder()
-                      .add(
-                          new NodeDataFetcher(graphQLFieldDefinition.getType().getName()) {
-                            @Override
-                            public Object apply(String s) {
-                              // TODO: Don't hardcode the arguments structure.
-                              try {
-                                return null;
-                                //                      return graphQLFieldDefinition
-                                //                              .getDataFetcher()
-                                //                              .get(
-                                //
-                                // DataFetchingEnvironmentImpl.newDataFetchingEnvironment()
-                                //
-                                // .arguments(ImmutableMap.of("input", ImmutableMap.of("id",
-                                // s)))
-                                //                                  .build());
-                              } catch (Exception e) {
-                                throw new RuntimeException(e);
-                              }
-                            }
-                          });
-                }
+                schemaBundleBuilder.nodeDataFetchersBuilder().addAll(nodeDataFetchers);
+                schemaBundleBuilder.modificationsBuilder().addAll(schemaModifications);
 
-                for (Method method : findMethods(moduleClass, SchemaModification.class)) {
-                  SchemaModification annotation =
-                      method.getAnnotationsByType(SchemaModification.class)[0];
-                  String name = annotation.addField();
-                  Class<?> typeClass = annotation.onType();
-                  Descriptor typeDescriptor =
-                      (Descriptor) typeClass.getMethod("getDescriptor").invoke(null);
-                  schemaBundleBuilder.fileDescriptorsBuilder().add(typeDescriptor.getFile());
-                  schemaBundleBuilder
-                      .modificationsBuilder()
-                      .add(methodToTypeModification(method, name, typeDescriptor));
-                }
-              } catch (IllegalAccessException
-                  | NoSuchMethodException
-                  | InvocationTargetException e) {
+              } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
               }
 
