@@ -13,9 +13,9 @@ public abstract class FieldDefinition<T> {
 
   abstract DataFetcher<T> dataFetcher();
 
-  static <T> FieldDefinition create(
+  static <T> FieldDefinition<T> create(
       String parentTypeName, GraphQLFieldDefinition field, DataFetcher<T> dataFetcher) {
-    return new AutoValue_FieldDefinition(parentTypeName, field, dataFetcher);
+    return new AutoValue_FieldDefinition<T>(parentTypeName, field, dataFetcher);
   }
 
   String fieldName() {
