@@ -1,24 +1,24 @@
 package com.google.api.graphql.rejoiner;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Descriptors;
 import graphql.schema.GraphQLFieldDefinition;
 import java.util.Collection;
-import javax.inject.Provider;
 
 @AutoValue
 public abstract class SchemaBundle {
 
-  public abstract ImmutableSet<GraphQLFieldDefinition> queryFields();
+  public abstract ImmutableList<GraphQLFieldDefinition> queryFields();
 
-  public abstract ImmutableSet<GraphQLFieldDefinition> mutationFields();
+  public abstract ImmutableList<GraphQLFieldDefinition> mutationFields();
 
-  public abstract ImmutableSet<TypeModification> modifications();
+  public abstract ImmutableList<TypeModification> modifications();
 
   public abstract ImmutableSet<Descriptors.FileDescriptor> fileDescriptors();
 
-  public abstract ImmutableSet<NodeDataFetcher> nodeDataFetchers();
+  public abstract ImmutableList<NodeDataFetcher> nodeDataFetchers();
 
   public static Builder builder() {
     return new AutoValue_SchemaBundle.Builder();
@@ -37,25 +37,17 @@ public abstract class SchemaBundle {
     return builder.build();
   }
 
-  public static SchemaBundle combineProviders(Collection<Provider<SchemaBundle>> schemaBundles) {
-    return combine(
-        schemaBundles
-            .stream()
-            .map(schemaBundleProvider -> schemaBundleProvider.get())
-            .collect(ImmutableSet.toImmutableSet()));
-  }
-
   @AutoValue.Builder
   public abstract static class Builder {
-    public abstract ImmutableSet.Builder<GraphQLFieldDefinition> queryFieldsBuilder();
+    public abstract ImmutableList.Builder<GraphQLFieldDefinition> queryFieldsBuilder();
 
-    public abstract ImmutableSet.Builder<GraphQLFieldDefinition> mutationFieldsBuilder();
+    public abstract ImmutableList.Builder<GraphQLFieldDefinition> mutationFieldsBuilder();
 
-    public abstract ImmutableSet.Builder<TypeModification> modificationsBuilder();
+    public abstract ImmutableList.Builder<TypeModification> modificationsBuilder();
 
     public abstract ImmutableSet.Builder<Descriptors.FileDescriptor> fileDescriptorsBuilder();
 
-    public abstract ImmutableSet.Builder<NodeDataFetcher> nodeDataFetchersBuilder();
+    public abstract ImmutableList.Builder<NodeDataFetcher> nodeDataFetchersBuilder();
 
     public abstract SchemaBundle build();
   }

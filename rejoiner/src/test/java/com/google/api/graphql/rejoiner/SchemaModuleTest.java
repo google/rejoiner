@@ -30,6 +30,7 @@ import graphql.Scalars;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.junit.Test;
@@ -218,7 +219,7 @@ public final class SchemaModuleTest {
     assertThat(schemaBundle.mutationFields()).isEmpty();
     assertThat(schemaBundle.fileDescriptors()).hasSize(1);
     assertThat(schemaBundle.modifications()).isEmpty();
-    Set<GraphQLFieldDefinition> queryFields = schemaBundle.queryFields();
+    Collection<GraphQLFieldDefinition> queryFields = schemaBundle.queryFields();
     GraphQLFieldDefinition hello = queryFields.iterator().next();
     assertThat(hello.getName()).isEqualTo("hello");
     assertThat(hello.getArguments()).hasSize(1);

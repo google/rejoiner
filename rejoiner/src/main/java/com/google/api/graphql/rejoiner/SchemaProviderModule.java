@@ -16,7 +16,6 @@ package com.google.api.graphql.rejoiner;
 
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import graphql.relay.Relay;
@@ -51,7 +50,7 @@ public final class SchemaProviderModule extends AbstractModule {
               .collect(Collectors.toMap(e -> e.getClassName(), Function.identity()));
 
       GraphQLObjectType.Builder queryType =
-          newObject().name("QueryType").fields(Lists.newArrayList(schemaBundle.queryFields()));
+          newObject().name("QueryType").fields(schemaBundle.queryFields());
 
       ProtoRegistry protoRegistry =
           ProtoRegistry.newBuilder()
@@ -83,10 +82,7 @@ public final class SchemaProviderModule extends AbstractModule {
         return GraphQLSchema.newSchema().query(queryType).build(protoRegistry.listTypes());
       }
       GraphQLObjectType mutationType =
-          newObject()
-              .name("MutationType")
-              .fields(Lists.newArrayList(schemaBundle.mutationFields()))
-              .build();
+          newObject().name("MutationType").fields(schemaBundle.mutationFields()).build();
       return GraphQLSchema.newSchema()
           .query(queryType)
           .mutation(mutationType)
