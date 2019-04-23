@@ -44,7 +44,7 @@ public final class SelectorToFieldMask {
 
     Builder maskFromSelectionBuilder = FieldMask.newBuilder();
 
-    for (Field field : environment.getFields()) {
+    for (Field field : environment.getMergedField().getFields()) {
       for (Selection selection1 : field.getSelectionSet().getSelections()) {
         if (selection1 instanceof Field) {
           Field field2 = (Field) selection1;
@@ -66,7 +66,7 @@ public final class SelectorToFieldMask {
       Descriptor descriptor) {
 
     Builder maskFromSelectionBuilder = FieldMask.newBuilder();
-    for (Field field : environment.getFields()) {
+    for (Field field : environment.getMergedField().getFields()) {
       for (Selection selection : field.getSelectionSet().getSelections()) {
         maskFromSelectionBuilder.addAllPaths(
             getPathsForProto("", selection, descriptor, fragmentsByName));

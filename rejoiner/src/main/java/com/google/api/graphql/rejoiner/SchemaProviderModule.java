@@ -79,14 +79,18 @@ public final class SchemaProviderModule extends AbstractModule {
       }
 
       if (schemaBundle.mutationFields().isEmpty()) {
-        return GraphQLSchema.newSchema().query(queryType).build(protoRegistry.listTypes());
+        return GraphQLSchema.newSchema()
+            .query(queryType)
+            .additionalTypes(protoRegistry.listTypes())
+            .build();
       }
       GraphQLObjectType mutationType =
           newObject().name("MutationType").fields(schemaBundle.mutationFields()).build();
       return GraphQLSchema.newSchema()
           .query(queryType)
           .mutation(mutationType)
-          .build(protoRegistry.listTypes());
+          .additionalTypes(protoRegistry.listTypes())
+          .build();
     }
   }
 
