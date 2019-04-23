@@ -15,6 +15,7 @@
 package com.google.api.graphql.rejoiner;
 
 import static graphql.Scalars.GraphQLString;
+
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
 import com.google.common.collect.BiMap;

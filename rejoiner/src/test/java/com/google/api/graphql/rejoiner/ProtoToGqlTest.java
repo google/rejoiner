@@ -86,34 +86,43 @@ public final class ProtoToGqlTest {
 
     GraphQLFieldDefinition intFieldGraphQLFieldDefinition = result.getFieldDefinition("intField");
     assertThat(intFieldGraphQLFieldDefinition).isNotNull();
-    assertThat(intFieldGraphQLFieldDefinition.getDescription().equals("Some leading comment. Some trailing comment")).isTrue();
+    assertThat(
+            intFieldGraphQLFieldDefinition
+                .getDescription()
+                .equals("Some leading comment. Some trailing comment"))
+        .isTrue();
 
-    GraphQLFieldDefinition camelCaseNameGraphQLFieldDefinition = result.getFieldDefinition("camelCaseName");
+    GraphQLFieldDefinition camelCaseNameGraphQLFieldDefinition =
+        result.getFieldDefinition("camelCaseName");
     assertThat(camelCaseNameGraphQLFieldDefinition).isNotNull();
-    assertThat(camelCaseNameGraphQLFieldDefinition.getDescription().equals("Some leading comment")).isTrue();
+    assertThat(camelCaseNameGraphQLFieldDefinition.getDescription().equals("Some leading comment"))
+        .isTrue();
 
-    GraphQLFieldDefinition testProtoNameGraphQLFieldDefinition = result.getFieldDefinition("testProto");
+    GraphQLFieldDefinition testProtoNameGraphQLFieldDefinition =
+        result.getFieldDefinition("testProto");
     assertThat(testProtoNameGraphQLFieldDefinition).isNotNull();
-    assertThat(testProtoNameGraphQLFieldDefinition.getDescription().equals("Some trailing comment")).isTrue();
+    assertThat(testProtoNameGraphQLFieldDefinition.getDescription().equals("Some trailing comment"))
+        .isTrue();
 
     GraphQLEnumType nestedEnumType = ProtoToGql.convert(TestEnum.getDescriptor());
 
     GraphQLEnumValueDefinition graphQLFieldDefinition = nestedEnumType.getValue("UNKNOWN");
     assertThat(graphQLFieldDefinition.getDescription().equals("Some trailing comment")).isTrue();
 
-    GraphQLObjectType nestedMessageType = ProtoToGql.convert(Proto2.NestedProto.getDescriptor(), null);
+    GraphQLObjectType nestedMessageType =
+        ProtoToGql.convert(Proto2.NestedProto.getDescriptor(), null);
 
     assertThat(nestedMessageType.getDescription().equals("Nested type comment")).isTrue();
 
-    GraphQLFieldDefinition nestedFieldGraphQLFieldDefinition = nestedMessageType.getFieldDefinition("nestedId");
+    GraphQLFieldDefinition nestedFieldGraphQLFieldDefinition =
+        nestedMessageType.getFieldDefinition("nestedId");
     assertThat(nestedFieldGraphQLFieldDefinition).isNotNull();
-    assertThat(nestedFieldGraphQLFieldDefinition.getDescription().equals("Some nested id")).isTrue();
+    assertThat(nestedFieldGraphQLFieldDefinition.getDescription().equals("Some nested id"))
+        .isTrue();
 
     GraphQLEnumType enumType = ProtoToGql.convert(TestProto.TestEnumWithComments.getDescriptor());
 
     graphQLFieldDefinition = enumType.getValue("FOO");
     assertThat(graphQLFieldDefinition.getDescription().equals("Some trailing comment")).isTrue();
-
   }
-
 }

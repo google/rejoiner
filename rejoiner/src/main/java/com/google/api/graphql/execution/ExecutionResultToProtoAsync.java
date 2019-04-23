@@ -20,10 +20,9 @@ import com.google.api.graphql.grpc.QueryResponseToProto;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Message;
-import graphql.ExecutionResult;
 import graphql.ErrorType;
+import graphql.ExecutionResult;
 import graphql.GraphQLError;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 

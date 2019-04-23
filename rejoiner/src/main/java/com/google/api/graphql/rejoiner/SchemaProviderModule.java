@@ -16,12 +16,9 @@ package com.google.api.graphql.rejoiner;
 
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import com.google.protobuf.Descriptors.FileDescriptor;
 import graphql.relay.Relay;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import java.util.Map;
@@ -35,38 +32,31 @@ import javax.inject.Provider;
 public final class SchemaProviderModule extends AbstractModule {
 
   static class SchemaImpl implements Provider<GraphQLSchema> {
-    private final Set<GraphQLFieldDefinition> queryFields;
-    private final Set<GraphQLFieldDefinition> mutationFields;
-    private final Set<TypeModification> modifications;
-    private final Set<FileDescriptor> fileDescriptors;
-    private final Set<NodeDataFetcher> nodeDataFetchers;
+
+    private final Provider<Set<SchemaBundle>> schemaBundleProviders;
 
     @Inject
-    public SchemaImpl(
-        @Annotations.Queries Set<GraphQLFieldDefinition> queryFields,
-        @Annotations.Mutations Set<GraphQLFieldDefinition> mutationFields,
-        @Annotations.GraphModifications Set<TypeModification> modifications,
-        @Annotations.ExtraTypes Set<FileDescriptor> fileDescriptors,
-        @Annotations.Queries Set<NodeDataFetcher> nodeDataFetchers) {
-      this.queryFields = queryFields;
-      this.mutationFields = mutationFields;
-      this.modifications = modifications;
-      this.fileDescriptors = fileDescriptors;
-      this.nodeDataFetchers = nodeDataFetchers;
+    public SchemaImpl(@Annotations.SchemaBundles Provider<Set<SchemaBundle>> schemaBundles) {
+      this.schemaBundleProviders = schemaBundles;
     }
 
     @Override
     public GraphQLSchema get() {
+      SchemaBundle schemaBundle = SchemaBundle.combine(schemaBundleProviders.get());
       Map<String, ? extends Function<String, Object>> nodeDataFetchers =
-          this.nodeDataFetchers
+          schemaBundle
+              .nodeDataFetchers()
               .stream()
               .collect(Collectors.toMap(e -> e.getClassName(), Function.identity()));
 
       GraphQLObjectType.Builder queryType =
-          newObject().name("QueryType").fields(Lists.newArrayList(queryFields));
+          newObject().name("QueryType").fields(schemaBundle.queryFields());
 
       ProtoRegistry protoRegistry =
-          ProtoRegistry.newBuilder().addAll(fileDescriptors).add(modifications).build();
+          ProtoRegistry.newBuilder()
+              .addAll(schemaBundle.fileDescriptors())
+              .add(schemaBundle.modifications())
+              .build();
 
       if (protoRegistry.hasRelayNode()) {
         queryType.field(
@@ -88,11 +78,11 @@ public final class SchemaProviderModule extends AbstractModule {
                     }));
       }
 
-      if (mutationFields.isEmpty()) {
+      if (schemaBundle.mutationFields().isEmpty()) {
         return GraphQLSchema.newSchema().query(queryType).build(protoRegistry.listTypes());
       }
       GraphQLObjectType mutationType =
-          newObject().name("MutationType").fields(Lists.newArrayList(mutationFields)).build();
+          newObject().name("MutationType").fields(schemaBundle.mutationFields()).build();
       return GraphQLSchema.newSchema()
           .query(queryType)
           .mutation(mutationType)
@@ -103,8 +93,8 @@ public final class SchemaProviderModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(GraphQLSchema.class)
-      .annotatedWith(Schema.class)
-      .toProvider(SchemaImpl.class)
-      .in(Singleton.class);
+        .annotatedWith(Schema.class)
+        .toProvider(SchemaImpl.class)
+        .in(Singleton.class);
   }
 }

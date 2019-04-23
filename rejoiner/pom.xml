@@ -16,7 +16,9 @@
  limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<!-- To check for updates: mvn versions:display-dependency-updates -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -79,7 +81,7 @@
     <dependency>
       <groupId>com.graphql-java</groupId>
       <artifactId>graphql-java</artifactId>
-      <version>2018-11-28T08-13-20-3ada93e</version>
+      <version>2019-04-09T05-29-53-bd9240c</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -159,9 +161,9 @@
 
   </dependencies>
   <build>
-  <plugins>
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.7.0</version>
         <configuration>
@@ -186,120 +188,121 @@
             <version>2.3.1</version>
           </dependency>
         </dependencies>
-    </plugin>
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-source-plugin</artifactId>
-      <version>2.2.1</version>
-      <executions>
-        <execution>
-          <id>attach-sources</id>
-          <goals>
-            <goal>jar-no-fork</goal>
-          </goals>
-        </execution>
-      </executions>
-    </plugin>
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-javadoc-plugin</artifactId>
-      <version>2.9.1</version>
-      <executions>
-        <execution>
-          <id>attach-javadocs</id>
-          <goals>
-            <goal>jar</goal>
-          </goals>
-        </execution>
-      </executions>
-      <configuration>
-        <additionalparam>-Xdoclint:none</additionalparam>
-      </configuration>
-    </plugin>
-    <plugin>
-     <groupId>org.apache.maven.plugins</groupId>
-     <artifactId>maven-gpg-plugin</artifactId>
-     <version>1.5</version>
-     <executions>
-       <execution>
-         <id>sign-artifacts</id>
-         <phase>verify</phase>
-         <goals>
-           <goal>sign</goal>
-         </goals>
-       </execution>
-     </executions>
-   </plugin>
-    <plugin>
-      <groupId>org.sonatype.plugins</groupId>
-      <artifactId>nexus-staging-maven-plugin</artifactId>
-      <version>1.6.7</version>
-      <extensions>true</extensions>
-      <configuration>
-         <serverId>ossrh</serverId>
-         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-         <autoReleaseAfterClose>true</autoReleaseAfterClose>
-      </configuration>
-    </plugin>
-    <plugin>
-       <groupId>org.xolstice.maven.plugins</groupId>
-       <artifactId>protobuf-maven-plugin</artifactId>
-       <version>0.5.1</version>
-       <configuration>
-         <protocExecutable>/usr/local/bin/protoc</protocExecutable>
-         <writeDescriptorSet>true</writeDescriptorSet>
-         <descriptorSetFileName>descriptor_set.desc</descriptorSetFileName>
-         <descriptorSetOutputDirectory>${build.directory}/test-classes/META-INF/proto</descriptorSetOutputDirectory>
-         <includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
-         <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
-       </configuration>
-       <executions>
-         <execution>
-           <goals>
-             <goal>compile</goal>
-             <goal>test-compile</goal>
-           </goals>
-         </execution>
-       </executions>
-    </plugin>
-    <plugin>
-      <groupId>org.jacoco</groupId>
-      <artifactId>jacoco-maven-plugin</artifactId>
-      <version>0.8.2</version>
-      <configuration>
-        <excludes>
-          <exclude>**/*AutoValue_*</exclude>
-          <exclude>**/generated-sources/**/*</exclude>
-        </excludes>
-      </configuration>
-      <executions>
-        <execution>
-          <id>prepare-agent</id>
-          <goals>
-            <goal>prepare-agent</goal>
-          </goals>
-        </execution>
-        <execution>
-          <id>report</id>
-          <phase>prepare-package</phase>
-          <goals>
-            <goal>report</goal>
-          </goals>
-        </execution>
-        <execution>
-          <id>post-unit-test</id>
-          <phase>test</phase>
-          <goals>
-            <goal>report</goal>
-          </goals>
-        </execution>
-      </executions>
-    </plugin>
-    <plugin>
-      <groupId>org.eluder.coveralls</groupId>
-      <artifactId>coveralls-maven-plugin</artifactId>
-      <version>4.3.0</version>
-    </plugin>
-  </plugins>
-</build>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <additionalparam>-Xdoclint:none</additionalparam>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.7</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>0.5.1</version>
+        <configuration>
+          <protocExecutable>/usr/local/bin/protoc</protocExecutable>
+          <writeDescriptorSet>true</writeDescriptorSet>
+          <descriptorSetFileName>descriptor_set.desc</descriptorSetFileName>
+          <descriptorSetOutputDirectory>${build.directory}/test-classes/META-INF/proto
+          </descriptorSetOutputDirectory>
+          <includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
+          <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.2</version>
+        <configuration>
+          <excludes>
+            <exclude>**/*AutoValue_*</exclude>
+            <exclude>**/generated-sources/**/*</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>post-unit-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.eluder.coveralls</groupId>
+        <artifactId>coveralls-maven-plugin</artifactId>
+        <version>4.3.0</version>
+      </plugin>
+    </plugins>
+  </build>
 </project>

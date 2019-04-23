@@ -25,17 +25,5 @@ final class Annotations {
 
   @Retention(RetentionPolicy.RUNTIME)
   @Qualifier
-  @interface Mutations {}
-
-  @Retention(RetentionPolicy.RUNTIME)
-  @Qualifier
-  @interface Queries {}
-
-  @Retention(RetentionPolicy.RUNTIME)
-  @Qualifier
-  @interface GraphModifications {}
-
-  @Retention(RetentionPolicy.RUNTIME)
-  @Qualifier
-  @interface ExtraTypes {}
+  @interface SchemaBundles {}
 }

@@ -110,7 +110,7 @@ final class ProtoRegistry {
       return this;
     }
 
-    Builder add(Set<TypeModification> modifications) {
+    Builder add(Collection<TypeModification> modifications) {
       typeModifications.addAll(modifications);
       return this;
     }

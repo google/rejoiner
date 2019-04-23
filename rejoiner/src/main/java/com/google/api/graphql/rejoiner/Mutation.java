@@ -22,6 +22,9 @@ import java.lang.annotation.RetentionPolicy;
 public @interface Mutation {
   /** Name of the Mutation, only used when annotating a method. */
   String value() default "";
-  /** Full service name (including package) to be able to find appropriate metadata in generated descriptor set. */
+  /**
+   * Full service name (including package) to be able to find appropriate metadata in generated
+   * descriptor set.
+   */
   String fullName() default "";
 }
