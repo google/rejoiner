@@ -16,32 +16,22 @@ package com.google.api.graphql.rejoiner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.api.graphql.rejoiner.Annotations.ExtraTypes;
-import com.google.api.graphql.rejoiner.Annotations.GraphModifications;
-import com.google.api.graphql.rejoiner.Annotations.Mutations;
-import com.google.api.graphql.rejoiner.Annotations.Queries;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsRequest;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsResponse;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
-import com.google.protobuf.Descriptors.FileDescriptor;
 import graphql.Scalars;
-import graphql.execution.ExecutionContextBuilder;
-import graphql.execution.ExecutionId;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
-
 import java.util.List;
 import java.util.Set;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -50,19 +40,13 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class SchemaModuleTest {
 
-  private static final Key<Set<SchemaBundle>>  =
+  private static final Key<Set<SchemaBundle>> KEY =
       Key.get(new TypeLiteral<Set<SchemaBundle>>() {}, Annotations.SchemaBundles.class);
 
-//    Multibinder<SchemaBundle> schemaBundleProviders =
-//            Multibinder.newSetBinder(
-//                    binder(), new TypeLiteral<SchemaBundle>() {}, Annotations.SchemaBundles.class);
   @Test
   public void schemaModuleShouldProvideEmpty() {
     Injector injector = Guice.createInjector(new SchemaModule() {});
-    assertThat(injector.getInstance(QUERY_KEY)).isNotNull();
-    assertThat(injector.getInstance(MUTATION_KEY)).isNotNull();
-    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).isNotNull();
-    assertThat(injector.getInstance(MODIFICATION_KEY)).isNotNull();
+    assertThat(injector.getInstance(KEY)).isNotNull();
   }
 
   @Test
@@ -77,10 +61,8 @@ public final class SchemaModuleTest {
                       .type(Scalars.GraphQLString)
                       .build();
             });
-    assertThat(injector.getInstance(QUERY_KEY)).hasSize(1);
-    assertThat(injector.getInstance(MUTATION_KEY)).isEmpty();
-    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).isEmpty();
-    assertThat(injector.getInstance(MODIFICATION_KEY)).isEmpty();
+    SchemaBundle schemaBundle = SchemaBundle.combine(injector.getInstance(KEY));
+    assertThat(schemaBundle.queryFields()).hasSize(1);
   }
 
   @Test
@@ -113,10 +95,12 @@ public final class SchemaModuleTest {
                     GreetingsResponse.newBuilder().setId(request.getId()).build());
               }
             });
-    assertThat(injector.getInstance(QUERY_KEY)).hasSize(2);
-    assertThat(injector.getInstance(MUTATION_KEY)).hasSize(2);
-    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).hasSize(1);
-    assertThat(injector.getInstance(MODIFICATION_KEY)).isEmpty();
+
+    SchemaBundle schemaBundle = SchemaBundle.combine(injector.getInstance(KEY));
+    assertThat(schemaBundle.queryFields()).hasSize(2);
+    assertThat(schemaBundle.mutationFields()).hasSize(2);
+    assertThat(schemaBundle.fileDescriptors()).hasSize(1);
+    assertThat(schemaBundle.modifications()).isEmpty();
   }
 
   @Test
@@ -149,10 +133,11 @@ public final class SchemaModuleTest {
       }
     }
     Injector injector = Guice.createInjector(new NamespacedSchemaModule());
-    assertThat(injector.getInstance(QUERY_KEY)).hasSize(1);
-    assertThat(injector.getInstance(MUTATION_KEY)).hasSize(1);
-    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).hasSize(1);
-    assertThat(injector.getInstance(MODIFICATION_KEY)).isEmpty();
+    SchemaBundle schemaBundle = SchemaBundle.combine(injector.getInstance(KEY));
+    assertThat(schemaBundle.queryFields()).hasSize(1);
+    assertThat(schemaBundle.mutationFields()).hasSize(1);
+    assertThat(schemaBundle.fileDescriptors()).hasSize(1);
+    assertThat(schemaBundle.modifications()).isEmpty();
   }
 
   @Test
@@ -170,9 +155,11 @@ public final class SchemaModuleTest {
                     GreetingsResponse.newBuilder().setId(request.getId()).build());
               }
             });
-    assertThat(injector.getInstance(MUTATION_KEY)).hasSize(1);
+    SchemaBundle schemaBundle = SchemaBundle.combine(injector.getInstance(KEY));
+    assertThat(schemaBundle.mutationFields()).hasSize(1);
+
     List<GraphQLArgument> arguments =
-        injector.getInstance(MUTATION_KEY).iterator().next().getArguments();
+        schemaBundle.mutationFields().iterator().next().getArguments();
     assertThat(arguments).hasSize(2);
     assertThat(
             arguments
@@ -226,11 +213,12 @@ public final class SchemaModuleTest {
   }
 
   private void validateSchema(Injector injector) throws Exception {
-    assertThat(injector.getInstance(QUERY_KEY)).hasSize(1);
-    assertThat(injector.getInstance(MUTATION_KEY)).isEmpty();
-    assertThat(injector.getInstance(EXTRA_TYPE_KEY)).hasSize(1);
-    assertThat(injector.getInstance(MODIFICATION_KEY)).isEmpty();
-    Set<GraphQLFieldDefinition> queryFields = injector.getInstance(QUERY_KEY);
+    SchemaBundle schemaBundle = SchemaBundle.combine(injector.getInstance(KEY));
+    assertThat(schemaBundle.queryFields()).hasSize(1);
+    assertThat(schemaBundle.mutationFields()).isEmpty();
+    assertThat(schemaBundle.fileDescriptors()).hasSize(1);
+    assertThat(schemaBundle.modifications()).isEmpty();
+    Set<GraphQLFieldDefinition> queryFields = schemaBundle.queryFields();
     GraphQLFieldDefinition hello = queryFields.iterator().next();
     assertThat(hello.getName()).isEqualTo("hello");
     assertThat(hello.getArguments()).hasSize(1);
@@ -259,11 +247,25 @@ public final class SchemaModuleTest {
     //        .isEqualTo(GreetingsResponse.newBuilder().setId("123").build());
   }
 
-  @Test(expected = CreationException.class)
+  @Test
+  public void schemaModuleShouldNotFailOnInjectorCreation() {
+    Injector injector =
+        Guice.createInjector(
+            new SchemaModule() {
+              @Query String greeting = "hi";
+            });
+  }
+
+  @Test(expected = ProvisionException.class)
   public void schemaModuleShouldFailIfWrongTypeIsAnnotated() {
-    Guice.createInjector(
-        new SchemaModule() {
-          @Query String greeting = "hi";
-        });
+    Injector injector =
+        Guice.createInjector(
+            new SchemaModule() {
+              @Query String greeting = "hi";
+            });
+
+    // TODO: replace with assertThrows(()->injector.getInstance(KEY), ProvisionException.class)
+    // and remove schemaModuleShouldNotFailOnInjectorCreation
+    injector.getInstance(KEY);
   }
 }

@@ -16,7 +16,6 @@ package com.google.api.graphql.rejoiner;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.DescriptorProtos;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap;
@@ -86,9 +85,8 @@ final class DescriptorSet {
   /**
    * Iterate through a component's path inside a proto descriptor.
    *
-   * <p>
-   * The path is a tuple of component type and a relative position For example: [4, 1, 3, 2, 2, 1] or
-   * [MESSAGE_TYPE_FIELD_NUMBER, 1, NESTED_TYPE_FIELD_NUMBER, 2, FIELD_FIELD_NUMBER, 1] is
+   * <p>The path is a tuple of component type and a relative position For example: [4, 1, 3, 2, 2,
+   * 1] or [MESSAGE_TYPE_FIELD_NUMBER, 1, NESTED_TYPE_FIELD_NUMBER, 2, FIELD_FIELD_NUMBER, 1] is
    * representing the second field of the third nested message in the second message in the file
    *
    * @see DescriptorProtos.SourceCodeInfoOrBuilder for more info

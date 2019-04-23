@@ -16,10 +16,6 @@ package com.google.api.graphql.rejoiner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.api.graphql.rejoiner.Greetings.ExtraProto;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsRequest;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsResponse;
@@ -42,6 +38,9 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
 import io.grpc.Status;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -104,17 +103,15 @@ public final class RejoinerIntegrationTest {
       return Futures.immediateFuture(request.toBuilder().setSomeValue(source.getId()).build());
     }
 
-      @Query("greetingWithException")
-      ListenableFuture<GreetingsResponse> greetingsWithException(GreetingsRequest request) {
-        throw Status.UNIMPLEMENTED
-                .withDescription("message from service")
-                .asRuntimeException();
-      }
+    @Query("greetingWithException")
+    ListenableFuture<GreetingsResponse> greetingsWithException(GreetingsRequest request) {
+      throw Status.UNIMPLEMENTED.withDescription("message from service").asRuntimeException();
+    }
 
-      @Query("greetingWithGraphQLError")
-      ListenableFuture<GreetingsResponse> greetingsWithGraphqlError(GreetingsRequest request) {
-        throw new SampleGraphQLException();
-      }
+    @Query("greetingWithGraphQLError")
+    ListenableFuture<GreetingsResponse> greetingsWithGraphqlError(GreetingsRequest request) {
+      throw new SampleGraphQLException();
+    }
   }
 
   static class GreetingsAddonSchemaModule extends SchemaModule {
@@ -137,16 +134,18 @@ public final class RejoinerIntegrationTest {
 
   @Test
   public void schemaShouldList() {
-    GraphQLOutputType listOfStuff = schema.getQueryType().getFieldDefinition("listOfStuff").getType();
+    GraphQLOutputType listOfStuff =
+        schema.getQueryType().getFieldDefinition("listOfStuff").getType();
     assertThat(listOfStuff).isInstanceOf(GraphQLList.class);
-    assertThat(((GraphQLList)listOfStuff).getWrappedType()).isInstanceOf(GraphQLNonNull.class);
+    assertThat(((GraphQLList) listOfStuff).getWrappedType()).isInstanceOf(GraphQLNonNull.class);
   }
 
   @Test
   public void schemaShouldListSync() {
-    GraphQLOutputType listOfStuff = schema.getQueryType().getFieldDefinition("listOfStuffSync").getType();
+    GraphQLOutputType listOfStuff =
+        schema.getQueryType().getFieldDefinition("listOfStuffSync").getType();
     assertThat(listOfStuff).isInstanceOf(GraphQLList.class);
-    assertThat(((GraphQLList)listOfStuff).getWrappedType()).isInstanceOf(GraphQLNonNull.class);
+    assertThat(((GraphQLList) listOfStuff).getWrappedType()).isInstanceOf(GraphQLNonNull.class);
   }
 
   @Test
@@ -167,28 +166,28 @@ public final class RejoinerIntegrationTest {
 
   @Test
   public void handlesRuntimeExceptionMessage() {
-    GraphQL graphQL = GraphQL.newGraphQL(schema)
-            .build();
+    GraphQL graphQL = GraphQL.newGraphQL(schema).build();
 
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-            .query("query { greetingWithException { id } }")
-            .build();
+    ExecutionInput executionInput =
+        ExecutionInput.newExecutionInput().query("query { greetingWithException { id } }").build();
 
     ExecutionResult executionResult = graphQL.execute(executionInput);
 
     assertThat(executionResult.getErrors()).hasSize(1);
     GraphQLError graphQLError = executionResult.getErrors().get(0);
-    assertThat(graphQLError.getMessage()).isEqualTo("Exception while fetching data (/greetingWithException) : UNIMPLEMENTED: message from service");
+    assertThat(graphQLError.getMessage())
+        .isEqualTo(
+            "Exception while fetching data (/greetingWithException) : UNIMPLEMENTED: message from service");
     assertThat(graphQLError.getPath()).hasSize(1);
     assertThat(graphQLError.getPath().get(0)).isEqualTo("greetingWithException");
   }
 
   @Test
   public void handlesGraphQLError() {
-    GraphQL graphQL = GraphQL.newGraphQL(schema)
-            .build();
+    GraphQL graphQL = GraphQL.newGraphQL(schema).build();
 
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+    ExecutionInput executionInput =
+        ExecutionInput.newExecutionInput()
             .query("query { greetingWithGraphQLError { id } }")
             .build();
 
@@ -196,7 +195,8 @@ public final class RejoinerIntegrationTest {
 
     assertThat(executionResult.getErrors()).hasSize(1);
     GraphQLError graphQLError = executionResult.getErrors().get(0);
-    assertThat(graphQLError.getMessage()).isEqualTo("Exception while fetching data (/greetingWithGraphQLError) : Test GraphQLError");
+    assertThat(graphQLError.getMessage())
+        .isEqualTo("Exception while fetching data (/greetingWithGraphQLError) : Test GraphQLError");
     assertThat(graphQLError.getExtensions()).containsEntry("error", "message");
     assertThat(graphQLError.getPath()).hasSize(1);
     assertThat(graphQLError.getPath().get(0)).isEqualTo("greetingWithGraphQLError");

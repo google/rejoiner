@@ -16,13 +16,10 @@ package com.google.api.graphql.rejoiner;
 
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import com.google.protobuf.Descriptors.FileDescriptor;
 import graphql.relay.Relay;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import java.util.Map;
@@ -36,16 +33,17 @@ import javax.inject.Provider;
 public final class SchemaProviderModule extends AbstractModule {
 
   static class SchemaImpl implements Provider<GraphQLSchema> {
-    private final ImmutableSet<Provider<SchemaBundle>> schemaBundleProviders;
+
+    private final Provider<Set<SchemaBundle>> schemaBundleProviders;
 
     @Inject
-    public SchemaImpl(@Annotations.SchemaBundles Set<Provider<SchemaBundle>> schemaBundles) {
-      this.schemaBundleProviders = ImmutableSet.copyOf(schemaBundles);
+    public SchemaImpl(@Annotations.SchemaBundles Provider<Set<SchemaBundle>> schemaBundles) {
+      this.schemaBundleProviders = schemaBundles;
     }
 
     @Override
     public GraphQLSchema get() {
-      SchemaBundle schemaBundle = SchemaBundle.combineProviders(schemaBundleProviders);
+      SchemaBundle schemaBundle = SchemaBundle.combine(schemaBundleProviders.get());
       Map<String, ? extends Function<String, Object>> nodeDataFetchers =
           schemaBundle
               .nodeDataFetchers()

@@ -4,10 +4,8 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Descriptors;
 import graphql.schema.GraphQLFieldDefinition;
-
-import javax.inject.Provider;
 import java.util.Collection;
-import java.util.stream.Collectors;
+import javax.inject.Provider;
 
 @AutoValue
 public abstract class SchemaBundle {

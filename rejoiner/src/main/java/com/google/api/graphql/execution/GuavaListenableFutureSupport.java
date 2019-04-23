@@ -81,5 +81,4 @@ public final class GuavaListenableFutureSupport {
       }
     };
   }
-
 }

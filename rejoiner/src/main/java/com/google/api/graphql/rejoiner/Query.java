@@ -23,7 +23,9 @@ public @interface Query {
 
   /** Name of the Query, only used when annotating a method. */
   String value() default "";
-  /** Full service name (including package) to be able to find appropriate metadata in generated descriptor set. */
+  /**
+   * Full service name (including package) to be able to find appropriate metadata in generated
+   * descriptor set.
+   */
   String fullName() default "";
-
 }

@@ -9,32 +9,36 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLOutputType;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.stream.Stream;
 
 /**
- * SchemaModule that generates queries and mutations for GAX gRPC clients, such as the Google Cloud Platform APIs.
+ * SchemaModule that generates queries and mutations for GAX gRPC clients, such as the Google Cloud
+ * Platform APIs.
  */
 public abstract class GaxSchemaModule extends SchemaModule {
 
-  protected ImmutableList<GraphQLFieldDefinition> serviceToFields(Class<?> client, ImmutableList<String> methodWhitelist) {
+  protected ImmutableList<GraphQLFieldDefinition> serviceToFields(
+      Class<?> client, ImmutableList<String> methodWhitelist) {
     return getMethods(client, methodWhitelist)
         .map(
             methodWrapper -> {
               try {
                 methodWrapper.setAccessible(true);
                 /* com.google.api.gax.rpc.UnaryCallable<Req, Resp> */
-                ParameterizedType callable = (ParameterizedType) methodWrapper.getGenericReturnType();
+                ParameterizedType callable =
+                    (ParameterizedType) methodWrapper.getGenericReturnType();
                 GraphQLOutputType responseType = getReturnType(callable);
                 Class<? extends Message> requestMessageClass =
                     (Class<? extends Message>) callable.getActualTypeArguments()[0];
                 Descriptors.Descriptor requestDescriptor =
-                    (Descriptors.Descriptor) requestMessageClass.getMethod("getDescriptor").invoke(null);
+                    (Descriptors.Descriptor)
+                        requestMessageClass.getMethod("getDescriptor").invoke(null);
                 Message requestMessage =
-                    ((Message.Builder) requestMessageClass.getMethod("newBuilder").invoke(null)).buildPartial();
+                    ((Message.Builder) requestMessageClass.getMethod("newBuilder").invoke(null))
+                        .buildPartial();
                 Provider<?> service = getProvider(client);
 
                 GqlInputConverter inputConverter =
@@ -49,9 +53,10 @@ public abstract class GaxSchemaModule extends SchemaModule {
                               env.getArgument("input"));
                       try {
                         Object callableInstance = methodWrapper.invoke(service.get());
-                        Method method = callableInstance.getClass().getMethod("futureCall", Object.class);
+                        Method method =
+                            callableInstance.getClass().getMethod("futureCall", Object.class);
                         method.setAccessible(true);
-                        Object[] methodParameterValues = new Object[]{input};
+                        Object[] methodParameterValues = new Object[] {input};
                         return method.invoke(callableInstance, methodParameterValues);
                       } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -69,7 +74,6 @@ public abstract class GaxSchemaModule extends SchemaModule {
               }
             })
         .collect(ImmutableList.toImmutableList());
-
   }
 
   private Stream<Method> getMethods(Class<?> clientClass, ImmutableList<String> methodWhitelist) {
@@ -84,11 +88,12 @@ public abstract class GaxSchemaModule extends SchemaModule {
         .filter(method -> asyncNameWhitelist.contains(method.getName()));
   }
 
-  private GraphQLOutputType getReturnType(ParameterizedType parameterizedType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  private GraphQLOutputType getReturnType(ParameterizedType parameterizedType)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Class<? extends Message> responseClass =
         (Class<? extends Message>) parameterizedType.getActualTypeArguments()[1];
-    Descriptors.Descriptor responseDescriptor = (Descriptors.Descriptor)
-        responseClass.getMethod("getDescriptor").invoke(null);
+    Descriptors.Descriptor responseDescriptor =
+        (Descriptors.Descriptor) responseClass.getMethod("getDescriptor").invoke(null);
     addExtraType(responseDescriptor);
     return ProtoToGql.getReference(responseDescriptor);
   }
@@ -98,5 +103,4 @@ public abstract class GaxSchemaModule extends SchemaModule {
   private static String transformName(String name) {
     return name.substring(0, name.length() - LENGTH_OF_CALLABLE);
   }
-
 }
