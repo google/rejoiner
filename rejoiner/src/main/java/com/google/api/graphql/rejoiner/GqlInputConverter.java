@@ -139,6 +139,12 @@ final class GqlInputConverter {
       return enumDescriptor.findValueByName(value.toString());
     }
 
+    if (field.getType() == FieldDescriptor.Type.FLOAT) {
+      if (value instanceof Double) {
+        return ((Double) value).floatValue();
+      }
+    }
+
     return value;
   }
 
