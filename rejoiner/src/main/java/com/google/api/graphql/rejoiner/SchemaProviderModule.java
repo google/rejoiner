@@ -14,21 +14,17 @@
 
 package com.google.api.graphql.rejoiner;
 
-import static graphql.schema.GraphQLObjectType.newObject;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import graphql.relay.Relay;
-import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.Set;
 
-/** Provides a {@link GraphQLSchema} by combining fields from all SchemaModules. */
+/**
+ * Provides a {@link GraphQLSchema} by combining fields from all SchemaModules.
+ */
 public final class SchemaProviderModule extends AbstractModule {
 
   static class SchemaImpl implements Provider<GraphQLSchema> {
@@ -43,62 +39,15 @@ public final class SchemaProviderModule extends AbstractModule {
     @Override
     public GraphQLSchema get() {
       SchemaBundle schemaBundle = SchemaBundle.combine(schemaBundleProviders.get());
-      Map<String, ? extends Function<String, Object>> nodeDataFetchers =
-          schemaBundle
-              .nodeDataFetchers()
-              .stream()
-              .collect(Collectors.toMap(e -> e.getClassName(), Function.identity()));
-
-      GraphQLObjectType.Builder queryType =
-          newObject().name("QueryType").fields(schemaBundle.queryFields());
-
-      ProtoRegistry protoRegistry =
-          ProtoRegistry.newBuilder()
-              .addAll(schemaBundle.fileDescriptors())
-              .add(schemaBundle.modifications())
-              .build();
-
-      if (protoRegistry.hasRelayNode()) {
-        queryType.field(
-            new Relay()
-                .nodeField(
-                    protoRegistry.getRelayNode(),
-                    environment -> {
-                      String id = environment.getArgument("id");
-                      Relay.ResolvedGlobalId resolvedGlobalId = new Relay().fromGlobalId(id);
-                      Function<String, ?> stringFunction =
-                          nodeDataFetchers.get(resolvedGlobalId.getType());
-                      if (stringFunction == null) {
-                        throw new RuntimeException(
-                            String.format(
-                                "Relay Node fetcher not implemented for type=%s",
-                                resolvedGlobalId.getType()));
-                      }
-                      return stringFunction.apply(resolvedGlobalId.getId());
-                    }));
-      }
-
-      if (schemaBundle.mutationFields().isEmpty()) {
-        return GraphQLSchema.newSchema()
-            .query(queryType)
-            .additionalTypes(protoRegistry.listTypes())
-            .build();
-      }
-      GraphQLObjectType mutationType =
-          newObject().name("MutationType").fields(schemaBundle.mutationFields()).build();
-      return GraphQLSchema.newSchema()
-          .query(queryType)
-          .mutation(mutationType)
-          .additionalTypes(protoRegistry.listTypes())
-          .build();
+      return schemaBundle.toSchema();
     }
   }
 
   @Override
   protected void configure() {
     bind(GraphQLSchema.class)
-        .annotatedWith(Schema.class)
-        .toProvider(SchemaImpl.class)
-        .in(Singleton.class);
+            .annotatedWith(Schema.class)
+            .toProvider(SchemaImpl.class)
+            .in(Singleton.class);
   }
 }
