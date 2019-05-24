@@ -26,7 +26,6 @@ import com.google.protobuf.Descriptors.FileDescriptor;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLTypeReference;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -45,47 +44,44 @@ public abstract class SchemaModule extends AbstractModule {
 
   private final Object schemaDefinition;
 
-  /**
-   * Uses the fields and methods on the given schema definition.
-   */
+  /** Uses the fields and methods on the given schema definition. */
   public SchemaModule(Object schemaDefinition) {
     this.schemaDefinition = schemaDefinition;
   }
 
-  /**
-   * Uses the fields and methods on the module itself.
-   */
+  /** Uses the fields and methods on the module itself. */
   public SchemaModule() {
     schemaDefinition = this;
   }
 
-  private final SchemaDefinitionReader definition = new SchemaDefinitionReader() {
-    @Override
-    protected ImmutableList<GraphQLFieldDefinition> extraMutations() {
-      return SchemaModule.this.extraMutations();
-    }
-
-    @Override
-    protected Function<DataFetchingEnvironment, Object> handleParameter(Method method, int parameterIndex) {
-      Annotation[] annotations = method.getParameterAnnotations()[parameterIndex];
-      Annotation qualifier = null;
-      for (Annotation annotation : annotations) {
-        if (com.google.inject.internal.Annotations.isBindingAnnotation(
-                annotation.annotationType())) {
-          qualifier = annotation;
+  private final SchemaDefinitionReader definition =
+      new SchemaDefinitionReader() {
+        @Override
+        protected ImmutableList<GraphQLFieldDefinition> extraMutations() {
+          return SchemaModule.this.extraMutations();
         }
-      }
-      final java.lang.reflect.Type[] genericParameterTypes = method.getGenericParameterTypes();
-      Key<?> key =
+
+        @Override
+        protected Function<DataFetchingEnvironment, Object> handleParameter(
+            Method method, int parameterIndex) {
+          Annotation[] annotations = method.getParameterAnnotations()[parameterIndex];
+          Annotation qualifier = null;
+          for (Annotation annotation : annotations) {
+            if (com.google.inject.internal.Annotations.isBindingAnnotation(
+                annotation.annotationType())) {
+              qualifier = annotation;
+            }
+          }
+          final java.lang.reflect.Type[] genericParameterTypes = method.getGenericParameterTypes();
+          Key<?> key =
               qualifier == null
-                      ? Key.get(genericParameterTypes[parameterIndex])
-                      : Key.get(genericParameterTypes[parameterIndex], qualifier);
+                  ? Key.get(genericParameterTypes[parameterIndex])
+                  : Key.get(genericParameterTypes[parameterIndex], qualifier);
 
-      final com.google.inject.Provider<?> provider = binder().getProvider(key);
-      return (ignored) -> provider;
-    }
-
-  };
+          final com.google.inject.Provider<?> provider = binder().getProvider(key);
+          return (ignored) -> provider;
+        }
+      };
 
   /**
    * Returns a reference to the GraphQL type corresponding to the supplied proto.
@@ -120,18 +116,17 @@ public abstract class SchemaModule extends AbstractModule {
     definition.addMutationList(mutations);
   }
 
-  protected void configureSchema() {
-  }
+  protected void configureSchema() {}
 
   @Override
   protected final void configure() {
-    Multibinder<SchemaBundle> schemaBundleProviders = Multibinder.newSetBinder(
-            binder(),
-            new TypeLiteral<SchemaBundle>() {
-            },
-            Annotations.SchemaBundles.class);
+    Multibinder<SchemaBundle> schemaBundleProviders =
+        Multibinder.newSetBinder(
+            binder(), new TypeLiteral<SchemaBundle>() {}, Annotations.SchemaBundles.class);
 
-    schemaBundleProviders.addBinding().toProvider(
+    schemaBundleProviders
+        .addBinding()
+        .toProvider(
             () -> {
               configureSchema();
               return definition.createBundle(schemaDefinition);
@@ -143,5 +138,4 @@ public abstract class SchemaModule extends AbstractModule {
   void addExtraType(Descriptors.Descriptor descriptor) {
     definition.addExtraType(descriptor);
   }
-
 }

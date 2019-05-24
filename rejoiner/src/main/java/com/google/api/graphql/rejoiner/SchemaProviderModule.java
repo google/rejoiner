@@ -17,14 +17,11 @@ package com.google.api.graphql.rejoiner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import graphql.schema.GraphQLSchema;
-
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.Set;
 
-/**
- * Provides a {@link GraphQLSchema} by combining fields from all SchemaModules.
- */
+/** Provides a {@link GraphQLSchema} by combining fields from all SchemaModules. */
 public final class SchemaProviderModule extends AbstractModule {
 
   static class SchemaImpl implements Provider<GraphQLSchema> {
@@ -46,8 +43,8 @@ public final class SchemaProviderModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(GraphQLSchema.class)
-            .annotatedWith(Schema.class)
-            .toProvider(SchemaImpl.class)
-            .in(Singleton.class);
+        .annotatedWith(Schema.class)
+        .toProvider(SchemaImpl.class)
+        .in(Singleton.class);
   }
 }
