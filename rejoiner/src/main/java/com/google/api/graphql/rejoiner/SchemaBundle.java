@@ -1,14 +1,67 @@
 package com.google.api.graphql.rejoiner;
 
+import static graphql.schema.GraphQLObjectType.newObject;
+
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Descriptors;
+import graphql.relay.Relay;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @AutoValue
 public abstract class SchemaBundle {
+
+  public GraphQLSchema toSchema() {
+    Map<String, ? extends Function<String, Object>> nodeDataFetchers =
+        nodeDataFetchers().stream()
+            .collect(Collectors.toMap(e -> e.getClassName(), Function.identity()));
+
+    GraphQLObjectType.Builder queryType = newObject().name("QueryType").fields(queryFields());
+
+    ProtoRegistry protoRegistry =
+        ProtoRegistry.newBuilder().addAll(fileDescriptors()).add(modifications()).build();
+
+    if (protoRegistry.hasRelayNode()) {
+      queryType.field(
+          new Relay()
+              .nodeField(
+                  protoRegistry.getRelayNode(),
+                  environment -> {
+                    String id = environment.getArgument("id");
+                    Relay.ResolvedGlobalId resolvedGlobalId = new Relay().fromGlobalId(id);
+                    Function<String, ?> stringFunction =
+                        nodeDataFetchers.get(resolvedGlobalId.getType());
+                    if (stringFunction == null) {
+                      throw new RuntimeException(
+                          String.format(
+                              "Relay Node fetcher not implemented for type=%s",
+                              resolvedGlobalId.getType()));
+                    }
+                    return stringFunction.apply(resolvedGlobalId.getId());
+                  }));
+    }
+
+    if (mutationFields().isEmpty()) {
+      return GraphQLSchema.newSchema()
+          .query(queryType)
+          .additionalTypes(protoRegistry.listTypes())
+          .build();
+    }
+    GraphQLObjectType mutationType =
+        newObject().name("MutationType").fields(mutationFields()).build();
+    return GraphQLSchema.newSchema()
+        .query(queryType)
+        .mutation(mutationType)
+        .additionalTypes(protoRegistry.listTypes())
+        .build();
+  }
 
   public abstract ImmutableList<GraphQLFieldDefinition> queryFields();
 
