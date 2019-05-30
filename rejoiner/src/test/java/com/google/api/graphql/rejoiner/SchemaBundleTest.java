@@ -7,11 +7,16 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+
+/** Unit tests for {@link SchemaBundle}. */
+@RunWith(JUnit4.class)
 public class SchemaBundleTest {
   @Test
   public void createSchemaUsingSchemaBundle() {
-    final SchemaBundle.Builder schemaBuilder = AutoValue_SchemaBundle.builder();
+    final SchemaBundle.Builder schemaBuilder = SchemaBundle.builder();
     schemaBuilder
         .modificationsBuilder()
         .add(
