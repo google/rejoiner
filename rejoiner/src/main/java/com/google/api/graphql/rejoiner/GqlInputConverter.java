@@ -46,7 +46,7 @@ import java.util.Set;
  *
  * <p>Keeps a mapping from type name to Proto descriptor for Message and Enum types.
  */
-final class GqlInputConverter {
+public final class GqlInputConverter {
 
   private final BiMap<String, Descriptor> descriptorMapping;
   private final BiMap<String, EnumDescriptor> enumMapping;
@@ -60,11 +60,11 @@ final class GqlInputConverter {
     this.enumMapping = enumMapping;
   }
 
-  static Builder newBuilder() {
+  public static Builder newBuilder() {
     return new Builder();
   }
 
-  Message createProtoBuf(
+  public Message createProtoBuf(
       Descriptor descriptor, Message.Builder builder, Map<String, Object> input) {
 
     if (input == null) {
@@ -192,17 +192,17 @@ final class GqlInputConverter {
   // Based on ProtoRegistry.Builder, but builds a map of descriptors rather than types.
 
   /** Builder for GqlInputConverter. */
-  static class Builder {
+  public static class Builder {
     private final ArrayList<FileDescriptor> fileDescriptors = new ArrayList<>();
     private final ArrayList<Descriptor> descriptors = new ArrayList<>();
     private final ArrayList<EnumDescriptor> enumDescriptors = new ArrayList<>();
 
-    Builder add(FileDescriptor fileDescriptor) {
+    public Builder add(FileDescriptor fileDescriptor) {
       fileDescriptors.add(fileDescriptor);
       return this;
     }
 
-    GqlInputConverter build() {
+    public GqlInputConverter build() {
       HashBiMap<String, Descriptor> mapping = HashBiMap.create();
       HashBiMap<String, EnumDescriptor> enumMapping = HashBiMap.create(getEnumMap(enumDescriptors));
       LinkedList<Descriptor> loop = new LinkedList<>(descriptors);

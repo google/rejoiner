@@ -36,6 +36,9 @@ public final class QueryResponseToProto {
 
   @SuppressWarnings("unchecked")
   private static Object buildMessage(Builder builder, Map<String, Object> fields) {
+    if (fields == null) {
+      return builder.build();
+    }
     Descriptor descriptor = builder.getDescriptorForType();
     for (Map.Entry<String, Object> entry : fields.entrySet()) {
       if (entry.getValue() == null) {
@@ -58,6 +61,9 @@ public final class QueryResponseToProto {
   @SuppressWarnings("unchecked")
   private static Object buildValue(
       Message.Builder parentBuilder, FieldDescriptor field, Object value) {
+    if (field == null) {
+      return value;
+    }
     if (field.getType() == FieldDescriptor.Type.MESSAGE) {
       if (field.isRepeated()) {}
       Message.Builder fieldBuilder = parentBuilder.newBuilderForField(field);

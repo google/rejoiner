@@ -14,6 +14,8 @@
 
 package com.google.api.graphql.grpc;
 
+import com.google.common.base.CaseFormat;
+import com.google.common.base.Converter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -24,11 +26,17 @@ import java.util.Map;
 /** Creates a Map based on a Message, while maintaining the field name case. */
 public final class ProtoToMap {
 
+  private static final Converter<String, String> UNDERSCORE_TO_CAMEL =
+      CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
+
   public static Map<String, Object> messageToMap(Message message) {
     ImmutableMap.Builder<String, Object> variablesBuilder = new ImmutableMap.Builder<>();
     message
         .getAllFields()
-        .forEach((field, value) -> variablesBuilder.put(field.getName(), mapValues(field, value)));
+        .forEach(
+            (field, value) ->
+                variablesBuilder.put(
+                    UNDERSCORE_TO_CAMEL.convert(field.getName()), mapValues(field, value)));
     return variablesBuilder.build();
   }
 
