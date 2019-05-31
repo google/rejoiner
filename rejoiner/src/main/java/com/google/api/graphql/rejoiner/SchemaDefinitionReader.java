@@ -234,8 +234,6 @@ public class SchemaDefinitionReader {
   /**
    * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
    * that are annotated with {@link Query}.
-   *
-   * @param moduleClass
    */
   private static ImmutableSet<Field> findTypeModificationFields(Class<?> moduleClass) {
     return findFields(moduleClass, SchemaModification.class, TypeModification.class);
@@ -244,8 +242,6 @@ public class SchemaDefinitionReader {
   /**
    * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
    * that are annotated with {@link Query}.
-   *
-   * @param moduleClass
    */
   private static ImmutableSet<Field> findExtraTypeFields(Class<?> moduleClass) {
     return findFields(moduleClass, ExtraType.class, FileDescriptor.class);
@@ -254,8 +250,6 @@ public class SchemaDefinitionReader {
   /**
    * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
    * that are annotated with {@link Query}.
-   *
-   * @param moduleClass
    */
   private static ImmutableSet<Field> findMutationFields(Class<?> moduleClass) {
     return findFields(moduleClass, Mutation.class, GraphQLFieldDefinition.class);
@@ -264,8 +258,6 @@ public class SchemaDefinitionReader {
   /**
    * Returns an {@link ImmutableSet} of all the methods in {@code moduleClass} or its super classes
    * that are annotated with {@link Query}.
-   *
-   * @param moduleClass
    */
   private static ImmutableSet<Field> findQueryFields(Class<?> moduleClass) {
     return findFields(moduleClass, Query.class, GraphQLFieldDefinition.class);
@@ -379,7 +371,7 @@ public class SchemaDefinitionReader {
     method.setAccessible(true);
     try {
       ImmutableList<MethodMetadata> methodParameters = getMethodMetadata(method, descriptor);
-      DataFetcher dataFetcher =
+      DataFetcher<?> dataFetcher =
           (DataFetchingEnvironment environment) -> {
             Object[] methodParameterValues = new Object[methodParameters.size()];
             for (int i = 0; i < methodParameters.size(); i++) {
