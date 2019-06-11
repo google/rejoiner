@@ -152,6 +152,10 @@ public final class GqlInputConverter {
     return GraphQLArgument.newArgument().name(name).type(getInputTypeReference(descriptor)).build();
   }
 
+  static GraphQLArgument createArgument(EnumDescriptor descriptor, String name) {
+    return GraphQLArgument.newArgument().name(name).type(ProtoToGql.getReference(descriptor)).build();
+  }
+
   static String getReferenceName(GenericDescriptor descriptor) {
     return "Input_" + ProtoToGql.getReferenceName(descriptor);
   }
