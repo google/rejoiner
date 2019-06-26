@@ -60,6 +60,14 @@ public class SchemaDefinitionReader {
   private final ImmutableSet.Builder<Descriptor> referencedDescriptors = ImmutableSet.builder();
   private final List<GraphQLFieldDefinition> allQueriesInModule = new ArrayList<>();
   private final List<GraphQLFieldDefinition> allMutationsInModule = new ArrayList<>();
+  private final SchemaBundle.Builder schemaBundleBuilder = SchemaBundle.builder();
+  private final Class<?> moduleClass;
+  private final Object schemaDefinition;
+
+  public SchemaDefinitionReader(Object schemaDefinition) {
+    this.schemaDefinition = schemaDefinition;
+    this.moduleClass = schemaDefinition.getClass();
+  }
 
   /**
    * Returns a reference to the GraphQL type corresponding to the supplied proto.
@@ -96,8 +104,7 @@ public class SchemaDefinitionReader {
     allMutationsInModule.addAll(mutations);
   }
 
-  public SchemaBundle createBundle(final Object schemaDefinition) {
-    final Class<?> moduleClass = schemaDefinition.getClass();
+  public void readMembers() {
 
     for (Method method : findMethods(moduleClass, Query.class)) {
       Query query = method.getAnnotationsByType(Query.class)[0];
@@ -153,8 +160,6 @@ public class SchemaDefinitionReader {
       throw new RuntimeException(e);
     }
 
-    SchemaBundle.Builder schemaBundleBuilder = SchemaBundle.builder();
-
     allMutationsInModule.addAll(extraMutations());
 
     try {
@@ -181,51 +186,51 @@ public class SchemaDefinitionReader {
             .fileDescriptorsBuilder()
             .add((FileDescriptor) field.get(schemaDefinition));
       }
-
-      Namespace namespaceAnnotation = findClassAnnotation(moduleClass, Namespace.class);
-
-      if (namespaceAnnotation == null) {
-        schemaBundleBuilder.mutationFieldsBuilder().addAll(allMutationsInModule);
-        schemaBundleBuilder.queryFieldsBuilder().addAll(allQueriesInModule);
-      } else {
-        String namespace = namespaceAnnotation.value();
-        if (!allQueriesInModule.isEmpty()) {
-          schemaBundleBuilder
-              .queryFieldsBuilder()
-              .add(
-                  GraphQLFieldDefinition.newFieldDefinition()
-                      .staticValue("")
-                      .name(namespace)
-                      .description(namespace)
-                      .type(
-                          GraphQLObjectType.newObject()
-                              .name("_QUERY_FIELD_GROUP_" + namespace)
-                              .fields(allQueriesInModule)
-                              .build())
-                      .build());
-        }
-        if (!allMutationsInModule.isEmpty()) {
-          schemaBundleBuilder
-              .mutationFieldsBuilder()
-              .add(
-                  GraphQLFieldDefinition.newFieldDefinition()
-                      .staticValue("")
-                      .name(namespace)
-                      .description(namespace)
-                      .type(
-                          GraphQLObjectType.newObject()
-                              .name("_MUTATION_FIELD_GROUP_" + namespace)
-                              .fields(allMutationsInModule)
-                              .build())
-                      .build());
-        }
-      }
-
       schemaBundleBuilder.nodeDataFetchersBuilder().addAll(nodeDataFetchers);
       schemaBundleBuilder.modificationsBuilder().addAll(schemaModifications);
-
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public SchemaBundle createBundle() {
+    Namespace namespaceAnnotation = findClassAnnotation(moduleClass, Namespace.class);
+
+    if (namespaceAnnotation == null) {
+      schemaBundleBuilder.mutationFieldsBuilder().addAll(allMutationsInModule);
+      schemaBundleBuilder.queryFieldsBuilder().addAll(allQueriesInModule);
+    } else {
+      String namespace = namespaceAnnotation.value();
+      if (!allQueriesInModule.isEmpty()) {
+        schemaBundleBuilder
+            .queryFieldsBuilder()
+            .add(
+                GraphQLFieldDefinition.newFieldDefinition()
+                    .staticValue("")
+                    .name(namespace)
+                    .description(namespace)
+                    .type(
+                        GraphQLObjectType.newObject()
+                            .name("_QUERY_FIELD_GROUP_" + namespace)
+                            .fields(allQueriesInModule)
+                            .build())
+                    .build());
+      }
+      if (!allMutationsInModule.isEmpty()) {
+        schemaBundleBuilder
+            .mutationFieldsBuilder()
+            .add(
+                GraphQLFieldDefinition.newFieldDefinition()
+                    .staticValue("")
+                    .name(namespace)
+                    .description(namespace)
+                    .type(
+                        GraphQLObjectType.newObject()
+                            .name("_MUTATION_FIELD_GROUP_" + namespace)
+                            .fields(allMutationsInModule)
+                            .build())
+                    .build());
+      }
     }
 
     referencedDescriptors

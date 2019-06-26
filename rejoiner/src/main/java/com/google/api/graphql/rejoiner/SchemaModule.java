@@ -47,41 +47,46 @@ public abstract class SchemaModule extends AbstractModule {
   /** Uses the fields and methods on the given schema definition. */
   public SchemaModule(Object schemaDefinition) {
     this.schemaDefinition = schemaDefinition;
+    definition = createdSchemaDefinitionReader();
   }
 
   /** Uses the fields and methods on the module itself. */
   public SchemaModule() {
     schemaDefinition = this;
+    definition = createdSchemaDefinitionReader();
   }
 
-  private final SchemaDefinitionReader definition =
-      new SchemaDefinitionReader() {
-        @Override
-        protected ImmutableList<GraphQLFieldDefinition> extraMutations() {
-          return SchemaModule.this.extraMutations();
-        }
+  private final SchemaDefinitionReader definition;
 
-        @Override
-        protected Function<DataFetchingEnvironment, Object> handleParameter(
-            Method method, int parameterIndex) {
-          Annotation[] annotations = method.getParameterAnnotations()[parameterIndex];
-          Annotation qualifier = null;
-          for (Annotation annotation : annotations) {
-            if (com.google.inject.internal.Annotations.isBindingAnnotation(
-                annotation.annotationType())) {
-              qualifier = annotation;
-            }
+  private SchemaDefinitionReader createdSchemaDefinitionReader() {
+    return new SchemaDefinitionReader(this.schemaDefinition) {
+      @Override
+      protected ImmutableList<GraphQLFieldDefinition> extraMutations() {
+        return SchemaModule.this.extraMutations();
+      }
+
+      @Override
+      protected Function<DataFetchingEnvironment, Object> handleParameter(
+          Method method, int parameterIndex) {
+        Annotation[] annotations = method.getParameterAnnotations()[parameterIndex];
+        Annotation qualifier = null;
+        for (Annotation annotation : annotations) {
+          if (com.google.inject.internal.Annotations.isBindingAnnotation(
+              annotation.annotationType())) {
+            qualifier = annotation;
           }
-          final java.lang.reflect.Type[] genericParameterTypes = method.getGenericParameterTypes();
-          Key<?> key =
-              qualifier == null
-                  ? Key.get(genericParameterTypes[parameterIndex])
-                  : Key.get(genericParameterTypes[parameterIndex], qualifier);
-
-          final com.google.inject.Provider<?> provider = binder().getProvider(key);
-          return (ignored) -> provider;
         }
-      };
+        final java.lang.reflect.Type[] genericParameterTypes = method.getGenericParameterTypes();
+        Key<?> key =
+            qualifier == null
+                ? Key.get(genericParameterTypes[parameterIndex])
+                : Key.get(genericParameterTypes[parameterIndex], qualifier);
+
+        final com.google.inject.Provider<?> provider = binder().getProvider(key);
+        return (ignored) -> provider;
+      }
+    };
+  }
 
   /**
    * Returns a reference to the GraphQL type corresponding to the supplied proto.
@@ -116,7 +121,11 @@ public abstract class SchemaModule extends AbstractModule {
     definition.addMutationList(mutations);
   }
 
+  /** Override and call addQuery etc (called while the binder() is available). */
   protected void configureSchema() {}
+
+  /** Override and call addQuery etc (called lazily when the Schema is created). */
+  protected void configureSchemaAsync() {}
 
   @Override
   protected final void configure() {
@@ -124,14 +133,15 @@ public abstract class SchemaModule extends AbstractModule {
         Multibinder.newSetBinder(
             binder(), new TypeLiteral<SchemaBundle>() {}, Annotations.SchemaBundles.class);
 
+    configureSchema();
+    definition.readMembers();
     schemaBundleProviders
         .addBinding()
         .toProvider(
             () -> {
-              configureSchema();
-              return definition.createBundle(schemaDefinition);
+              configureSchemaAsync();
+              return definition.createBundle();
             });
-
     requestInjection(this);
   }
 
