@@ -248,7 +248,6 @@
         <artifactId>protobuf-maven-plugin</artifactId>
         <version>0.5.1</version>
         <configuration>
-          <protocExecutable>/usr/local/bin/protoc</protocExecutable>
           <writeDescriptorSet>true</writeDescriptorSet>
           <descriptorSetFileName>descriptor_set.desc</descriptorSetFileName>
           <descriptorSetOutputDirectory>${build.directory}/test-classes/META-INF/proto
