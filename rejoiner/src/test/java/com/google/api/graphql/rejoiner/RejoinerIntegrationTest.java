@@ -32,6 +32,8 @@ import graphql.GraphQL;
 import graphql.GraphQLError;
 import graphql.language.SourceLocation;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
@@ -97,6 +99,11 @@ public final class RejoinerIntegrationTest {
       return Futures.immediateFuture(GreetingsResponse.newBuilder().setId(request.getId()).build());
     }
 
+    @Query("getAccountWithLanguages")
+    Greetings.AccountValue accounts(@Arg("language") Greetings.Languages languages) {
+      return Greetings.AccountValue.newBuilder().setAnEnum(languages).build();
+    }
+
     @SchemaModification(addField = "extraField", onType = GreetingsResponse.class)
     ListenableFuture<ExtraProto> greetingsResponseToExtraProto(
         ExtraProto request, GreetingsResponse source) {
@@ -129,7 +136,7 @@ public final class RejoinerIntegrationTest {
 
   @Test
   public void schemaShouldHaveOneQuery() {
-    assertThat(schema.getQueryType().getFieldDefinitions()).hasSize(6);
+    assertThat(schema.getQueryType().getFieldDefinitions()).hasSize(7);
   }
 
   @Test
@@ -149,6 +156,14 @@ public final class RejoinerIntegrationTest {
   }
 
   @Test
+  public void schemaShouldGetAccountWithEnumArgs() {
+    GraphQLFieldDefinition getAccount =
+        schema.getQueryType().getFieldDefinition("getAccountWithLanguages");
+    assertThat(getAccount.getArgument("language").getType()).isInstanceOf(GraphQLEnumType.class);
+    assertThat(getAccount.getType()).isInstanceOf(GraphQLObjectType.class);
+  }
+
+  @Test
   public void schemaShouldHaveNoMutations() {
     assertThat(schema.getMutationType()).isNull();
   }
@@ -162,6 +177,17 @@ public final class RejoinerIntegrationTest {
     assertThat(obj.getFieldDefinition("id")).isNotNull();
     assertThat(obj.getFieldDefinition("extraField")).isNotNull();
     assertThat(obj.getFieldDefinition("greeting")).isNull();
+  }
+
+  @Test
+  public void executionQueryWithEnumArgs() {
+    GraphQL graphQL = GraphQL.newGraphQL(schema).build();
+    ExecutionInput executionInput =
+        ExecutionInput.newExecutionInput()
+            .query("query { getAccountWithLanguages(language: EO) { anEnum } }")
+            .build();
+    ExecutionResult executionResult = graphQL.execute(executionInput);
+    assertThat(executionResult.getErrors()).hasSize(0);
   }
 
   @Test

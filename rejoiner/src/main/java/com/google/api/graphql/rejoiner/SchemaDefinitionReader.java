@@ -15,15 +15,19 @@
 package com.google.api.graphql.rejoiner;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Converter;
+import com.google.common.base.Enums;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Message;
+import com.google.protobuf.ProtocolMessageEnum;
 import graphql.Scalars;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -526,8 +530,8 @@ public class SchemaDefinitionReader {
           listBuilder.add(MethodMetadata.create(function, argument));
         }
       } else if (isArg(method.getParameterAnnotations()[i])) {
+        String argName = getArgName(method.getParameterAnnotations()[i]);
         if (javaTypeToScalarMap.containsKey(parameterType)) {
-          String argName = getArgName(method.getParameterAnnotations()[i]);
           Function<DataFetchingEnvironment, ?> function =
               environment -> environment.getArgument(argName);
           GraphQLArgument argument =
@@ -535,6 +539,18 @@ public class SchemaDefinitionReader {
                   .name(argName)
                   .type(javaTypeToScalarMap.get(parameterType))
                   .build();
+          listBuilder.add(MethodMetadata.create(function, argument));
+        } else if (ProtocolMessageEnum.class.isAssignableFrom(parameterType)) {
+          Class<? extends Enum> requestClass = (Class<? extends Enum>) parameterType;
+          Descriptors.EnumDescriptor requestDescriptor =
+              (Descriptors.EnumDescriptor) requestClass.getMethod("getDescriptor").invoke(null);
+          Converter converter = Enums.stringConverter(requestClass);
+          Function<DataFetchingEnvironment, ?> function =
+              environment -> {
+                String enumValue = environment.getArgument(argName);
+                return converter.convert(enumValue);
+              };
+          GraphQLArgument argument = GqlInputConverter.createArgument(requestDescriptor, argName);
           listBuilder.add(MethodMetadata.create(function, argument));
         } else {
           throw new RuntimeException("Unknown arg type: " + parameterType.getName());

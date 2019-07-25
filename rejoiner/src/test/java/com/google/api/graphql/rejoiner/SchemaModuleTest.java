@@ -142,6 +142,33 @@ public final class SchemaModuleTest {
   }
 
   @Test
+  public void schemaModuleShouldApplyProtoEnumArgs() {
+      Injector injector =
+              Guice.createInjector(
+                      new SchemaModule() {
+
+                          @Mutation("mutationMethodWithArgs")
+                          ListenableFuture<GreetingsResponse> mutationMethod(
+                                  GreetingsRequest request, @Arg("myLanguage") Greetings.Languages myLanguage) {
+                              return Futures.immediateFuture(
+                                      GreetingsResponse.newBuilder().setId(request.getId()).build());
+                          }
+                      });
+      SchemaBundle schemaBundle = SchemaBundle.combine(injector.getInstance(KEY));
+      assertThat(schemaBundle.mutationFields()).hasSize(1);
+
+      List<GraphQLArgument> arguments =
+              schemaBundle.mutationFields().iterator().next().getArguments();
+      assertThat(arguments).hasSize(2);
+      assertThat(
+              arguments
+                      .stream()
+                      .map(argument -> argument.getName())
+                      .collect(ImmutableList.toImmutableList()))
+              .containsExactly("input", "myLanguage");
+  }
+
+  @Test
   public void schemaModuleShouldApplyArgs() {
 
     Injector injector =
