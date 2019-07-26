@@ -83,7 +83,7 @@ public abstract class SchemaModule extends AbstractModule {
                 : Key.get(genericParameterTypes[parameterIndex], qualifier);
 
         final com.google.inject.Provider<?> provider = binder().getProvider(key);
-        return (ignored) -> provider;
+        return (ignored) -> provider.get();
       }
     };
   }
