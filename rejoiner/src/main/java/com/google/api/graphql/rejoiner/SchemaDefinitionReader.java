@@ -541,7 +541,9 @@ public class SchemaDefinitionReader {
                   .build();
           listBuilder.add(MethodMetadata.create(function, argument));
         } else if (ProtocolMessageEnum.class.isAssignableFrom(parameterType)) {
+          @SuppressWarnings("unchecked")
           Class<? extends Enum<?>> requestClass = (Class<? extends Enum<?>>) parameterType;
+          @SuppressWarnings("unchecked")
           Converter<String, ? extends Enum<?>> converter =
               Enums.stringConverter((Class) requestClass);
           Function<DataFetchingEnvironment, ?> function =
