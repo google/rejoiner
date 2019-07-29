@@ -20,7 +20,8 @@ public abstract class SchemaBundle {
 
   public GraphQLSchema toSchema() {
     Map<String, ? extends Function<String, Object>> nodeDataFetchers =
-        nodeDataFetchers().stream()
+        nodeDataFetchers()
+            .stream()
             .collect(Collectors.toMap(e -> e.getClassName(), Function.identity()));
 
     GraphQLObjectType.Builder queryType = newObject().name("QueryType").fields(queryFields());

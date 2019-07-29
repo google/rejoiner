@@ -187,7 +187,7 @@ public final class RejoinerIntegrationTest {
             .query("query { getAccountWithLanguages(language: EO) { anEnum } }")
             .build();
     ExecutionResult executionResult = graphQL.execute(executionInput);
-    assertThat(executionResult.getErrors()).hasSize(0);
+    assertThat(executionResult.getErrors()).isEmpty();
   }
 
   @Test

@@ -541,15 +541,16 @@ public class SchemaDefinitionReader {
                   .build();
           listBuilder.add(MethodMetadata.create(function, argument));
         } else if (ProtocolMessageEnum.class.isAssignableFrom(parameterType)) {
-          Class<? extends Enum> requestClass = (Class<? extends Enum>) parameterType;
-          Descriptors.EnumDescriptor requestDescriptor =
-              (Descriptors.EnumDescriptor) requestClass.getMethod("getDescriptor").invoke(null);
-          Converter converter = Enums.stringConverter(requestClass);
+          Class<? extends Enum<?>> requestClass = (Class<? extends Enum<?>>) parameterType;
+          Converter<String, ? extends Enum<?>> converter =
+              Enums.stringConverter((Class) requestClass);
           Function<DataFetchingEnvironment, ?> function =
               environment -> {
                 String enumValue = environment.getArgument(argName);
                 return converter.convert(enumValue);
               };
+          Descriptors.EnumDescriptor requestDescriptor =
+              (Descriptors.EnumDescriptor) requestClass.getMethod("getDescriptor").invoke(null);
           GraphQLArgument argument = GqlInputConverter.createArgument(requestDescriptor, argName);
           listBuilder.add(MethodMetadata.create(function, argument));
         } else {
