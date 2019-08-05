@@ -14,43 +14,27 @@
 
 package com.google.api.graphql.rejoiner;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
-import static graphql.Scalars.GraphQLID;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-
 import com.google.api.graphql.options.RelayOptionsProto;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Converter;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.Descriptors.Descriptor;
-import com.google.protobuf.Descriptors.EnumDescriptor;
-import com.google.protobuf.Descriptors.EnumValueDescriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.*;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
-import com.google.protobuf.Descriptors.GenericDescriptor;
 import com.google.protobuf.Message;
 import graphql.Scalars;
 import graphql.relay.Relay;
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLEnumType;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLInterfaceType;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLNonNull;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLScalarType;
-import graphql.schema.GraphQLType;
-import graphql.schema.GraphQLTypeReference;
-import java.lang.reflect.InvocationTargetException;
+import graphql.schema.*;
+
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.google.common.collect.ImmutableList.toImmutableList;
+import static graphql.Scalars.GraphQLID;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 /** Converts Protos to GraphQL Types. */
 final class ProtoToGql {
@@ -99,21 +83,21 @@ final class ProtoToGql {
             : (DataFetchingEnvironment environment) -> {
               final Map<Object, Object> field = (Map) protoDataFetcher.get(environment);
               return field.entrySet().stream()
-              .map(entry -> ImmutableMap.of("key", entry.getKey(), "value", entry.getValue()))
-              .collect(toImmutableList());
+                  .map(entry -> ImmutableMap.of("key", entry.getKey(), "value", entry.getValue()))
+                  .collect(toImmutableList());
             };
-      GraphQLFieldDefinition.Builder builder =
+    GraphQLFieldDefinition.Builder builder =
         newFieldDefinition()
-              .type(convertType(fieldDescriptor))
+            .type(convertType(fieldDescriptor))
             .dataFetcher(dataFetcher)
-              .name(fieldDescriptor.getJsonName());
-      builder.description(DescriptorSet.COMMENTS.get(fieldDescriptor.getFullName()));
-      if (fieldDescriptor.getOptions().hasDeprecated()
-          && fieldDescriptor.getOptions().getDeprecated()) {
-        builder.deprecate("deprecated in proto");
-      }
-      return builder.build();
+            .name(fieldDescriptor.getJsonName());
+    builder.description(DescriptorSet.COMMENTS.get(fieldDescriptor.getFullName()));
+    if (fieldDescriptor.getOptions().hasDeprecated()
+        && fieldDescriptor.getOptions().getDeprecated()) {
+      builder.deprecate("deprecated in proto");
     }
+    return builder.build();
+  }
 
   private static class ProtoDataFetcher implements DataFetcher<Object> {
     private final String methodName;
@@ -164,9 +148,7 @@ final class ProtoToGql {
         descriptor.getFields().stream().map(ProtoToGql::convertField).collect(toImmutableList());
 
     Optional<GraphQLFieldDefinition> relayId =
-        descriptor
-            .getFields()
-            .stream()
+        descriptor.getFields().stream()
             .filter(field -> field.getOptions().hasExtension(RelayOptionsProto.relayOptions))
             .map(
                 field ->
@@ -233,4 +215,32 @@ final class ProtoToGql {
   static GraphQLTypeReference getReference(GenericDescriptor descriptor) {
     return new GraphQLTypeReference(getReferenceName(descriptor));
   }
+
+  //  private java.util.function.Function<Object, Object> getter(Class clazz, String methodName) {
+  //    MethodHandles.Lookup lookup = MethodHandles.lookup();
+  //
+  //    try {
+  //      CallSite site = LambdaMetafactory.metafactory(lookup,
+  //
+  //              "apply",
+  //
+  //              MethodType.methodType(Function.class),
+  //
+  //              MethodType.methodType(Object.class, Object.class),
+  //
+  //              lookup.findVirtual(clazz, methodName, MethodType.methodType(String.class)),
+  //
+  //              MethodType.methodType(Object.class, clazz));
+  //      return (java.util.function.Function<Object, Object>) site.getTarget().invokeExact();
+  //    } catch (LambdaConversionException e) {
+  //      e.printStackTrace();
+  //    } catch (NoSuchMethodException e) {
+  //      e.printStackTrace();
+  //    } catch (IllegalAccessException e) {
+  //      e.printStackTrace();
+  //    } catch (Throwable throwable) {
+  //      throwable.printStackTrace();
+  //    }
+  //
+  //  }
 }

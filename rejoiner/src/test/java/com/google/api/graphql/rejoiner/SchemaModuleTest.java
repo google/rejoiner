@@ -14,8 +14,6 @@
 
 package com.google.api.graphql.rejoiner;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import com.google.api.graphql.rejoiner.Greetings.GreetingsRequest;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsResponse;
 import com.google.common.collect.ImmutableList;
@@ -37,6 +35,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import static com.google.common.truth.Truth.assertThat;
 
 /** Unit tests for {@link SchemaModule}. */
 @RunWith(JUnit4.class)
@@ -164,8 +168,7 @@ public final class SchemaModuleTest {
         schemaBundle.mutationFields().iterator().next().getArguments();
     assertThat(arguments).hasSize(2);
     assertThat(
-            arguments
-                .stream()
+            arguments.stream()
                 .map(argument -> argument.getName())
                 .collect(ImmutableList.toImmutableList()))
         .containsExactly("input", "showDeleted");
