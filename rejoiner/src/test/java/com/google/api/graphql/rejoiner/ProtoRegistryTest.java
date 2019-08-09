@@ -18,6 +18,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLType;
 import java.util.Set;
 import org.junit.Test;
@@ -46,5 +47,6 @@ public final class ProtoRegistryTest {
             "Input_javatests_com_google_api_graphql_rejoiner_proto_Proto2_NestedProto");
   }
 
-  private static final Function<GraphQLType, String> GET_NAME = type -> type.getName();
+  private static final Function<GraphQLType, String> GET_NAME =
+      type -> ((GraphQLNamedType) type).getName();
 }

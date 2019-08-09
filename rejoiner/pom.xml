@@ -81,7 +81,7 @@
     <dependency>
       <groupId>com.graphql-java</groupId>
       <artifactId>graphql-java</artifactId>
-      <version>2019-05-27T04-13-44-5373f96</version>
+      <version>2019-08-05T23-30-46-c454ba2</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>

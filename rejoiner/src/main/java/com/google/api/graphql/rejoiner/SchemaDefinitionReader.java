@@ -34,6 +34,7 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
@@ -129,7 +130,7 @@ public class SchemaDefinitionReader {
       GraphQLFieldDefinition graphQLFieldDefinition =
           methodToFieldDefinition(schemaDefinition, method, "_NOT_USED_", "_NOT_USED_", null);
       nodeDataFetchers.add(
-          new NodeDataFetcher(graphQLFieldDefinition.getType().getName()) {
+          new NodeDataFetcher(((GraphQLNamedType) graphQLFieldDefinition.getType()).getName()) {
             @Override
             public Object apply(String s) {
               // TODO: Don't hardcode the arguments structure.
