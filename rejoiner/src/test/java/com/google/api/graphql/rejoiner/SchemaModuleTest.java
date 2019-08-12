@@ -36,10 +36,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import static com.google.common.truth.Truth.assertThat;
 
 /** Unit tests for {@link SchemaModule}. */
