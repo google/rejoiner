@@ -25,15 +25,18 @@ repositories {
 
 // Feel free to delete the comment at the next line. It is just for safely
 // updating the version in our release process.
-def grpcVersion = '1.7.0' // CURRENT_GRPC_VERSION
+def grpcVersion = '1.21.0' // CURRENT_GRPC_VERSION
 
 dependencies {
-  compile 'com.google.guava:guava:24.1-jre'
-  compile "com.google.api.grpc:proto-google-common-protos:0.1.9"
+  compile 'javax.annotation:javax.annotation-api:1.3.2'
+  compile group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.8.0'
+  compile 'com.google.guava:guava:28.0-jre'
+  compile "com.google.api.grpc:proto-google-common-protos:1.16.0"
   compile "io.grpc:grpc-netty:${grpcVersion}"
   compile "io.grpc:grpc-protobuf:${grpcVersion}"
   compile "io.grpc:grpc-stub:${grpcVersion}"
-  compile "com.google.api.graphql:rejoiner:0.1.0"
+
+  compile "com.google.api.graphql:rejoiner:0.3.0"
   compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.3.8.v20160314'
   compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.2'
   compile 'com.google.inject.extensions:guice-servlet:4.2.0'

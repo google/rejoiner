@@ -20,6 +20,7 @@ import graphql.Scalars;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
@@ -55,8 +56,7 @@ public final class SchemaToTypeScript {
 
   private static String toEnum(GraphQLEnumType type) {
     String types =
-        type.getValues()
-            .stream()
+        type.getValues().stream()
             .map(value -> value.getName())
             .filter(name -> !name.equals("UNRECOGNIZED"))
             .collect(Collectors.joining(", \n  "));
@@ -65,8 +65,7 @@ public final class SchemaToTypeScript {
 
   private static String toMessage(GraphQLObjectType type) {
     String fields =
-        type.getFieldDefinitions()
-            .stream()
+        type.getFieldDefinitions().stream()
             .filter(field -> !field.getName().equals("_"))
             .map(field -> toField(field))
             .collect(Collectors.joining("\n"));
@@ -81,11 +80,11 @@ public final class SchemaToTypeScript {
     if (type instanceof GraphQLList) {
       return toType(((GraphQLList) type).getWrappedType()) + "[]";
     } else if (type instanceof GraphQLObjectType) {
-      return type.getName();
+      return ((GraphQLObjectType) type).getName();
     } else if (type instanceof GraphQLEnumType) {
-      return type.getName() + "Enum";
+      return ((GraphQLEnumType) type).getName() + ".Enum";
     } else {
-      return TYPE_MAP.get(type.getName());
+      return TYPE_MAP.get(((GraphQLNamedType) type).getName());
     }
   }
 

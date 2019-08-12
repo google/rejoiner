@@ -22,6 +22,7 @@ import com.google.common.truth.extensions.proto.ProtoTruth;
 import com.google.protobuf.Message;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLNamedType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -58,7 +59,7 @@ public final class GqlInputConverterTest {
   public void inputConverterShouldCreateArgument() {
     GraphQLArgument argument = GqlInputConverter.createArgument(Proto1.getDescriptor(), "input");
     Truth.assertThat(argument.getName()).isEqualTo("input");
-    Truth.assertThat(argument.getType().getName())
+    Truth.assertThat(((GraphQLNamedType) argument.getType()).getName())
         .isEqualTo("Input_javatests_com_google_api_graphql_rejoiner_proto_Proto1");
   }
 
@@ -76,7 +77,7 @@ public final class GqlInputConverterTest {
   public void inputConverterShouldCreateArgumentForMessagesInSameFile() {
     GraphQLArgument argument = GqlInputConverter.createArgument(Proto2.getDescriptor(), "input");
     Truth.assertThat(argument.getName()).isEqualTo("input");
-    Truth.assertThat(argument.getType().getName())
+    Truth.assertThat(((GraphQLNamedType) argument.getType()).getName())
         .isEqualTo("Input_javatests_com_google_api_graphql_rejoiner_proto_Proto2");
   }
 }

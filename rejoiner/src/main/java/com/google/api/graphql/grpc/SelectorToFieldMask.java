@@ -16,17 +16,20 @@ package com.google.api.graphql.grpc;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.FieldMask.Builder;
+import graphql.execution.MergedField;
 import graphql.language.Field;
 import graphql.language.FragmentDefinition;
 import graphql.language.FragmentSpread;
 import graphql.language.Selection;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.Map;
+import java.util.Optional;
 
 /** Creates a {@link FieldMask} based on a GraphQL {@link Selection}. */
 public final class SelectorToFieldMask {
@@ -37,10 +40,9 @@ public final class SelectorToFieldMask {
       CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.LOWER_UNDERSCORE);
 
   public static Builder getFieldMaskForProto(
-      DataFetchingEnvironment environment,
-      ImmutableMap<String, FragmentDefinition> fragmentsByName,
-      Descriptor descriptor,
-      String startAtFieldName) {
+      DataFetchingEnvironment environment, Descriptor descriptor, String startAtFieldName) {
+
+    Map<String, FragmentDefinition> fragmentsByName = environment.getFragmentsByName();
 
     Builder maskFromSelectionBuilder = FieldMask.newBuilder();
 
@@ -61,13 +63,16 @@ public final class SelectorToFieldMask {
   }
 
   public static Builder getFieldMaskForProto(
-      DataFetchingEnvironment environment,
-      ImmutableMap<String, FragmentDefinition> fragmentsByName,
-      Descriptor descriptor) {
+      DataFetchingEnvironment environment, Descriptor descriptor) {
+
+    Map<String, FragmentDefinition> fragmentsByName = environment.getFragmentsByName();
 
     Builder maskFromSelectionBuilder = FieldMask.newBuilder();
-    for (Field field : environment.getFields()) {
-      for (Selection selection : field.getSelectionSet().getSelections()) {
+    for (Field field :
+        Optional.ofNullable(environment.getMergedField())
+            .map(MergedField::getFields)
+            .orElse(ImmutableList.of())) {
+      for (Selection<?> selection : field.getSelectionSet().getSelections()) {
         maskFromSelectionBuilder.addAllPaths(
             getPathsForProto("", selection, descriptor, fragmentsByName));
       }
@@ -77,7 +82,7 @@ public final class SelectorToFieldMask {
 
   private static ImmutableSet<String> getPathsForProto(
       String prefix,
-      Selection node,
+      Selection<?> node,
       Descriptor descriptor,
       Map<String, FragmentDefinition> fragmentsByName) {
     ImmutableSet.Builder<String> builder = ImmutableSet.builder();
@@ -92,7 +97,7 @@ public final class SelectorToFieldMask {
       }
 
       if (field.getSelectionSet() != null) {
-        for (Selection selection : field.getSelectionSet().getSelections()) {
+        for (Selection<?> selection : field.getSelectionSet().getSelections()) {
           builder.addAll(
               getPathsForProto(
                   prefix + name + ".",
@@ -108,7 +113,7 @@ public final class SelectorToFieldMask {
       String name = fragmentSpread.getName();
       FragmentDefinition field = fragmentsByName.get(fragmentSpread.getName());
       if (field.getSelectionSet() != null) {
-        for (Selection selection : field.getSelectionSet().getSelections()) {
+        for (Selection<?> selection : field.getSelectionSet().getSelections()) {
           builder.addAll(getPathsForProto(prefix, selection, descriptor, fragmentsByName));
         }
       } else {

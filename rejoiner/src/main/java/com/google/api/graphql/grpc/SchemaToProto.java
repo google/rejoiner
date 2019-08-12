@@ -21,6 +21,7 @@ import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLEnumValueDefinition;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
@@ -122,7 +123,7 @@ public final class SchemaToProto {
     return String.format("message %s {\n%s\n}", type.getName(), Joiner.on("\n").join(fields));
   }
 
-  private static String getJspb(GraphQLType type) {
+  private static String getJspb(GraphQLNamedType type) {
     return String.format("option (jspb.message_id) = \"graphql.%s\";", type.getName());
   }
 
@@ -134,11 +135,11 @@ public final class SchemaToProto {
     if (type instanceof GraphQLList) {
       return "repeated " + toType(((GraphQLList) type).getWrappedType());
     } else if (type instanceof GraphQLObjectType) {
-      return type.getName();
+      return ((GraphQLObjectType) type).getName();
     } else if (type instanceof GraphQLEnumType) {
-      return type.getName() + ".Enum";
+      return ((GraphQLEnumType) type).getName() + ".Enum";
     } else {
-      return TYPE_MAP.get(type.getName());
+      return TYPE_MAP.get(((GraphQLNamedType) type).getName());
     }
   }
 
