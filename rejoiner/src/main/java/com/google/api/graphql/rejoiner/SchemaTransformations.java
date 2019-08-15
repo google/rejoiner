@@ -38,35 +38,35 @@ public final class SchemaTransformations {
                 @Override
                 public TraversalControl visitGraphQLInterfaceType(
                     GraphQLInterfaceType node, TraverserContext<GraphQLSchemaElement> context) {
-                  reachableTypes.add(((GraphQLNamedType) node).getName());
+                  reachableTypes.add(node.getName());
                   return super.visitGraphQLInterfaceType(node, context);
                 }
 
                 @Override
                 public TraversalControl visitGraphQLEnumType(
                     GraphQLEnumType node, TraverserContext<GraphQLSchemaElement> context) {
-                  reachableTypes.add(((GraphQLNamedType) node).getName());
+                  reachableTypes.add(node.getName());
                   return super.visitGraphQLEnumType(node, context);
                 }
 
                 @Override
                 public TraversalControl visitGraphQLInputObjectType(
                     GraphQLInputObjectType node, TraverserContext<GraphQLSchemaElement> context) {
-                  reachableTypes.add(((GraphQLNamedType) node).getName());
+                  reachableTypes.add(node.getName());
                   return super.visitGraphQLInputObjectType(node, context);
                 }
 
                 @Override
                 public TraversalControl visitGraphQLObjectType(
                     GraphQLObjectType node, TraverserContext<GraphQLSchemaElement> context) {
-                  reachableTypes.add(((GraphQLNamedType) node).getName());
+                  reachableTypes.add(node.getName());
                   return super.visitGraphQLObjectType(node, context);
                 }
 
                 @Override
                 public TraversalControl visitGraphQLTypeReference(
                     GraphQLTypeReference node, TraverserContext<GraphQLSchemaElement> context) {
-                  reachableTypes.add(((GraphQLNamedType) node).getName());
+                  reachableTypes.add(node.getName());
                   return super.visitGraphQLTypeReference(node, context);
                 }
 
