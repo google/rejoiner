@@ -16,22 +16,25 @@ package com.google.api.graphql.rejoiner;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
+import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeReference;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
- * Module for registering parts of a {@link graphql.schema.GraphQLSchema}.
+ * Module for registering parts of a {@link GraphQLSchema}.
  *
  * <p>Any public fields of type {@link GraphQLFieldDefinition} annotated with {@link Query} or
  * {@link Mutation} will be added to the top level query or mutation. Fields of type {@link
@@ -43,15 +46,25 @@ import java.util.List;
 public abstract class SchemaModule extends AbstractModule {
 
   private final Object schemaDefinition;
+  private final ImmutableMap<String, String> commentsMap;
 
   /** Uses the fields and methods on the given schema definition. */
   public SchemaModule(Object schemaDefinition) {
     this.schemaDefinition = schemaDefinition;
+    commentsMap = ImmutableMap.of();
     definition = createdSchemaDefinitionReader();
   }
 
   /** Uses the fields and methods on the module itself. */
   public SchemaModule() {
+    schemaDefinition = this;
+    commentsMap = ImmutableMap.of();
+    definition = createdSchemaDefinitionReader();
+  }
+
+  /** Creates a schema using the supplied fields descriptions. */
+  public SchemaModule(ImmutableMap<String, String> commentsMap) {
+    this.commentsMap = commentsMap;
     schemaDefinition = this;
     definition = createdSchemaDefinitionReader();
   }
@@ -59,7 +72,7 @@ public abstract class SchemaModule extends AbstractModule {
   private final SchemaDefinitionReader definition;
 
   private SchemaDefinitionReader createdSchemaDefinitionReader() {
-    return new SchemaDefinitionReader(this.schemaDefinition) {
+    return new SchemaDefinitionReader(this.schemaDefinition, this.commentsMap) {
       @Override
       protected ImmutableList<GraphQLFieldDefinition> extraMutations() {
         return SchemaModule.this.extraMutations();
@@ -76,13 +89,13 @@ public abstract class SchemaModule extends AbstractModule {
             qualifier = annotation;
           }
         }
-        final java.lang.reflect.Type[] genericParameterTypes = method.getGenericParameterTypes();
+        final Type[] genericParameterTypes = method.getGenericParameterTypes();
         Key<?> key =
             qualifier == null
                 ? Key.get(genericParameterTypes[parameterIndex])
                 : Key.get(genericParameterTypes[parameterIndex], qualifier);
 
-        final com.google.inject.Provider<?> provider = binder().getProvider(key);
+        final Provider<?> provider = binder().getProvider(key);
         return (ignored) -> provider.get();
       }
     };
@@ -145,7 +158,7 @@ public abstract class SchemaModule extends AbstractModule {
     requestInjection(this);
   }
 
-  void addExtraType(Descriptors.Descriptor descriptor) {
+  void addExtraType(Descriptor descriptor) {
     definition.addExtraType(descriptor);
   }
 }

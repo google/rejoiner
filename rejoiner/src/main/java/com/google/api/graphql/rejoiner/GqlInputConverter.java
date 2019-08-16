@@ -21,6 +21,7 @@ import com.google.common.base.Converter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -99,7 +100,7 @@ public final class GqlInputConverter {
     return builder.build();
   }
 
-  GraphQLType getInputType(Descriptor descriptor) {
+  GraphQLType getInputType(Descriptor descriptor, ImmutableMap<String, String> commentsMap) {
     GraphQLInputObjectType.Builder builder =
         GraphQLInputObjectType.newInputObject().name(getReferenceName(descriptor));
 
@@ -116,11 +117,11 @@ public final class GqlInputConverter {
         inputBuilder.type((GraphQLInputType) fieldType);
       }
 
-      inputBuilder.description(DescriptorSet.COMMENTS.get(field.getFullName()));
+      inputBuilder.description(commentsMap.get(field.getFullName()));
 
       builder.field(inputBuilder.build());
     }
-    builder.description(DescriptorSet.COMMENTS.get(descriptor.getFullName()));
+    builder.description(commentsMap.get(descriptor.getFullName()));
     return builder.build();
   }
 

@@ -68,7 +68,8 @@ public final class GqlInputConverterTest {
     GqlInputConverter inputConverter =
         GqlInputConverter.newBuilder().add(TestProto.getDescriptor().getFile()).build();
     GraphQLInputObjectType input =
-        (GraphQLInputObjectType) inputConverter.getInputType(Proto1.getDescriptor());
+        (GraphQLInputObjectType)
+            inputConverter.getInputType(Proto1.getDescriptor(), ImmutableMap.of());
     Truth.assertThat(input.getField("intField")).isNotNull();
     Truth.assertThat(input.getField("camelCaseName")).isNotNull();
   }
