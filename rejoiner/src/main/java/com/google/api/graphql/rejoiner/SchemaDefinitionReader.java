@@ -68,10 +68,12 @@ public class SchemaDefinitionReader {
   private final SchemaBundle.Builder schemaBundleBuilder = SchemaBundle.builder();
   private final Class<?> moduleClass;
   private final Object schemaDefinition;
+  private final ImmutableMap<String, String> commentsMap;
 
-  public SchemaDefinitionReader(Object schemaDefinition) {
+  public SchemaDefinitionReader(Object schemaDefinition, ImmutableMap<String, String> commentsMap) {
     this.schemaDefinition = schemaDefinition;
     this.moduleClass = schemaDefinition.getClass();
+    this.commentsMap = commentsMap;
   }
 
   /**
@@ -114,13 +116,13 @@ public class SchemaDefinitionReader {
     for (Method method : findMethods(moduleClass, Query.class)) {
       Query query = method.getAnnotationsByType(Query.class)[0];
       allQueriesInModule.add(
-          methodToFieldDefinition(schemaDefinition, method, query.value(), query.fullName(), null));
+          methodToFieldDefinition(schemaDefinition, method, query.value(), query.fullName(), null, commentsMap));
     }
     for (Method method : findMethods(moduleClass, Mutation.class)) {
       Mutation mutation = method.getAnnotationsByType(Mutation.class)[0];
       allMutationsInModule.add(
           methodToFieldDefinition(
-              schemaDefinition, method, mutation.value(), mutation.fullName(), null));
+              schemaDefinition, method, mutation.value(), mutation.fullName(), null,commentsMap));
     }
 
     final List<NodeDataFetcher> nodeDataFetchers = new ArrayList<>();
@@ -128,7 +130,7 @@ public class SchemaDefinitionReader {
 
     for (Method method : findMethods(moduleClass, RelayNode.class)) {
       GraphQLFieldDefinition graphQLFieldDefinition =
-          methodToFieldDefinition(schemaDefinition, method, "_NOT_USED_", "_NOT_USED_", null);
+          methodToFieldDefinition(schemaDefinition, method, "_NOT_USED_", "_NOT_USED_", null,commentsMap);
       nodeDataFetchers.add(
           new NodeDataFetcher(((GraphQLNamedType) graphQLFieldDefinition.getType()).getName()) {
             @Override
@@ -159,7 +161,7 @@ public class SchemaDefinitionReader {
         Descriptor typeDescriptor = (Descriptor) typeClass.getMethod("getDescriptor").invoke(null);
         referencedDescriptors.add(typeDescriptor);
         schemaModifications.add(
-            methodToTypeModification(schemaDefinition, method, name, typeDescriptor));
+            methodToTypeModification(schemaDefinition, method, name, typeDescriptor, commentsMap));
       }
     } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
       throw new RuntimeException(e);
@@ -242,6 +244,7 @@ public class SchemaDefinitionReader {
         .build()
         .forEach(
             descriptor -> schemaBundleBuilder.fileDescriptorsBuilder().add(descriptor.getFile()));
+
 
     return schemaBundleBuilder.build();
   }
@@ -375,9 +378,9 @@ public class SchemaDefinitionReader {
   }
 
   private TypeModification methodToTypeModification(
-      Object module, Method method, String name, Descriptor typeDescriptor) {
+      Object module, Method method, String name, Descriptor typeDescriptor, ImmutableMap<String, String> commentsMap) {
     GraphQLFieldDefinition fieldDef =
-        methodToFieldDefinition(module, method, name, name, typeDescriptor);
+        methodToFieldDefinition(module, method, name, name, typeDescriptor, commentsMap);
     return Type.find(typeDescriptor).addField(fieldDef);
   }
 
@@ -386,7 +389,8 @@ public class SchemaDefinitionReader {
       Method method,
       String name,
       @Nullable String fullName,
-      @Nullable Descriptor descriptor) {
+      @Nullable Descriptor descriptor,
+      ImmutableMap<String, String> commentsMap) {
     method.setAccessible(true);
     try {
       ImmutableList<MethodMetadata> methodParameters = getMethodMetadata(method, descriptor);
@@ -415,7 +419,7 @@ public class SchemaDefinitionReader {
       GraphQLFieldDefinition.Builder fieldDef = GraphQLFieldDefinition.newFieldDefinition();
       fieldDef.type(returnType);
       fieldDef.name(name);
-      fieldDef.description(DescriptorSet.COMMENTS.get(fullName));
+      fieldDef.description(commentsMap.get(fullName));
       for (MethodMetadata methodMetadata : methodParameters) {
         if (methodMetadata.hasArgument()) {
           fieldDef.argument(methodMetadata.argument());

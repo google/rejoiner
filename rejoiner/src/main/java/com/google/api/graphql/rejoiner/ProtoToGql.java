@@ -82,7 +82,8 @@ final class ProtoToGql {
   private static final ImmutableList<GraphQLFieldDefinition> STATIC_FIELD =
       ImmutableList.of(newFieldDefinition().type(GraphQLString).name("_").staticValue("-").build());
 
-  private static GraphQLFieldDefinition convertField(FieldDescriptor fieldDescriptor) {
+  private static GraphQLFieldDefinition convertField(
+      FieldDescriptor fieldDescriptor, ImmutableMap<String, String> commentsMap) {
     final String fieldName = fieldDescriptor.getName();
     final String convertedFieldName =
         fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
@@ -105,7 +106,7 @@ final class ProtoToGql {
             .type(convertType(fieldDescriptor))
             .dataFetcher(dataFetcher)
             .name(fieldDescriptor.getJsonName());
-    builder.description(DescriptorSet.COMMENTS.get(fieldDescriptor.getFullName()));
+    builder.description(commentsMap.get(fieldDescriptor.getFullName()));
     if (fieldDescriptor.getOptions().hasDeprecated()
         && fieldDescriptor.getOptions().getDeprecated()) {
       builder.deprecate("deprecated in proto");
@@ -157,9 +158,14 @@ final class ProtoToGql {
     }
   }
 
-  static GraphQLObjectType convert(Descriptor descriptor, GraphQLInterfaceType nodeInterface) {
+  static GraphQLObjectType convert(
+      Descriptor descriptor,
+      GraphQLInterfaceType nodeInterface,
+      ImmutableMap<String, String> commentsMap) {
     ImmutableList<GraphQLFieldDefinition> graphQLFieldDefinitions =
-        descriptor.getFields().stream().map(ProtoToGql::convertField).collect(toImmutableList());
+        descriptor.getFields().stream()
+            .map(field -> ProtoToGql.convertField(field, commentsMap))
+            .collect(toImmutableList());
 
     Optional<GraphQLFieldDefinition> relayId =
         descriptor.getFields().stream()
@@ -203,18 +209,19 @@ final class ProtoToGql {
 
     return GraphQLObjectType.newObject()
         .name(getReferenceName(descriptor))
-        .description(DescriptorSet.COMMENTS.get(descriptor.getFullName()))
+        .description(commentsMap.get(descriptor.getFullName()))
         .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions)
         .build();
   }
 
-  static GraphQLEnumType convert(EnumDescriptor descriptor) {
+  static GraphQLEnumType convert(
+      EnumDescriptor descriptor, ImmutableMap<String, String> commentsMap) {
     GraphQLEnumType.Builder builder = GraphQLEnumType.newEnum().name(getReferenceName(descriptor));
     for (EnumValueDescriptor value : descriptor.getValues()) {
       builder.value(
           value.getName(),
           value.getName(),
-          DescriptorSet.COMMENTS.get(value.getFullName()),
+          commentsMap.get(value.getFullName()),
           value.getOptions().getDeprecated() ? "deprecated in proto" : null);
     }
     return builder.build();

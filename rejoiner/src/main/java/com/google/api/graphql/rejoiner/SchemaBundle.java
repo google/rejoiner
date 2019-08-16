@@ -4,6 +4,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Descriptors;
 import graphql.relay.Relay;
@@ -20,14 +21,17 @@ public abstract class SchemaBundle {
 
   public GraphQLSchema toSchema() {
     Map<String, ? extends Function<String, Object>> nodeDataFetchers =
-        nodeDataFetchers()
-            .stream()
+        nodeDataFetchers().stream()
             .collect(Collectors.toMap(e -> e.getClassName(), Function.identity()));
 
     GraphQLObjectType.Builder queryType = newObject().name("QueryType").fields(queryFields());
 
     ProtoRegistry protoRegistry =
-        ProtoRegistry.newBuilder().addAll(fileDescriptors()).add(modifications()).build();
+        ProtoRegistry.newBuilder()
+            .setComments(commentsMap())
+            .addAll(fileDescriptors())
+            .add(modifications())
+            .build();
 
     if (protoRegistry.hasRelayNode()) {
       queryType.field(
@@ -74,6 +78,8 @@ public abstract class SchemaBundle {
 
   public abstract ImmutableList<NodeDataFetcher> nodeDataFetchers();
 
+  public abstract ImmutableMap<String, String> commentsMap();
+
   public static Builder builder() {
     return new AutoValue_SchemaBundle.Builder();
   }
@@ -87,6 +93,7 @@ public abstract class SchemaBundle {
           builder.modificationsBuilder().addAll(schemaBundle.modifications());
           builder.fileDescriptorsBuilder().addAll(schemaBundle.fileDescriptors());
           builder.nodeDataFetchersBuilder().addAll(schemaBundle.nodeDataFetchers());
+          builder.commentsMapBuilder().putAll(schemaBundle.commentsMap());
         });
     return builder.build();
   }
@@ -102,6 +109,8 @@ public abstract class SchemaBundle {
     public abstract ImmutableSet.Builder<Descriptors.FileDescriptor> fileDescriptorsBuilder();
 
     public abstract ImmutableList.Builder<NodeDataFetcher> nodeDataFetchersBuilder();
+
+    public abstract ImmutableMap.Builder<String, String> commentsMapBuilder();
 
     public abstract SchemaBundle build();
   }

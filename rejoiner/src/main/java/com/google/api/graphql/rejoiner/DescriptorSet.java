@@ -25,29 +25,21 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 final class DescriptorSet {
-  private static final String DEFAULT_DESCRIPTOR_SET_FILE_LOCATION =
-      "META-INF/proto/descriptor_set.desc";
-
-  static final ImmutableMap<String, String> COMMENTS = getCommentsFromDescriptorFile();
 
   private DescriptorSet() {}
 
-  private static ImmutableMap<String, String> getCommentsFromDescriptorFile() {
+  /** Returns a map containing the comments for types and fields. */
+  public static ImmutableMap<String, String> getCommentsFromDescriptorFile(
+      InputStream descriptorSetInputStream) {
     try {
-      InputStream is =
-          DescriptorSet.class
-              .getClassLoader()
-              .getResourceAsStream(DEFAULT_DESCRIPTOR_SET_FILE_LOCATION);
       DescriptorProtos.FileDescriptorSet descriptors =
-          DescriptorProtos.FileDescriptorSet.parseFrom(is);
-      return descriptors
-          .getFileList()
-          .stream()
+          DescriptorProtos.FileDescriptorSet.parseFrom(descriptorSetInputStream);
+      return descriptors.getFileList().stream()
           .flatMap(
               fileDescriptorProto -> parseDescriptorFile(fileDescriptorProto).entrySet().stream())
           .collect(
               ImmutableMap.toImmutableMap(
-                  Map.Entry::getKey, Map.Entry::getValue, (entry, value) -> entry));
+                  Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> value1));
     } catch (IOException ignored) {
     }
     return ImmutableMap.of();
@@ -55,10 +47,7 @@ final class DescriptorSet {
 
   private static Map<String, String> parseDescriptorFile(
       DescriptorProtos.FileDescriptorProto descriptor) {
-    return descriptor
-        .getSourceCodeInfo()
-        .getLocationList()
-        .stream()
+    return descriptor.getSourceCodeInfo().getLocationList().stream()
         .filter(
             location ->
                 !(location.getLeadingComments().isEmpty()
