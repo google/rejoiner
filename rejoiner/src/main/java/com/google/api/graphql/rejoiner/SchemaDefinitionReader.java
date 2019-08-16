@@ -74,6 +74,7 @@ public class SchemaDefinitionReader {
     this.schemaDefinition = schemaDefinition;
     this.moduleClass = schemaDefinition.getClass();
     this.commentsMap = commentsMap;
+    schemaBundleBuilder.commentsMapBuilder().putAll(commentsMap);
   }
 
   /**

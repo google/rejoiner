@@ -46,7 +46,7 @@ import java.util.List;
 public abstract class SchemaModule extends AbstractModule {
 
   private final Object schemaDefinition;
-  private final ImmutableMap<String, String> commentsMap;
+  final ImmutableMap<String, String> commentsMap;
 
   /** Uses the fields and methods on the given schema definition. */
   public SchemaModule(Object schemaDefinition) {

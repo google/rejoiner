@@ -24,7 +24,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-final class DescriptorSet {
+/** Reads comments in proto files. */
+public final class DescriptorSet {
 
   private DescriptorSet() {}
 

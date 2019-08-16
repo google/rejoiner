@@ -12,6 +12,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -86,6 +87,7 @@ public abstract class SchemaBundle {
 
   public static SchemaBundle combine(Collection<SchemaBundle> schemaBundles) {
     Builder builder = SchemaBundle.builder();
+    Map<String, String> commentsMap = new HashMap<>();
     schemaBundles.forEach(
         schemaBundle -> {
           builder.queryFieldsBuilder().addAll(schemaBundle.queryFields());
@@ -93,8 +95,9 @@ public abstract class SchemaBundle {
           builder.modificationsBuilder().addAll(schemaBundle.modifications());
           builder.fileDescriptorsBuilder().addAll(schemaBundle.fileDescriptors());
           builder.nodeDataFetchersBuilder().addAll(schemaBundle.nodeDataFetchers());
-          builder.commentsMapBuilder().putAll(schemaBundle.commentsMap());
+          commentsMap.putAll(schemaBundle.commentsMap());
         });
+    builder.commentsMapBuilder().putAll(commentsMap);
     return builder.build();
   }
 
