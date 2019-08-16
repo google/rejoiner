@@ -14,7 +14,6 @@
 
 package com.google.api.graphql.rejoiner;
 
-import com.google.api.graphql.options.RelayOptionsProto;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Converter;
@@ -26,16 +25,13 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.GenericDescriptor;
-import com.google.protobuf.Message;
 import graphql.Scalars;
-import graphql.relay.Relay;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
@@ -43,10 +39,8 @@ import graphql.schema.GraphQLTypeReference;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static graphql.Scalars.GraphQLID;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
@@ -168,7 +162,7 @@ final class ProtoToGql {
             .collect(toImmutableList());
 
     // TODO: add back relay support
-    
+
     //    Optional<GraphQLFieldDefinition> relayId =
     //        descriptor.getFields().stream()
     //            .filter(field -> field.getOptions().hasExtension(RelayOptionsProto.relayOptions))
