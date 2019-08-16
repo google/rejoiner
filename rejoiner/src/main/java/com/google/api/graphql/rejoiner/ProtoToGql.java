@@ -167,23 +167,25 @@ final class ProtoToGql {
             .map(field -> ProtoToGql.convertField(field, commentsMap))
             .collect(toImmutableList());
 
-    Optional<GraphQLFieldDefinition> relayId =
-        descriptor.getFields().stream()
-            .filter(field -> field.getOptions().hasExtension(RelayOptionsProto.relayOptions))
-            .map(
-                field ->
-                    newFieldDefinition()
-                        .name("id")
-                        .type(new GraphQLNonNull(GraphQLID))
-                        .description("Relay ID")
-                        .dataFetcher(
-                            data ->
-                                new Relay()
-                                    .toGlobalId(
-                                        getReferenceName(descriptor),
-                                        data.<Message>getSource().getField(field).toString()))
-                        .build())
-            .findFirst();
+    // TODO: add back relay support
+    
+    //    Optional<GraphQLFieldDefinition> relayId =
+    //        descriptor.getFields().stream()
+    //            .filter(field -> field.getOptions().hasExtension(RelayOptionsProto.relayOptions))
+    //            .map(
+    //                field ->
+    //                    newFieldDefinition()
+    //                        .name("id")
+    //                        .type(new GraphQLNonNull(GraphQLID))
+    //                        .description("Relay ID")
+    //                        .dataFetcher(
+    //                            data ->
+    //                                new Relay()
+    //                                    .toGlobalId(
+    //                                        getReferenceName(descriptor),
+    //                                        data.<Message>getSource().getField(field).toString()))
+    //                        .build())
+    //            .findFirst();
 
     //   if (relayId.isPresent()) {
     //      return GraphQLObjectType.newObject()
