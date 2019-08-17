@@ -1,6 +1,8 @@
 sudo: true
 
 language: java
+jdk:
+  - openjdk8
 
 env:
   global:
