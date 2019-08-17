@@ -2,7 +2,7 @@ sudo: true
 
 language: java
 jdk:
-  - oraclejdk8
+  - oraclejdk9
 
 env:
   global:
