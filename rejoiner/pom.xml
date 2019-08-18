@@ -280,9 +280,12 @@
         <version>0.8.4</version>
         <configuration>
           <excludes>
+            <!-- Removes the generated proto Java code. -->
+            <exclude>**/com/google/api/graphql/*</exclude>
+            <exclude>**/com/google/api/graphql/options/*</exclude>
             <exclude>**/*AutoValue_*</exclude>
+            <!-- This doesn't actually work. -->
             <exclude>**/generated-sources/**/*</exclude>
-            <exclude>**/target/**/*</exclude>
           </excludes>
         </configuration>
         <executions>
