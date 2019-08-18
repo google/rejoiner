@@ -282,6 +282,7 @@
           <excludes>
             <exclude>**/*AutoValue_*</exclude>
             <exclude>**/generated-sources/**/*</exclude>
+            <exclude>**/target/**/*</exclude>
           </excludes>
         </configuration>
         <executions>
