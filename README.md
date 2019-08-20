@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/google/rejoiner.svg?branch=master)](https://travis-ci.org/google/rejoiner)
 [![Coverage Status](https://coveralls.io/repos/github/google/rejoiner/badge.svg)](https://coveralls.io/github/google/rejoiner)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b43373716f2241a8bebd332e438b2454)](https://www.codacy.com/app/siderakis/rejoiner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=google/rejoiner&amp;utm_campaign=Badge_Grade)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.google.api.graphql/rejoiner/badge.svg)](http://mvnrepository.com/artifact/com.google.api.graphql/rejoiner/0.0.4)
 
 
