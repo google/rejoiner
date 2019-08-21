@@ -64,7 +64,6 @@ final class GraphQlServlet extends HttpServlet {
         new ChainedInstrumentation(
             Arrays.asList(
                 GuavaListenableFutureSupport.listenableFutureInstrumentation(),
-                new DataLoaderDispatcherInstrumentation(dataLoaderRegistry),
                 new TracingInstrumentation()));
     GraphQL graphql = GraphQL.newGraphQL(schema).instrumentation(instrumentation).build();
 
@@ -82,6 +81,7 @@ final class GraphQlServlet extends HttpServlet {
             .query(query)
             .operationName(operationName)
             .variables(variables)
+            .dataLoaderRegistry(dataLoaderRegistry)
             .context(dataLoaderRegistry)
             .build();
     ExecutionResult executionResult = graphql.execute(executionInput);
