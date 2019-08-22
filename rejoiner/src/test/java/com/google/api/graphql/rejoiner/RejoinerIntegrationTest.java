@@ -83,6 +83,11 @@ public final class RejoinerIntegrationTest {
     ListenableFuture<TestProto.Proto1> proto1() {
       return Futures.immediateFuture(
           TestProto.Proto1.newBuilder()
+              .setCamelCaseName(101)
+              .setId("id")
+              .setIntField(1)
+              .setNameField("name")
+              .setTestInnerProto(TestProto.Proto1.InnerProto.newBuilder().setFoo("foooo"))
               .putAllMapField(
                   ImmutableMap.of(
                       "a", "1",
@@ -228,6 +233,40 @@ public final class RejoinerIntegrationTest {
                             ImmutableMap.of("key", "a", "value", "1"),
                             ImmutableMap.of("key", "b", "value", "2"),
                             ImmutableMap.of("key", "c", "value", "3"))))));
+  }
+
+  @Test
+  public void executionQueryWithAllFields() {
+    GraphQL graphQL =
+        GraphQL.newGraphQL(schema)
+            .instrumentation(GuavaListenableFutureSupport.listenableFutureInstrumentation())
+            .build();
+    ExecutionInput executionInput =
+        ExecutionInput.newExecutionInput()
+            .query(
+                "query { proto1 { mapField { key value } camelCaseName id intField RenamedField testInnerProto {foo} } }")
+            .build();
+    ExecutionResult executionResult = graphQL.execute(executionInput);
+    assertThat(executionResult.getErrors()).isEmpty();
+    assertThat(executionResult.toSpecification())
+        .isEqualTo(
+            ImmutableMap.of(
+                "data",
+                ImmutableMap.of(
+                    "proto1",
+                    ImmutableMap.builder()
+                        .put(
+                            "mapField",
+                            ImmutableList.of(
+                                ImmutableMap.of("key", "a", "value", "1"),
+                                ImmutableMap.of("key", "b", "value", "2"),
+                                ImmutableMap.of("key", "c", "value", "3")))
+                        .put("camelCaseName", (long) 101)
+                        .put("id", "id")
+                        .put("intField", (long) 1)
+                        .put("RenamedField", "name")
+                        .put("testInnerProto", ImmutableMap.of("foo", "foooo"))
+                        .build())));
   }
 
   @Test
