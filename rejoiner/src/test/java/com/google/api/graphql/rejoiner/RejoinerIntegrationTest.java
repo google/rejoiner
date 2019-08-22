@@ -206,17 +206,29 @@ public final class RejoinerIntegrationTest {
 
   @Test
   public void executionQueryWithMapResponse() {
-    GraphQL graphQL = GraphQL.newGraphQL(schema).instrumentation(
-            GuavaListenableFutureSupport.listenableFutureInstrumentation()
-    ).build();
+    GraphQL graphQL =
+        GraphQL.newGraphQL(schema)
+            .instrumentation(GuavaListenableFutureSupport.listenableFutureInstrumentation())
+            .build();
     ExecutionInput executionInput =
-            ExecutionInput.newExecutionInput()
-                    .query("query { proto1 { mapField { key value } } }")
-                    .build();
+        ExecutionInput.newExecutionInput()
+            .query("query { proto1 { mapField { key value } } }")
+            .build();
     ExecutionResult executionResult = graphQL.execute(executionInput);
     assertThat(executionResult.getErrors()).isEmpty();
+    assertThat(executionResult.toSpecification())
+        .isEqualTo(
+            ImmutableMap.of(
+                "data",
+                ImmutableMap.of(
+                    "proto1",
+                    ImmutableMap.of(
+                        "mapField",
+                        ImmutableList.of(
+                            ImmutableMap.of("key", "a", "value", "1"),
+                            ImmutableMap.of("key", "b", "value", "2"),
+                            ImmutableMap.of("key", "c", "value", "3"))))));
   }
-
 
   @Test
   public void handlesRuntimeExceptionMessage() {
