@@ -14,9 +14,7 @@
 
 package com.google.api.graphql.rejoiner;
 
-import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Converter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors.Descriptor;
@@ -27,7 +25,6 @@ import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.GenericDescriptor;
 import graphql.Scalars;
 import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInterfaceType;
@@ -36,9 +33,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeReference;
-
-import java.lang.reflect.Method;
-import java.util.Map;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static graphql.Scalars.GraphQLString;
@@ -69,32 +63,12 @@ final class ProtoToGql {
           .put(Type.SFIXED64, Scalars.GraphQLLong)
           .build();
 
-  private static final Converter<String, String> UNDERSCORE_TO_CAMEL =
-      CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
-  private static final Converter<String, String> LOWER_CAMEL_TO_UPPER =
-      CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL);
   private static final ImmutableList<GraphQLFieldDefinition> STATIC_FIELD =
       ImmutableList.of(newFieldDefinition().type(GraphQLString).name("_").staticValue("-").build());
 
   private static GraphQLFieldDefinition convertField(
       FieldDescriptor fieldDescriptor, ImmutableMap<String, String> commentsMap) {
-    final String fieldName = fieldDescriptor.getName();
-    final String convertedFieldName =
-        fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
-    final String methodNameSuffix =
-        fieldDescriptor.isMapField() ? "Map" : fieldDescriptor.isRepeated() ? "List" : "";
-    final String methodName =
-        "get" + LOWER_CAMEL_TO_UPPER.convert(convertedFieldName) + methodNameSuffix;
-    final ProtoDataFetcher protoDataFetcher = new ProtoDataFetcher(methodName);
-    final DataFetcher dataFetcher =
-        !fieldDescriptor.isMapField()
-            ? protoDataFetcher
-            : (DataFetchingEnvironment environment) -> {
-              final Map<Object, Object> field = (Map) protoDataFetcher.get(environment);
-              return field.entrySet().stream()
-                  .map(entry -> ImmutableMap.of("key", entry.getKey(), "value", entry.getValue()))
-                  .collect(toImmutableList());
-            };
+    DataFetcher<?> dataFetcher = new ProtoDataFetcher(fieldDescriptor);
     GraphQLFieldDefinition.Builder builder =
         newFieldDefinition()
             .type(convertType(fieldDescriptor))
@@ -106,25 +80,6 @@ final class ProtoToGql {
       builder.deprecate("deprecated in proto");
     }
     return builder.build();
-  }
-
-  private static class ProtoDataFetcher implements DataFetcher<Object> {
-    private final String methodName;
-    private Method method = null;
-
-    ProtoDataFetcher(String methodName) {
-      this.methodName = methodName;
-    }
-
-    @Override
-    public Object get(DataFetchingEnvironment environment) throws Exception {
-      final Object source = environment.getSource();
-      if (source == null) return null;
-      if (method == null)
-        // no synchronization necessary because this line is idempotent
-        method = source.getClass().getMethod(methodName);
-      return method.invoke(source);
-    }
   }
 
   /** Returns a GraphQLOutputType generated from a FieldDescriptor. */
@@ -233,31 +188,4 @@ final class ProtoToGql {
     return new GraphQLTypeReference(getReferenceName(descriptor));
   }
 
-  //  private java.util.function.Function<Object, Object> getter(Class clazz, String methodName) {
-  //    MethodHandles.Lookup lookup = MethodHandles.lookup();
-  //
-  //    try {
-  //      CallSite site = LambdaMetafactory.metafactory(lookup,
-  //
-  //              "apply",
-  //
-  //              MethodType.methodType(Function.class),
-  //
-  //              MethodType.methodType(Object.class, Object.class),
-  //
-  //              lookup.findVirtual(clazz, methodName, MethodType.methodType(String.class)),
-  //
-  //              MethodType.methodType(Object.class, clazz));
-  //      return (java.util.function.Function<Object, Object>) site.getTarget().invokeExact();
-  //    } catch (LambdaConversionException e) {
-  //      e.printStackTrace();
-  //    } catch (NoSuchMethodException e) {
-  //      e.printStackTrace();
-  //    } catch (IllegalAccessException e) {
-  //      e.printStackTrace();
-  //    } catch (Throwable throwable) {
-  //      throwable.printStackTrace();
-  //    }
-  //
-  //  }
 }
