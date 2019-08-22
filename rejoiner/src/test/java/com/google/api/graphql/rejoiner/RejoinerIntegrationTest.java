@@ -16,10 +16,12 @@ package com.google.api.graphql.rejoiner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.api.graphql.execution.GuavaListenableFutureSupport;
 import com.google.api.graphql.rejoiner.Greetings.ExtraProto;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsRequest;
 import com.google.api.graphql.rejoiner.Greetings.GreetingsResponse;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -76,6 +78,18 @@ public final class RejoinerIntegrationTest {
   }
 
   static class GreetingsSchemaModule extends SchemaModule {
+
+    @Query("proto1")
+    ListenableFuture<TestProto.Proto1> proto1() {
+      return Futures.immediateFuture(
+          TestProto.Proto1.newBuilder()
+              .putAllMapField(
+                  ImmutableMap.of(
+                      "a", "1",
+                      "b", "2",
+                      "c", "3"))
+              .build());
+    }
 
     @Query("greetingXL")
     ListenableFuture<GreetingsResponse> greetingXl(
@@ -135,8 +149,8 @@ public final class RejoinerIntegrationTest {
           .getInstance(Key.get(GraphQLSchema.class, Schema.class));
 
   @Test
-  public void schemaShouldHaveOneQuery() {
-    assertThat(schema.getQueryType().getFieldDefinitions()).hasSize(7);
+  public void schemaShouldHaveNQueries() {
+    assertThat(schema.getQueryType().getFieldDefinitions()).hasSize(8);
   }
 
   @Test
@@ -189,6 +203,20 @@ public final class RejoinerIntegrationTest {
     ExecutionResult executionResult = graphQL.execute(executionInput);
     assertThat(executionResult.getErrors()).isEmpty();
   }
+
+  @Test
+  public void executionQueryWithMapResponse() {
+    GraphQL graphQL = GraphQL.newGraphQL(schema).instrumentation(
+            GuavaListenableFutureSupport.listenableFutureInstrumentation()
+    ).build();
+    ExecutionInput executionInput =
+            ExecutionInput.newExecutionInput()
+                    .query("query { proto1 { mapField { key value } } }")
+                    .build();
+    ExecutionResult executionResult = graphQL.execute(executionInput);
+    assertThat(executionResult.getErrors()).isEmpty();
+  }
+
 
   @Test
   public void handlesRuntimeExceptionMessage() {

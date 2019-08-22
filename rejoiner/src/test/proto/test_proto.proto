@@ -27,6 +27,7 @@ message Proto1 {
   //Some leading comment
   int64 camelCaseName = 5;
   string name_field = 6 [json_name="RenamedField"];
+  map<string, string> map_field = 7;
 
   message InnerProto {
     string foo = 1;

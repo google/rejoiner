@@ -35,6 +35,8 @@ public final class ProtoRegistryTest {
         ProtoRegistry.newBuilder().add(TestProto.getDescriptor()).build().listTypes();
     assertThat(FluentIterable.from(graphQLTypes).transform(GET_NAME))
         .containsExactly(
+            "javatests_com_google_api_graphql_rejoiner_proto_Proto1_MapFieldEntry",
+            "Input_javatests_com_google_api_graphql_rejoiner_proto_Proto1_MapFieldEntry",
             "javatests_com_google_api_graphql_rejoiner_proto_Proto1",
             "javatests_com_google_api_graphql_rejoiner_proto_Proto2",
             "javatests_com_google_api_graphql_rejoiner_proto_Proto1_InnerProto",
