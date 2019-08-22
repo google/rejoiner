@@ -16,7 +16,6 @@ package com.google.api.graphql.rejoiner;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
-import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import graphql.schema.DataFetcher;
@@ -27,9 +26,7 @@ import graphql.schema.GraphQLType;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
-
-class ProtoDataFetcher implements DataFetcher<Object> {
+final class ProtoDataFetcher implements DataFetcher<Object> {
   private static final Converter<String, String> UNDERSCORE_TO_CAMEL =
       CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.LOWER_CAMEL);
   private static final Converter<String, String> LOWER_CAMEL_TO_UPPER =
