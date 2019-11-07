@@ -21,6 +21,7 @@
 These features are actively being developed.
 
  - Expose any GraphQL schema as a gRPC service.
+ - Lossless end to end proto scalar types when using gRPC.
  - Relay support [[Example](./examples/src/main/java/com/google/api/graphql/examples/library)]
  - GraphQL Stream (based on gRPC streaming) [[Example](./examples/src/main/java/com/google/api/graphql/examples/streaming)]
 
