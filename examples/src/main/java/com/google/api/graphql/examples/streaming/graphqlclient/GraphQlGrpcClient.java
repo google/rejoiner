@@ -19,7 +19,7 @@ public class GraphQlGrpcClient {
   private final CountDownLatch ON_COMPLETE = new CountDownLatch(1);
 
   public GraphQlGrpcClient(String host, int port) {
-    this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build());
+    this(ManagedChannelBuilder.forAddress(host, port).usePlaintext().build());
   }
 
   GraphQlGrpcClient(ManagedChannel channel) {

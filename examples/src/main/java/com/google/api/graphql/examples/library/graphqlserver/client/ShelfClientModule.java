@@ -26,8 +26,7 @@ final class ShelfClientModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    ManagedChannel channel =
-        ManagedChannelBuilder.forAddress(HOST, PORT).usePlaintext(true).build();
+    ManagedChannel channel = ManagedChannelBuilder.forAddress(HOST, PORT).usePlaintext().build();
     bind(ShelfServiceGrpc.ShelfServiceFutureStub.class)
         .toInstance(ShelfServiceGrpc.newFutureStub(channel));
     bind(ShelfServiceGrpc.ShelfServiceBlockingStub.class)
