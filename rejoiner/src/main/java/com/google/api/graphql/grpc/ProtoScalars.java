@@ -14,6 +14,8 @@ import graphql.schema.GraphQLScalarType;
  */
 public final class ProtoScalars {
 
+  private ProtoScalars() {}
+
   public static final GraphQLScalarType UINT_32 =
       GraphQLScalarType.newScalar(Scalars.GraphQLInt)
           .name("uint32")

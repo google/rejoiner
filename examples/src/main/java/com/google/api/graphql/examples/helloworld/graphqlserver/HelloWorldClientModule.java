@@ -27,8 +27,7 @@ final class HelloWorldClientModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    ManagedChannel channel =
-        ManagedChannelBuilder.forAddress(HOST, PORT).usePlaintext().build();
+    ManagedChannel channel = ManagedChannelBuilder.forAddress(HOST, PORT).usePlaintext().build();
     bind(GreeterGrpc.GreeterBlockingStub.class).toInstance(GreeterGrpc.newBlockingStub(channel));
   }
 }
