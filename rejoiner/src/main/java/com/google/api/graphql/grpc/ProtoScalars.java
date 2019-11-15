@@ -71,4 +71,12 @@ public final class ProtoScalars {
           .name("sfixed64")
           .description("Scalar for proto type sfixed64. Always eight bytes.")
           .build();
+
+  public static final GraphQLScalarType BYTES =
+      GraphQLScalarType.newScalar(Scalars.GraphQLString)
+          .name("bytes")
+          .description(
+              "Scalar for proto type bytes."
+                  + " May contain any arbitrary sequence of bytes no longer than 2^32.")
+          .build();
 }

@@ -16,6 +16,7 @@ package com.google.api.graphql.rejoiner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.api.graphql.grpc.ProtoScalars;
 import com.google.api.graphql.rejoiner.TestProto.Proto1;
 import com.google.api.graphql.rejoiner.TestProto.Proto1.InnerProto;
 import com.google.api.graphql.rejoiner.TestProto.Proto2;
@@ -55,7 +56,8 @@ public final class ProtoToGqlTest {
 
   @Test
   public void convertShouldWorkForMessage() {
-    GraphQLObjectType result = ProtoToGql.convert(Proto1.getDescriptor(), null, ImmutableMap.of());
+    GraphQLObjectType result =
+        ProtoToGql.convert(Proto1.getDescriptor(), null, SchemaOptions.defaultOptions());
     assertThat(result.getName())
         .isEqualTo("javatests_com_google_api_graphql_rejoiner_proto_Proto1");
     assertThat(result.getFieldDefinitions()).hasSize(7);
@@ -63,7 +65,8 @@ public final class ProtoToGqlTest {
 
   @Test
   public void convertShouldWorkForEnums() {
-    GraphQLEnumType result = ProtoToGql.convert(TestEnum.getDescriptor(), ImmutableMap.of());
+    GraphQLEnumType result =
+        ProtoToGql.convert(TestEnum.getDescriptor(), SchemaOptions.defaultOptions());
     assertThat(result.getName())
         .isEqualTo("javatests_com_google_api_graphql_rejoiner_proto_Proto2_TestEnum");
     assertThat(result.getValues()).hasSize(3);
@@ -74,11 +77,25 @@ public final class ProtoToGqlTest {
 
   @Test
   public void checkFieldNameCamelCase() {
-    GraphQLObjectType result = ProtoToGql.convert(Proto1.getDescriptor(), null, ImmutableMap.of());
+    GraphQLObjectType result =
+        ProtoToGql.convert(Proto1.getDescriptor(), null, SchemaOptions.defaultOptions());
     assertThat(result.getFieldDefinitions()).hasSize(7);
     assertThat(result.getFieldDefinition("intField")).isNotNull();
     assertThat(result.getFieldDefinition("camelCaseName")).isNotNull();
     assertThat(result.getFieldDefinition("RenamedField")).isNotNull();
+  }
+
+  @Test
+  public void checkCustomProtoScalarTypes(){
+    GraphQLObjectType result =
+            ProtoToGql.convert(PersonOuterClass.Birthday.getDescriptor(), null, SchemaOptions.builder().useProtoScalarTypes(true).build());
+    assertThat(result.getFieldDefinitions()).hasSize(3);
+    assertThat(result.getFieldDefinitions().stream().map(field->field.getType()).toArray()).asList().containsExactly(
+            ProtoScalars.SINT_32,
+            ProtoScalars.UINT_32,
+            ProtoScalars.UINT_32
+    );
+
   }
 
   @Test
@@ -92,7 +109,10 @@ public final class ProtoToGqlTest {
                 .getClassLoader()
                 .getResourceAsStream(DEFAULT_DESCRIPTOR_SET_FILE_LOCATION));
 
-    GraphQLObjectType result = ProtoToGql.convert(Proto1.getDescriptor(), null, comments);
+    SchemaOptions.Builder schemaOptionsBuilder = SchemaOptions.builder();
+    schemaOptionsBuilder.commentsMapBuilder().putAll(comments);
+    GraphQLObjectType result =
+        ProtoToGql.convert(Proto1.getDescriptor(), null, schemaOptionsBuilder.build());
 
     GraphQLFieldDefinition intFieldGraphQLFieldDefinition = result.getFieldDefinition("intField");
     assertThat(intFieldGraphQLFieldDefinition).isNotNull();
@@ -114,13 +134,13 @@ public final class ProtoToGqlTest {
     assertThat(testProtoNameGraphQLFieldDefinition.getDescription().equals("Some trailing comment"))
         .isTrue();
 
-    GraphQLEnumType nestedEnumType = ProtoToGql.convert(TestEnum.getDescriptor(), comments);
+    GraphQLEnumType nestedEnumType = ProtoToGql.convert(TestEnum.getDescriptor(), schemaOptionsBuilder.build());
 
     GraphQLEnumValueDefinition graphQLFieldDefinition = nestedEnumType.getValue("UNKNOWN");
     assertThat(graphQLFieldDefinition.getDescription().equals("Some trailing comment")).isTrue();
 
     GraphQLObjectType nestedMessageType =
-        ProtoToGql.convert(Proto2.NestedProto.getDescriptor(), null, comments);
+        ProtoToGql.convert(Proto2.NestedProto.getDescriptor(), null, schemaOptionsBuilder.build());
 
     assertThat(nestedMessageType.getDescription().equals("Nested type comment")).isTrue();
 
@@ -131,7 +151,7 @@ public final class ProtoToGqlTest {
         .isTrue();
 
     GraphQLEnumType enumType =
-        ProtoToGql.convert(TestProto.TestEnumWithComments.getDescriptor(), comments);
+        ProtoToGql.convert(TestProto.TestEnumWithComments.getDescriptor(), schemaOptionsBuilder.build());
 
     graphQLFieldDefinition = enumType.getValue("FOO");
     assertThat(graphQLFieldDefinition.getDescription().equals("Some trailing comment")).isTrue();

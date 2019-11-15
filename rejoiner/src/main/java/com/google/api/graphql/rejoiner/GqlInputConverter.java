@@ -21,7 +21,6 @@ import com.google.common.base.Converter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -100,7 +99,7 @@ public final class GqlInputConverter {
     return builder.build();
   }
 
-  GraphQLType getInputType(Descriptor descriptor, ImmutableMap<String, String> commentsMap) {
+  GraphQLType getInputType(Descriptor descriptor, SchemaOptions schemaOptions) {
     GraphQLInputObjectType.Builder builder =
         GraphQLInputObjectType.newInputObject().name(getReferenceName(descriptor));
 
@@ -108,7 +107,7 @@ public final class GqlInputConverter {
       builder.field(STATIC_FIELD);
     }
     for (FieldDescriptor field : descriptor.getFields()) {
-      GraphQLType fieldType = getFieldType(field);
+      GraphQLType fieldType = getFieldType(field, schemaOptions);
       GraphQLInputObjectField.Builder inputBuilder =
           GraphQLInputObjectField.newInputObjectField().name(getFieldName(field));
       if (field.isRepeated()) {
@@ -117,11 +116,11 @@ public final class GqlInputConverter {
         inputBuilder.type((GraphQLInputType) fieldType);
       }
 
-      inputBuilder.description(commentsMap.get(field.getFullName()));
+      inputBuilder.description(schemaOptions.commentsMap().get(field.getFullName()));
 
       builder.field(inputBuilder.build());
     }
-    builder.description(commentsMap.get(descriptor.getFullName()));
+    builder.description(schemaOptions.commentsMap().get(descriptor.getFullName()));
     return builder.build();
   }
 
@@ -170,7 +169,7 @@ public final class GqlInputConverter {
     return fieldName.contains("_") ? UNDERSCORE_TO_CAMEL.convert(fieldName) : fieldName;
   }
 
-  private GraphQLType getFieldType(FieldDescriptor field) {
+  private GraphQLType getFieldType(FieldDescriptor field, SchemaOptions schemaOptions) {
     if (field.getType() == FieldDescriptor.Type.MESSAGE
         || field.getType() == FieldDescriptor.Type.GROUP) {
       return new GraphQLTypeReference(getReferenceName(field.getMessageType()));
@@ -178,7 +177,7 @@ public final class GqlInputConverter {
     if (field.getType() == FieldDescriptor.Type.ENUM) {
       return new GraphQLTypeReference(ProtoToGql.getReferenceName(field.getEnumType()));
     }
-    GraphQLType type = ProtoToGql.convertType(field);
+    GraphQLType type = ProtoToGql.convertType(field, schemaOptions);
     if (type instanceof GraphQLList) {
       return ((GraphQLList) type).getWrappedType();
     }

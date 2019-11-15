@@ -29,7 +29,7 @@ public abstract class SchemaBundle {
 
     ProtoRegistry protoRegistry =
         ProtoRegistry.newBuilder()
-            .setComments(commentsMap())
+            .setSchemaOptions(schemaOptions())
             .addAll(fileDescriptors())
             .add(modifications())
             .build();
@@ -79,15 +79,15 @@ public abstract class SchemaBundle {
 
   public abstract ImmutableList<NodeDataFetcher> nodeDataFetchers();
 
-  public abstract ImmutableMap<String, String> commentsMap();
+  public abstract SchemaOptions schemaOptions();
 
   public static Builder builder() {
-    return new AutoValue_SchemaBundle.Builder();
+    return new AutoValue_SchemaBundle.Builder().schemaOptions(SchemaOptions.defaultOptions());
   }
 
   public static SchemaBundle combine(Collection<SchemaBundle> schemaBundles) {
     Builder builder = SchemaBundle.builder();
-    Map<String, String> commentsMap = new HashMap<>();
+    SchemaOptions.Builder schemaOptionsBuilder = SchemaOptions.builder();
     schemaBundles.forEach(
         schemaBundle -> {
           builder.queryFieldsBuilder().addAll(schemaBundle.queryFields());
@@ -95,9 +95,15 @@ public abstract class SchemaBundle {
           builder.modificationsBuilder().addAll(schemaBundle.modifications());
           builder.fileDescriptorsBuilder().addAll(schemaBundle.fileDescriptors());
           builder.nodeDataFetchersBuilder().addAll(schemaBundle.nodeDataFetchers());
-          commentsMap.putAll(schemaBundle.commentsMap());
+          schemaOptionsBuilder
+              .commentsMapBuilder()
+              .putAll(schemaBundle.schemaOptions().commentsMap());
+          if (schemaBundle.schemaOptions().useProtoScalarTypes()) {
+            // if one bundle has useProtoScalarTypes set then set it when combining.
+            schemaOptionsBuilder.useProtoScalarTypes(true);
+          }
         });
-    builder.commentsMapBuilder().putAll(commentsMap);
+    builder.schemaOptions(schemaOptionsBuilder.build());
     return builder.build();
   }
 
@@ -113,7 +119,7 @@ public abstract class SchemaBundle {
 
     public abstract ImmutableList.Builder<NodeDataFetcher> nodeDataFetchersBuilder();
 
-    public abstract ImmutableMap.Builder<String, String> commentsMapBuilder();
+    public abstract Builder schemaOptions(SchemaOptions schemaOptions);
 
     public abstract SchemaBundle build();
   }

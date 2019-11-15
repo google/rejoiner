@@ -68,13 +68,12 @@ public class SchemaDefinitionReader {
   private final SchemaBundle.Builder schemaBundleBuilder = SchemaBundle.builder();
   private final Class<?> moduleClass;
   private final Object schemaDefinition;
-  private final ImmutableMap<String, String> commentsMap;
+  private final SchemaOptions schemaOptions;
 
-  public SchemaDefinitionReader(Object schemaDefinition, ImmutableMap<String, String> commentsMap) {
+  public SchemaDefinitionReader(Object schemaDefinition, SchemaOptions schemaOptions) {
     this.schemaDefinition = schemaDefinition;
     this.moduleClass = schemaDefinition.getClass();
-    this.commentsMap = commentsMap;
-    schemaBundleBuilder.commentsMapBuilder().putAll(commentsMap);
+    this.schemaOptions = schemaOptions;
   }
 
   /**
@@ -117,13 +116,19 @@ public class SchemaDefinitionReader {
     for (Method method : findMethods(moduleClass, Query.class)) {
       Query query = method.getAnnotationsByType(Query.class)[0];
       allQueriesInModule.add(
-          methodToFieldDefinition(schemaDefinition, method, query.value(), query.fullName(), null, commentsMap));
+          methodToFieldDefinition(
+              schemaDefinition, method, query.value(), query.fullName(), null, schemaOptions));
     }
     for (Method method : findMethods(moduleClass, Mutation.class)) {
       Mutation mutation = method.getAnnotationsByType(Mutation.class)[0];
       allMutationsInModule.add(
           methodToFieldDefinition(
-              schemaDefinition, method, mutation.value(), mutation.fullName(), null,commentsMap));
+              schemaDefinition,
+              method,
+              mutation.value(),
+              mutation.fullName(),
+              null,
+              schemaOptions));
     }
 
     final List<NodeDataFetcher> nodeDataFetchers = new ArrayList<>();
@@ -131,7 +136,8 @@ public class SchemaDefinitionReader {
 
     for (Method method : findMethods(moduleClass, RelayNode.class)) {
       GraphQLFieldDefinition graphQLFieldDefinition =
-          methodToFieldDefinition(schemaDefinition, method, "_NOT_USED_", "_NOT_USED_", null,commentsMap);
+          methodToFieldDefinition(
+              schemaDefinition, method, "_NOT_USED_", "_NOT_USED_", null, schemaOptions);
       nodeDataFetchers.add(
           new NodeDataFetcher(((GraphQLNamedType) graphQLFieldDefinition.getType()).getName()) {
             @Override
@@ -162,7 +168,8 @@ public class SchemaDefinitionReader {
         Descriptor typeDescriptor = (Descriptor) typeClass.getMethod("getDescriptor").invoke(null);
         referencedDescriptors.add(typeDescriptor);
         schemaModifications.add(
-            methodToTypeModification(schemaDefinition, method, name, typeDescriptor, commentsMap));
+            methodToTypeModification(
+                schemaDefinition, method, name, typeDescriptor, schemaOptions));
       }
     } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
       throw new RuntimeException(e);
@@ -246,8 +253,7 @@ public class SchemaDefinitionReader {
         .forEach(
             descriptor -> schemaBundleBuilder.fileDescriptorsBuilder().add(descriptor.getFile()));
 
-
-    return schemaBundleBuilder.build();
+    return schemaBundleBuilder.schemaOptions(schemaOptions).build();
   }
 
   void addExtraType(Descriptor descriptor) {
@@ -379,9 +385,13 @@ public class SchemaDefinitionReader {
   }
 
   private TypeModification methodToTypeModification(
-      Object module, Method method, String name, Descriptor typeDescriptor, ImmutableMap<String, String> commentsMap) {
+      Object module,
+      Method method,
+      String name,
+      Descriptor typeDescriptor,
+      SchemaOptions schemaOptions) {
     GraphQLFieldDefinition fieldDef =
-        methodToFieldDefinition(module, method, name, name, typeDescriptor, commentsMap);
+        methodToFieldDefinition(module, method, name, name, typeDescriptor, schemaOptions);
     return Type.find(typeDescriptor).addField(fieldDef);
   }
 
@@ -391,7 +401,7 @@ public class SchemaDefinitionReader {
       String name,
       @Nullable String fullName,
       @Nullable Descriptor descriptor,
-      ImmutableMap<String, String> commentsMap) {
+      SchemaOptions schemaOptions) {
     method.setAccessible(true);
     try {
       ImmutableList<MethodMetadata> methodParameters = getMethodMetadata(method, descriptor);
@@ -420,7 +430,7 @@ public class SchemaDefinitionReader {
       GraphQLFieldDefinition.Builder fieldDef = GraphQLFieldDefinition.newFieldDefinition();
       fieldDef.type(returnType);
       fieldDef.name(name);
-      fieldDef.description(commentsMap.get(fullName));
+      fieldDef.description(schemaOptions.commentsMap().get(fullName));
       for (MethodMetadata methodMetadata : methodParameters) {
         if (methodMetadata.hasArgument()) {
           fieldDef.argument(methodMetadata.argument());

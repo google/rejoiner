@@ -88,7 +88,7 @@ final class ProtoRegistry {
     private final ArrayList<Descriptor> descriptors = new ArrayList<>();
     private final ArrayList<EnumDescriptor> enumDescriptors = new ArrayList<>();
     private final Set<TypeModification> typeModifications = new HashSet<>();
-    private ImmutableMap<String, String> commentsMap = ImmutableMap.of();
+    private SchemaOptions schemaOptions = SchemaOptions.defaultOptions();
 
     Builder add(FileDescriptor fileDescriptor) {
       fileDescriptors.add(fileDescriptor);
@@ -137,7 +137,7 @@ final class ProtoRegistry {
 
       mapping.putAll(
           modifyTypes(
-              getMap(fileDescriptors, descriptors, enumDescriptors, nodeInterface, commentsMap),
+              getMap(fileDescriptors, descriptors, enumDescriptors, nodeInterface, schemaOptions),
               modificationsMap));
 
       return new ProtoRegistry(mapping, nodeInterface);
@@ -148,16 +148,16 @@ final class ProtoRegistry {
         List<Descriptor> descriptors,
         List<EnumDescriptor> enumDescriptors,
         GraphQLInterfaceType nodeInterface,
-        ImmutableMap<String, String> commentsMap) {
+        SchemaOptions schemaOptions) {
       HashBiMap<String, GraphQLType> mapping =
-          HashBiMap.create(getEnumMap(enumDescriptors, commentsMap));
+          HashBiMap.create(getEnumMap(enumDescriptors, schemaOptions));
       LinkedList<Descriptor> loop = new LinkedList<>(descriptors);
 
       Set<FileDescriptor> fileDescriptorSet = extractDependencies(fileDescriptors);
 
       for (FileDescriptor fileDescriptor : fileDescriptorSet) {
         loop.addAll(fileDescriptor.getMessageTypes());
-        mapping.putAll(getEnumMap(fileDescriptor.getEnumTypes(), commentsMap));
+        mapping.putAll(getEnumMap(fileDescriptor.getEnumTypes(), schemaOptions));
       }
 
       while (!loop.isEmpty()) {
@@ -165,27 +165,27 @@ final class ProtoRegistry {
         if (!mapping.containsKey(descriptor.getFullName())) {
           mapping.put(
               ProtoToGql.getReferenceName(descriptor),
-              ProtoToGql.convert(descriptor, nodeInterface, commentsMap));
+              ProtoToGql.convert(descriptor, nodeInterface, schemaOptions));
           GqlInputConverter inputConverter =
               GqlInputConverter.newBuilder().add(descriptor.getFile()).build();
           mapping.put(
               GqlInputConverter.getReferenceName(descriptor),
-              inputConverter.getInputType(descriptor, commentsMap));
+              inputConverter.getInputType(descriptor, schemaOptions));
           loop.addAll(descriptor.getNestedTypes());
 
-          mapping.putAll(getEnumMap(descriptor.getEnumTypes(), commentsMap));
+          mapping.putAll(getEnumMap(descriptor.getEnumTypes(), schemaOptions));
         }
       }
       return ImmutableBiMap.copyOf(mapping);
     }
 
     private static BiMap<String, GraphQLType> getEnumMap(
-        Iterable<EnumDescriptor> descriptors, ImmutableMap<String, String> commentsMap) {
+        Iterable<EnumDescriptor> descriptors, SchemaOptions schemaOptions) {
       HashBiMap<String, GraphQLType> mapping = HashBiMap.create();
       for (EnumDescriptor enumDescriptor : descriptors) {
         mapping.put(
             ProtoToGql.getReferenceName(enumDescriptor),
-            ProtoToGql.convert(enumDescriptor, commentsMap));
+            ProtoToGql.convert(enumDescriptor, schemaOptions));
       }
       return mapping;
     }
@@ -211,8 +211,8 @@ final class ProtoRegistry {
       return result;
     }
 
-    public Builder setComments(ImmutableMap<String, String> commentsMap) {
-      this.commentsMap = commentsMap;
+    public Builder setSchemaOptions(SchemaOptions schemaOptions) {
+      this.schemaOptions = schemaOptions;
       return this;
     }
   }

@@ -46,25 +46,26 @@ import java.util.List;
 public abstract class SchemaModule extends AbstractModule {
 
   private final Object schemaDefinition;
-  final ImmutableMap<String, String> commentsMap;
+
+  private final SchemaOptions schemaOptions;
 
   /** Uses the fields and methods on the given schema definition. */
   public SchemaModule(Object schemaDefinition) {
     this.schemaDefinition = schemaDefinition;
-    commentsMap = ImmutableMap.of();
+    schemaOptions = SchemaOptions.defaultOptions();
     definition = createdSchemaDefinitionReader();
   }
 
   /** Uses the fields and methods on the module itself. */
   public SchemaModule() {
     schemaDefinition = this;
-    commentsMap = ImmutableMap.of();
+    schemaOptions = SchemaOptions.defaultOptions();
     definition = createdSchemaDefinitionReader();
   }
 
   /** Creates a schema using the supplied fields descriptions. */
-  public SchemaModule(ImmutableMap<String, String> commentsMap) {
-    this.commentsMap = commentsMap;
+  public SchemaModule(SchemaOptions schemaOptions) {
+    this.schemaOptions = schemaOptions;
     schemaDefinition = this;
     definition = createdSchemaDefinitionReader();
   }
@@ -72,7 +73,7 @@ public abstract class SchemaModule extends AbstractModule {
   private final SchemaDefinitionReader definition;
 
   private SchemaDefinitionReader createdSchemaDefinitionReader() {
-    return new SchemaDefinitionReader(this.schemaDefinition, this.commentsMap) {
+    return new SchemaDefinitionReader(this.schemaDefinition, this.schemaOptions) {
       @Override
       protected ImmutableList<GraphQLFieldDefinition> extraMutations() {
         return SchemaModule.this.extraMutations();

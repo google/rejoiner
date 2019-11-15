@@ -14,6 +14,7 @@
 
 package com.google.api.graphql.rejoiner;
 
+import com.google.api.graphql.grpc.ProtoScalars;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -43,6 +44,25 @@ final class ProtoToGql {
 
   private ProtoToGql() {}
 
+  private static final ImmutableMap<Type, GraphQLScalarType> PROTO_TYPE_MAP =
+      new ImmutableMap.Builder<Type, GraphQLScalarType>()
+          .put(Type.BOOL, Scalars.GraphQLBoolean)
+          .put(Type.FLOAT, Scalars.GraphQLFloat)
+          .put(Type.INT32, Scalars.GraphQLInt)
+          .put(Type.INT64, Scalars.GraphQLLong)
+          .put(Type.STRING, Scalars.GraphQLString)
+          .put(Type.DOUBLE, Scalars.GraphQLFloat)
+          .put(Type.UINT32, ProtoScalars.UINT_32)
+          .put(Type.UINT64, ProtoScalars.UINT_64)
+          .put(Type.SINT32, ProtoScalars.SINT_32)
+          .put(Type.SINT64, ProtoScalars.SINT_64)
+          .put(Type.BYTES, ProtoScalars.BYTES)
+          .put(Type.FIXED32, ProtoScalars.FIXED_32)
+          .put(Type.FIXED64, ProtoScalars.FIXED_64)
+          .put(Type.SFIXED32, ProtoScalars.S_FIXED_32)
+          .put(Type.SFIXED64, ProtoScalars.S_FIXED_64)
+          .build();
+
   private static final ImmutableMap<Type, GraphQLScalarType> TYPE_MAP =
       new ImmutableMap.Builder<Type, GraphQLScalarType>()
           .put(Type.BOOL, Scalars.GraphQLBoolean)
@@ -50,7 +70,6 @@ final class ProtoToGql {
           .put(Type.INT32, Scalars.GraphQLInt)
           .put(Type.INT64, Scalars.GraphQLLong)
           .put(Type.STRING, Scalars.GraphQLString)
-          // TODO: Add additional Scalar types to GraphQL
           .put(Type.DOUBLE, Scalars.GraphQLFloat)
           .put(Type.UINT32, Scalars.GraphQLInt)
           .put(Type.UINT64, Scalars.GraphQLLong)
@@ -67,14 +86,14 @@ final class ProtoToGql {
       ImmutableList.of(newFieldDefinition().type(GraphQLString).name("_").staticValue("-").build());
 
   private static GraphQLFieldDefinition convertField(
-      FieldDescriptor fieldDescriptor, ImmutableMap<String, String> commentsMap) {
+      FieldDescriptor fieldDescriptor, SchemaOptions schemaOptions) {
     DataFetcher<?> dataFetcher = new ProtoDataFetcher(fieldDescriptor);
     GraphQLFieldDefinition.Builder builder =
         newFieldDefinition()
-            .type(convertType(fieldDescriptor))
+            .type(convertType(fieldDescriptor, schemaOptions))
             .dataFetcher(dataFetcher)
             .name(fieldDescriptor.getJsonName());
-    builder.description(commentsMap.get(fieldDescriptor.getFullName()));
+    builder.description(schemaOptions.commentsMap().get(fieldDescriptor.getFullName()));
     if (fieldDescriptor.getOptions().hasDeprecated()
         && fieldDescriptor.getOptions().getDeprecated()) {
       builder.deprecate("deprecated in proto");
@@ -83,7 +102,8 @@ final class ProtoToGql {
   }
 
   /** Returns a GraphQLOutputType generated from a FieldDescriptor. */
-  static GraphQLOutputType convertType(FieldDescriptor fieldDescriptor) {
+  static GraphQLOutputType convertType(
+      FieldDescriptor fieldDescriptor, SchemaOptions schemaOptions) {
     final GraphQLOutputType type;
 
     if (fieldDescriptor.getType() == Type.MESSAGE) {
@@ -92,6 +112,8 @@ final class ProtoToGql {
       type = getReference(fieldDescriptor.getMessageType());
     } else if (fieldDescriptor.getType() == Type.ENUM) {
       type = getReference(fieldDescriptor.getEnumType());
+    } else if (schemaOptions.useProtoScalarTypes()) {
+      type = PROTO_TYPE_MAP.get(fieldDescriptor.getType());
     } else {
       type = TYPE_MAP.get(fieldDescriptor.getType());
     }
@@ -110,10 +132,10 @@ final class ProtoToGql {
   static GraphQLObjectType convert(
       Descriptor descriptor,
       GraphQLInterfaceType nodeInterface,
-      ImmutableMap<String, String> commentsMap) {
+      SchemaOptions schemaOptions) {
     ImmutableList<GraphQLFieldDefinition> graphQLFieldDefinitions =
         descriptor.getFields().stream()
-            .map(field -> ProtoToGql.convertField(field, commentsMap))
+            .map(field -> ProtoToGql.convertField(field, schemaOptions))
             .collect(toImmutableList());
 
     // TODO: add back relay support
@@ -160,19 +182,19 @@ final class ProtoToGql {
 
     return GraphQLObjectType.newObject()
         .name(getReferenceName(descriptor))
-        .description(commentsMap.get(descriptor.getFullName()))
+        .description(schemaOptions.commentsMap().get(descriptor.getFullName()))
         .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions)
         .build();
   }
 
   static GraphQLEnumType convert(
-      EnumDescriptor descriptor, ImmutableMap<String, String> commentsMap) {
+      EnumDescriptor descriptor, SchemaOptions schemaOptions) {
     GraphQLEnumType.Builder builder = GraphQLEnumType.newEnum().name(getReferenceName(descriptor));
     for (EnumValueDescriptor value : descriptor.getValues()) {
       builder.value(
           value.getName(),
           value.getName(),
-          commentsMap.get(value.getFullName()),
+          schemaOptions.commentsMap().get(value.getFullName()),
           value.getOptions().getDeprecated() ? "deprecated in proto" : null);
     }
     return builder.build();
@@ -187,5 +209,4 @@ final class ProtoToGql {
   static GraphQLTypeReference getReference(GenericDescriptor descriptor) {
     return new GraphQLTypeReference(getReferenceName(descriptor));
   }
-
 }

@@ -25,7 +25,7 @@ message Person {
 }
 
 message Birthday {
-  int32 year = 1;
-  int32 month = 2;
-  int32 day = 3;
+  sint32 year = 1;
+  uint32 month = 2;
+  uint32 day = 3;
 }
