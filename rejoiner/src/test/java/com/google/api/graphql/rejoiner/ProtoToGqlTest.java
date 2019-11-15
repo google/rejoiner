@@ -16,7 +16,6 @@ package com.google.api.graphql.rejoiner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.api.graphql.grpc.ProtoScalars;
 import com.google.api.graphql.rejoiner.TestProto.Proto1;
 import com.google.api.graphql.rejoiner.TestProto.Proto1.InnerProto;
 import com.google.api.graphql.rejoiner.TestProto.Proto2;

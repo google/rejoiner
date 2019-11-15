@@ -14,7 +14,6 @@
 
 package com.google.api.graphql.rejoiner;
 
-import com.google.api.graphql.grpc.ProtoScalars;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

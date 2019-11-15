@@ -1,4 +1,4 @@
-package com.google.api.graphql.grpc;
+package com.google.api.graphql.rejoiner;
 
 import graphql.Scalars;
 import graphql.schema.GraphQLScalarType;
