@@ -43,7 +43,7 @@
   <groupId>com.google.api.graphql</groupId>
   <artifactId>rejoiner</artifactId>
   <name>Rejoiner</name>
-  <version>0.3.1</version>
+  <version>0.4.1</version>
   <description>Generating GraphQL schemas from Protobufs.</description>
   <url>https://github.com/google/rejoiner</url>
   <packaging>jar</packaging>
@@ -122,11 +122,6 @@
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <version>3.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <version>4.1.0</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
