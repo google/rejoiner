@@ -22,10 +22,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
+    <groupId>com.google.api.graphql</groupId>
+    <artifactId>rejoiner-parent</artifactId>
+    <version>0.4.0-SNAPSHOT</version>
   </parent>
+
   <distributionManagement>
     <snapshotRepository>
       <id>ossrh</id>
@@ -149,6 +150,17 @@
       <version>0.1.16</version>
     </dependency>
     <dependency>
+      <groupId>com.google.api.graphql</groupId>
+      <artifactId>rejoiner</artifactId>
+      <version>0.4.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-firestore</artifactId>
+      <version>1.17.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
@@ -167,14 +179,6 @@
       <version>0.36</version>
       <scope>test</scope>
     </dependency>
-
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-firestore</artifactId>
-      <version>1.17.0</version>
-      <scope>test</scope>
-    </dependency>
-
 
   </dependencies>
   <build>
