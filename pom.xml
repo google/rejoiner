@@ -26,6 +26,7 @@
         <module>rejoiner</module>
         <module>rejoiner-guice</module>
         <module>rejoiner-grpc</module>
+        <module>rejoiner-schema</module>
         <!-- Examples are using gradle -->
         <!-- <module>rejoiner-examples</module>-->
     </modules>

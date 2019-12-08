@@ -6,3 +6,4 @@ website/build/
 website/yarn.lock
 website/i18n/*
 !website/i18n/en.json
+rejoiner-schema/build
