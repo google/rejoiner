@@ -28,6 +28,16 @@
     </dependency>
     <dependency>
       <groupId>com.google.api.graphql</groupId>
+      <artifactId>rejoiner-grpc</artifactId>
+      <version>0.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.graphql</groupId>
+      <artifactId>rejoiner-guice</artifactId>
+      <version>0.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.graphql</groupId>
       <artifactId>execution</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
@@ -46,6 +56,17 @@
       <artifactId>grpc-stub</artifactId>
       <version>1.10.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud</artifactId>
+      <version>0.41.0-alpha</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-container</artifactId>
+      <version>0.41.0-beta</version>
+    </dependency>
+
   </dependencies>
   <build>
     <extensions>

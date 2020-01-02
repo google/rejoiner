@@ -20,7 +20,7 @@ import com.google.api.core.ApiFutures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import graphql.execution.instrumentation.Instrumentation;
-import graphql.execution.instrumentation.NoOpInstrumentation;
+import graphql.execution.instrumentation.SimpleInstrumentation;
 import graphql.execution.instrumentation.parameters.InstrumentationFieldFetchParameters;
 import graphql.schema.DataFetcher;
 import net.javacrumbs.futureconverter.java8guava.FutureConverter;
@@ -49,7 +49,7 @@ public final class FuturesConverter {
   }
 
   public static Instrumentation apiFutureInstrumentation() {
-    return new NoOpInstrumentation() {
+    return new SimpleInstrumentation() {
       @Override
       public DataFetcher<?> instrumentDataFetcher(
           DataFetcher<?> dataFetcher, InstrumentationFieldFetchParameters parameters) {
