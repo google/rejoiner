@@ -10,6 +10,8 @@ env:
 
 before_install:
   - sed -i 's#/usr/local/bin/protoc#/tmp/protobuf/bin/protoc#g' rejoiner/pom.xml
+  - sed -i 's#/usr/local/bin/protoc#/tmp/protobuf/bin/protoc#g' rejoiner-grpc/pom.xml
+  - sed -i 's#/usr/local/bin/protoc#/tmp/protobuf/bin/protoc#g' rejoiner-schema/pom.xml
   - ./travis_before_install.sh # build protoc into /tmp/protobuf
 
 install:
