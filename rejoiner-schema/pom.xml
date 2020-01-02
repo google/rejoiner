@@ -4,9 +4,23 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>schema</groupId>
-  <artifactId>com.google.rejoiner</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <parent>
+    <groupId>com.google.api.graphql</groupId>
+    <artifactId>rejoiner-parent</artifactId>
+    <version>0.4.0-SNAPSHOT</version>
+  </parent>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <groupId>com.google.api.graphql</groupId>
+  <artifactId>rejoiner-schema</artifactId>
+  <version>0.4.0-SNAPSHOT</version>
+  <name>Rejoiner Schema</name>
 
   <dependencies>
     <dependency>
@@ -17,28 +31,44 @@
     <dependency>
       <groupId>com.google.api.graphql</groupId>
       <artifactId>rejoiner</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.4.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.graphql</groupId>
-      <artifactId>execution</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <artifactId>rejoiner-grpc</artifactId>
+      <version>0.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.graphql</groupId>
+      <artifactId>rejoiner-guice</artifactId>
+      <version>0.4.0</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty</artifactId>
-      <version>1.10.0</version>
+      <version>1.21.0</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-protobuf</artifactId>
-      <version>1.10.0</version>
+      <version>1.21.0</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-stub</artifactId>
-      <version>1.10.0</version>
+      <version>1.21.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud</artifactId>
+      <version>0.47.0-alpha</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-container</artifactId>
+      <version>0.109.0-beta</version>
+    </dependency>
+
   </dependencies>
   <build>
     <extensions>
