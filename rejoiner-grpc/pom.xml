@@ -44,46 +44,12 @@
   <groupId>com.google.api.graphql</groupId>
   <artifactId>rejoiner-grpc</artifactId>
   <name>Rejoiner gRPC</name>
-  <version>0.4.0</version>
+  <version>${rejoiner.version}</version>
   <description>Generating GraphQL schemas from Protobufs.</description>
   <url>https://github.com/google/rejoiner</url>
   <packaging>jar</packaging>
 
-  <scm>
-    <url>http://github.com/google/rejoiner/</url>
-    <connection>scm:git:git://github.com/google/rejoiner.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/google/rejoiner.git</developerConnection>
-    <tag>HEAD</tag>
-  </scm>
-
-  <issueManagement>
-    <system>GitHub Issues</system>
-    <url>http://github.com/google/rejoiner/issues</url>
-  </issueManagement>
-
-  <licenses>
-    <license>
-      <name>Apache 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-    </license>
-  </licenses>
-
-  <organization>
-    <name>Google, Inc.</name>
-    <url>http://www.google.com</url>
-  </organization>
-
   <dependencies>
-    <dependency>
-      <groupId>aopalliance</groupId>
-      <artifactId>aopalliance</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.graphql-java</groupId>
-      <artifactId>graphql-java</artifactId>
-      <version>2019-08-05T23-30-46-c454ba2</version>
-    </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
