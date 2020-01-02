@@ -13,13 +13,13 @@ before_install:
   - ./travis_before_install.sh # build protoc into /tmp/protobuf
 
 install:
-  - pushd rejoiner && mvn verify -Dgpg.skip && popd
+  - mvn verify -Dgpg.skip
 
 script:
-  - pushd rejoiner && mvn test && popd
+  - mvn test
 
 after_success:
-  - pushd rejoiner && mvn clean test jacoco:report coveralls:report && popd
+  - mvn clean test jacoco:report coveralls:report
 
 os:
   - linux
