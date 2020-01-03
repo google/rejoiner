@@ -10,10 +10,10 @@
     <version>0.4.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>com.google.api.graphql</groupId>
   <artifactId>example-schema</artifactId>
   <version>0.4.0-SNAPSHOT</version>
   <name>Example - Schema</name>
+  <packaging>war</packaging>
 
   <dependencies>
     <dependency>
@@ -79,41 +79,12 @@
     </dependency>
   </dependencies>
   <build>
-<!--    <extensions>-->
-<!--      <extension>-->
-<!--        <groupId>kr.motd.maven</groupId>-->
-<!--        <artifactId>os-maven-plugin</artifactId>-->
-<!--        <version>1.5.0.Final</version>-->
-<!--      </extension>-->
-<!--    </extensions>-->
-<!--    <plugins>-->
-<!--      <plugin>-->
-<!--        <groupId>org.apache.maven.plugins</groupId>-->
-<!--        <artifactId>maven-compiler-plugin</artifactId>-->
-<!--        <version>2.3.2</version>-->
-<!--        <configuration>-->
-<!--          <source>1.8</source>-->
-<!--          <target>1.8</target>-->
-<!--        </configuration>-->
-<!--      </plugin>-->
-<!--      <plugin>-->
-<!--        <groupId>org.xolstice.maven.plugins</groupId>-->
-<!--        <artifactId>protobuf-maven-plugin</artifactId>-->
-<!--        <version>0.5.0</version>-->
-<!--        <configuration>-->
-<!--          <protocArtifact>com.google.protobuf:protoc:3.5.1-1:exe:${os.detected.classifier}</protocArtifact>-->
-<!--          <pluginId>grpc-java</pluginId>-->
-<!--          <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.10.0:exe:${os.detected.classifier}</pluginArtifact>-->
-<!--        </configuration>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <goals>-->
-<!--              <goal>compile</goal>-->
-<!--              <goal>compile-custom</goal>-->
-<!--            </goals>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
-<!--    </plugins>-->
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.4.20.v20190813</version>
+      </plugin>
+    </plugins>
   </build>
 </project>

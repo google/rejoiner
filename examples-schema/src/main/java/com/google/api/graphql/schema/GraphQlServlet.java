@@ -12,30 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google;
+package com.google.api.graphql.schema;
 
 import com.google.api.graphql.execution.GuavaListenableFutureSupport;
 import com.google.api.graphql.rejoiner.Schema;
-import com.google.api.graphql.schema.FuturesConverter;
+import com.google.api.graphql.rejoiner.SchemaProviderModule;
+import com.google.api.graphql.schema.cloud.container.ContainerClientModule;
+import com.google.api.graphql.schema.cloud.container.ContainerSchemaModule;
+import com.google.api.graphql.schema.firestore.FirestoreClientModule;
+import com.google.api.graphql.schema.firestore.FirestoreSchemaModule;
+import com.google.api.graphql.schema.protobuf.TimestampSchemaModule;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.execution.instrumentation.ChainedInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
-import graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentation;
 import graphql.execution.instrumentation.tracing.TracingInstrumentation;
 import graphql.schema.GraphQLSchema;
 import org.dataloader.DataLoaderRegistry;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.inject.Singleton;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,30 +52,37 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-@Singleton
-final class GraphQlServlet extends HttpServlet {
+@WebServlet(urlPatterns = "graphql")
+public final class GraphQlServlet extends HttpServlet {
 
   private static final Logger logger = Logger.getLogger(GraphQlServlet.class.getName());
   private static final Gson GSON = new GsonBuilder().serializeNulls().create();
   private static final TypeToken<Map<String, Object>> MAP_TYPE_TOKEN =
       new TypeToken<Map<String, Object>>() {};
+  private static final Instrumentation INSTRUMENTATION =
+      new ChainedInstrumentation(
+          Arrays.asList(
+              FuturesConverter.apiFutureInstrumentation(),
+              GuavaListenableFutureSupport.listenableFutureInstrumentation(),
+              new TracingInstrumentation()));
 
   @Inject @Schema GraphQLSchema schema;
   @Inject Provider<DataLoaderRegistry> registryProvider;
 
+  public GraphQlServlet() {
+    Injector injector =
+        Guice.createInjector(
+            new SchemaProviderModule(),
+            new FirestoreClientModule(),
+            new ContainerClientModule(),
+            new FirestoreSchemaModule(),
+            new ContainerSchemaModule(),
+            new TimestampSchemaModule());
+    injector.injectMembers(this);
+  }
+
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-    DataLoaderRegistry dataLoaderRegistry = registryProvider.get();
-    Instrumentation instrumentation =
-        new ChainedInstrumentation(
-            Arrays.asList(
-                FuturesConverter.apiFutureInstrumentation(),
-                GuavaListenableFutureSupport.listenableFutureInstrumentation(),
-//                new DataLoaderDispatcherInstrumentation(dataLoaderRegistry),
-                new TracingInstrumentation()));
-    GraphQL graphql = GraphQL.newGraphQL(schema).instrumentation(instrumentation).build();
-
+  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     Map<String, Object> json = readJson(req);
     String query = (String) json.get("query");
     if (query == null) {
@@ -79,12 +92,16 @@ final class GraphQlServlet extends HttpServlet {
     String operationName = (String) json.get("operationName");
     Map<String, Object> variables = getVariables(json.get("variables"));
 
+    DataLoaderRegistry dataLoaderRegistry = registryProvider.get();
+    GraphQL graphql = GraphQL.newGraphQL(schema).instrumentation(INSTRUMENTATION).build();
+
     ExecutionInput executionInput =
         ExecutionInput.newExecutionInput()
             .query(query)
             .operationName(operationName)
             .variables(variables)
             .context(dataLoaderRegistry)
+            .dataLoaderRegistry(dataLoaderRegistry)
             .build();
     ExecutionResult executionResult = graphql.execute(executionInput);
     resp.setContentType("application/json");
