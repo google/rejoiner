@@ -39,17 +39,17 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
-      <version>3.8.0</version>
+      <version>3.11.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.5.0</version>
+      <version>3.11.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-common-protos</artifactId>
-      <version>0.1.16</version>
+      <version>1.17.0</version>
     </dependency>
   </dependencies>
   <build>

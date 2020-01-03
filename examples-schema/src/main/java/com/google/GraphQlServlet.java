@@ -66,7 +66,7 @@ final class GraphQlServlet extends HttpServlet {
             Arrays.asList(
                 FuturesConverter.apiFutureInstrumentation(),
                 GuavaListenableFutureSupport.listenableFutureInstrumentation(),
-                new DataLoaderDispatcherInstrumentation(dataLoaderRegistry),
+//                new DataLoaderDispatcherInstrumentation(dataLoaderRegistry),
                 new TracingInstrumentation()));
     GraphQL graphql = GraphQL.newGraphQL(schema).instrumentation(instrumentation).build();
 
