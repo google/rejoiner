@@ -8,3 +8,4 @@ website/i18n/*
 !website/i18n/en.json
 rejoiner-schema/build
 examples-schema/build
+examples-gradle/build

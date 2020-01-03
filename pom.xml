@@ -59,7 +59,7 @@
         <module>rejoiner-guice</module>
         <module>rejoiner-grpc</module>
         <module>schema</module>
-        <module>examples-schema</module>
+        <module>examples</module>
         <!-- Examples are using gradle -->
         <!-- <module>rejoiner-examples</module>-->
     </modules>

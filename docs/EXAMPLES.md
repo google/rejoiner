@@ -72,6 +72,17 @@ Current Limitations of Streaming Demo
 
 The library example uses DataLoaders which provides a request-scoped cache and automatically batches requests.
 
+
+## Example using Google cloud / firebase schema modules
+
+There are a few pre configured schema modules in `schema`. This example installs those
+schema and provides access using GraphiQL using a Jetty HTTP server.
+
+```
+cd examples/schema
+mvn jetty:run
+```
+
 ## Community Examples
 
 [github.com/dbaggett/medallion](https://github.com/dbaggett/medallion) contains multiple microservices and uses Kotlin instead of Java.
