@@ -15,7 +15,7 @@ GraphQL frontend server.
    <p>From the top level directory run these commands:
 
     ```
-    > cd examples
+    > cd examples-gradle
     > ./gradlew installDist
     > ./build/install/examples/bin/helloworld-backend
 
@@ -41,21 +41,21 @@ Note: This is a work in progress
 1. Run the gRPc backend server
 
    ```
-   > cd examples
+   > cd examples-gradle
    > ./gradlew installDist
    > ./build/install/examples/bin/streaming-backend
    ```
 2. Run the GraphQL frontend gRPC server
 
    ```
-   > cd examples
+   > cd examples-gradle
    > ./build/install/examples/bin/streaming-graphql-server
    ```
 
 3. Run the GraphQL gRPC client
 
    ```
-   > cd examples
+   > cd examples-gradle
    > ./build/install/examples/bin/streaming-graphql-client
    ```
 
