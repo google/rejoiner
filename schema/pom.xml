@@ -28,7 +28,7 @@
   <groupId>com.google.api.graphql</groupId>
   <artifactId>schema-parent</artifactId>
   <name>Schema Parent</name>
-  <version>0.4.0</version>
+  <version>0.4.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>common</module>

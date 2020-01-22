@@ -1,5 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'com.google.protobuf'
+apply plugin: 'maven'
+
 
 buildscript {
   repositories {
@@ -36,7 +38,9 @@ dependencies {
   compile "io.grpc:grpc-protobuf:${grpcVersion}"
   compile "io.grpc:grpc-stub:${grpcVersion}"
 
-  compile "com.google.api.graphql:rejoiner:0.3.0"
+  compile "com.google.api.graphql:rejoiner:0.4.0-SNAPSHOT"
+  compile "com.google.api.graphql:rejoiner-grpc:0.4.0-SNAPSHOT"
+  compile "com.google.api.graphql:rejoiner-guice:0.4.0-SNAPSHOT"
   compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.3.8.v20160314'
   compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.2'
   compile 'com.google.inject.extensions:guice-servlet:4.2.0'

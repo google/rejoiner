@@ -23,13 +23,13 @@
   <parent>
     <groupId>com.google.api.graphql</groupId>
     <artifactId>schema-parent</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.0-SNAPSHOT</version>
   </parent>
 
   <groupId>com.google.api.graphql</groupId>
   <artifactId>schema-firestore</artifactId>
   <name>Schema Firestore</name>
-  <version>0.4.0</version>
+  <version>0.4.0-SNAPSHOT</version>
   <description>Generating GraphQL schemas from Protobufs.</description>
   <url>https://github.com/google/rejoiner</url>
   <packaging>jar</packaging>

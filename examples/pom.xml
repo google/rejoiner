@@ -12,8 +12,10 @@
   <version>0.4.0-SNAPSHOT</version>
   <name>Example - Parent</name>
   <packaging>pom</packaging>
+  <properties>
+    <failOnMissingWebXml>false</failOnMissingWebXml>
+  </properties>
   <modules>
     <module>schema</module>
-<!--    <module>end-to-end-grpc</module>-->
   </modules>
 </project>
