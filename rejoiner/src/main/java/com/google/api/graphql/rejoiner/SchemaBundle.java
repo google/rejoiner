@@ -4,7 +4,6 @@ import static graphql.schema.GraphQLObjectType.newObject;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Descriptors;
 import graphql.relay.Relay;
@@ -88,6 +87,7 @@ public abstract class SchemaBundle {
   public static SchemaBundle combine(Collection<SchemaBundle> schemaBundles) {
     Builder builder = SchemaBundle.builder();
     SchemaOptions.Builder schemaOptionsBuilder = SchemaOptions.builder();
+    Map<String, String> allComments = new HashMap<>();
     schemaBundles.forEach(
         schemaBundle -> {
           builder.queryFieldsBuilder().addAll(schemaBundle.queryFields());
@@ -95,14 +95,13 @@ public abstract class SchemaBundle {
           builder.modificationsBuilder().addAll(schemaBundle.modifications());
           builder.fileDescriptorsBuilder().addAll(schemaBundle.fileDescriptors());
           builder.nodeDataFetchersBuilder().addAll(schemaBundle.nodeDataFetchers());
-          schemaOptionsBuilder
-              .commentsMapBuilder()
-              .putAll(schemaBundle.schemaOptions().commentsMap());
+          allComments.putAll(schemaBundle.schemaOptions().commentsMap());
           if (schemaBundle.schemaOptions().useProtoScalarTypes()) {
             // if one bundle has useProtoScalarTypes set then set it when combining.
             schemaOptionsBuilder.useProtoScalarTypes(true);
           }
         });
+    schemaOptionsBuilder.commentsMapBuilder().putAll(allComments);
     builder.schemaOptions(schemaOptionsBuilder.build());
     return builder.build();
   }
