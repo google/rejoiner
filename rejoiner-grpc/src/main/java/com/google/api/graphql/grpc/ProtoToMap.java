@@ -53,7 +53,6 @@ public final class ProtoToMap {
 
   private static Object mapValue(FieldDescriptor field, Object value) {
     if (value instanceof Message) {
-      @SuppressWarnings("unchecked")
       Message message = (Message) value;
       return messageToMap(message);
     } else if (field.isMapField()) {
