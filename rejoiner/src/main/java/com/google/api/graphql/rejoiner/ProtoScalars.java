@@ -1,6 +1,12 @@
 package com.google.api.graphql.rejoiner;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.StringValue;
 import graphql.Scalars;
+import graphql.schema.Coercing;
+import graphql.schema.CoercingParseLiteralException;
+import graphql.schema.CoercingParseValueException;
+import graphql.schema.CoercingSerializeException;
 import graphql.schema.GraphQLScalarType;
 
 /**
@@ -73,7 +79,41 @@ public final class ProtoScalars {
           .build();
 
   public static final GraphQLScalarType BYTES =
-      GraphQLScalarType.newScalar(Scalars.GraphQLString)
+      GraphQLScalarType.newScalar()
+          .coercing(
+              new Coercing<ByteString, String>() {
+                @Override
+                public String serialize(Object dataFetcherResult)
+                    throws CoercingSerializeException {
+                  if (dataFetcherResult instanceof ByteString) {
+                    return ((ByteString) dataFetcherResult).toStringUtf8();
+                  } else {
+                    throw new CoercingSerializeException(
+                        "Invalid value '" + dataFetcherResult + "' for Bytes");
+                  }
+                }
+
+                @Override
+                public ByteString parseValue(Object input) throws CoercingParseValueException {
+                  if (input instanceof String) {
+                    ByteString result = ByteString.copyFromUtf8((String) input);
+                    if (result == null) {
+                      throw new CoercingParseValueException(
+                          "Invalid value '" + input + "' for Bytes");
+                    }
+                    return result;
+                  }
+                  throw new CoercingParseValueException("Invalid value '" + input + "' for Bytes");
+                }
+
+                @Override
+                public ByteString parseLiteral(Object input) throws CoercingParseLiteralException {
+                  if (input instanceof StringValue) {
+                    return ((StringValue) input).getValueBytes();
+                  }
+                  return null;
+                }
+              })
           .name("Bytes")
           .description(
               "Scalar for proto type bytes."
