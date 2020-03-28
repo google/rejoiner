@@ -1,8 +1,8 @@
 package com.google.api.graphql.rejoiner;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.StringValue;
 import graphql.Scalars;
+import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingParseLiteralException;
 import graphql.schema.CoercingParseValueException;
@@ -81,12 +81,12 @@ public final class ProtoScalars {
   public static final GraphQLScalarType BYTES =
       GraphQLScalarType.newScalar()
           .coercing(
-              new Coercing<ByteString, String>() {
+              new Coercing<ByteString, ByteString>() {
                 @Override
-                public String serialize(Object dataFetcherResult)
+                public ByteString serialize(Object dataFetcherResult)
                     throws CoercingSerializeException {
                   if (dataFetcherResult instanceof ByteString) {
-                    return ((ByteString) dataFetcherResult).toStringUtf8();
+                    return (ByteString) dataFetcherResult;
                   } else {
                     throw new CoercingSerializeException(
                         "Invalid value '" + dataFetcherResult + "' for Bytes");
@@ -103,13 +103,16 @@ public final class ProtoScalars {
                     }
                     return result;
                   }
+                  if (input instanceof ByteString) {
+                    return (ByteString) input;
+                  }
                   throw new CoercingParseValueException("Invalid value '" + input + "' for Bytes");
                 }
 
                 @Override
                 public ByteString parseLiteral(Object input) throws CoercingParseLiteralException {
                   if (input instanceof StringValue) {
-                    return ((StringValue) input).getValueBytes();
+                    return ByteString.copyFromUtf8(((StringValue) input).getValue());
                   }
                   return null;
                 }

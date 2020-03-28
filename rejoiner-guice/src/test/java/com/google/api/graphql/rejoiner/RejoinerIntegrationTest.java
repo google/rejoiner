@@ -27,6 +27,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Guice;
 import com.google.inject.Key;
+import com.google.protobuf.ByteString;
 import graphql.ErrorType;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
@@ -79,6 +80,9 @@ public final class RejoinerIntegrationTest {
 
   static class GreetingsSchemaModule extends SchemaModule {
 
+    GreetingsSchemaModule(){
+      super(SchemaOptions.builder().useProtoScalarTypes(true).build());
+    }
     @Query("proto1")
     ListenableFuture<TestProto.Proto1> proto1() {
       return Futures.immediateFuture(
@@ -93,6 +97,7 @@ public final class RejoinerIntegrationTest {
                       "a", "1",
                       "b", "2",
                       "c", "3"))
+              .setBytesField(ByteString.copyFromUtf8("b-y-t-e-s"))
               .build());
     }
 
@@ -244,7 +249,7 @@ public final class RejoinerIntegrationTest {
     ExecutionInput executionInput =
         ExecutionInput.newExecutionInput()
             .query(
-                "query { proto1 { mapField { key value } camelCaseName id intField RenamedField testInnerProto {foo} } }")
+                "query { proto1 { mapField { key value } camelCaseName id intField RenamedField testInnerProto {foo} }}")
             .build();
     ExecutionResult executionResult = graphQL.execute(executionInput);
     assertThat(executionResult.getErrors()).isEmpty();
@@ -267,6 +272,26 @@ public final class RejoinerIntegrationTest {
                         .put("RenamedField", "name")
                         .put("testInnerProto", ImmutableMap.of("foo", "foooo"))
                         .build())));
+  }
+  @Test
+  public void executionQueryWithBytesFields() {
+    GraphQL graphQL =
+        GraphQL.newGraphQL(schema)
+            .instrumentation(GuavaListenableFutureSupport.listenableFutureInstrumentation())
+            .build();
+    ExecutionInput executionInput =
+        ExecutionInput.newExecutionInput()
+            .query(
+                "query { proto1 { bytesField } }")
+            .build();
+    ExecutionResult executionResult = graphQL.execute(executionInput);
+    assertThat(executionResult.getErrors()).isEmpty();
+    ByteString result =
+    ((ByteString)
+        ((Map<String, Object>)
+            ((Map<String, Object>) executionResult.toSpecification().get("data")).get("proto1")).get("bytesField"));
+
+    assertThat(result).isEqualTo(ByteString.copyFromUtf8("b-y-t-e-s"));
   }
 
   @Test
