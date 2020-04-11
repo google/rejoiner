@@ -1,4 +1,8 @@
 const siteConfig = {
+  algolia: {
+    apiKey: '0cd38f3b9cf50238665b8981b9709451',
+    indexName: 'rejoiner',
+  },
   title: 'Rejoiner',
   tagline: 'Uniform GraphQL schema from gRPC microservices',
   url: 'https://rejoiner.io',
