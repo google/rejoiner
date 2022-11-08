@@ -276,7 +276,7 @@ public final class RejoinerIntegrationTest {
                         .put("intField", (long) 1)
                         .put("RenamedField", "name")
                         .put("testInnerProto", ImmutableMap.of("foo", "foooo"))
-                        .put("bytesField", ByteString.copyFromUtf8("b-y-t-e-s"))
+                        .put("bytesField", "b-y-t-e-s")
                         .build())));
   }
 

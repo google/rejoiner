@@ -81,12 +81,12 @@ public final class ProtoScalars {
   public static final GraphQLScalarType BYTES =
       GraphQLScalarType.newScalar()
           .coercing(
-              new Coercing<ByteString, ByteString>() {
+              new Coercing<ByteString, String>() {
                 @Override
-                public ByteString serialize(Object dataFetcherResult)
+                public String serialize(Object dataFetcherResult)
                     throws CoercingSerializeException {
                   if (dataFetcherResult instanceof ByteString) {
-                    return (ByteString) dataFetcherResult;
+                    return ((ByteString) dataFetcherResult).toStringUtf8();
                   } else {
                     throw new CoercingSerializeException(
                         "Invalid value '" + dataFetcherResult + "' for Bytes");
@@ -119,7 +119,7 @@ public final class ProtoScalars {
               })
           .name("Bytes")
           .description(
-              "Scalar for proto type bytes."
+              "Scalar for proto type byte as a utf8-encoded string"
                   + " May contain any arbitrary sequence of bytes no longer than 2^32.")
           .build();
 }
