@@ -38,8 +38,8 @@ mutations, and schema modifications are presented below.
 ```java
 final class TodoQuerySchemaModule extends SchemaModule {
   @Query("listTodo")
-  ListenableFuture<ListTodoResponse> listTodo(ListTodoRequest request, TodoClient todoClient) {
-    return todoClient.listTodo(request);
+  ListenableFuture<ListTodoResponse> listTodo(ListTodoRequest request, TodoService todoService) {
+    return todoService.listTodo(request);
   }
 }
 ```
